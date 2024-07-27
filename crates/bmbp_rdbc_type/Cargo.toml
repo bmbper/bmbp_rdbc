@@ -13,7 +13,6 @@ documentation.workspace = true
 [dependencies]
 serde = { workspace = true }
 
-bmbp_rdbc_sql = { workspace = true }
 
 # 日志
 tracing = { workspace = true }
