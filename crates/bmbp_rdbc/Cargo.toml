@@ -1,0 +1,15 @@
+[package]
+name = "bmbp_rdbc"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description = "RDBC"
+license.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+[dependencies]
+bmbp_rdbc_type = { workspace = true }
+bmbp_rdbc_orm = { workspace = true }
+bmbp_rdbc_sql = { workspace = true }

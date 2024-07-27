@@ -1,0 +1,31 @@
+[package]
+name = "bmbp_rdbc_orm"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description = "ORM"
+license.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+
+[dependencies]
+# sql
+bmbp_rdbc_sql = { workspace = true }
+bmbp_rdbc_type = { workspace = true }
+# 日志
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+# 运行时
+tokio = { workspace = true }        # 异步抽象
+async_static = { workspace = true }
+async-trait = { workspace = true }
+once_cell = { workspace = true }
+# 数据库
+tokio-postgres = { workspace = true }
+# 序列化库
+serde = { workspace = true }
+serde_json = { workspace = true }
+# 时间库
+chrono = { workspace = true }

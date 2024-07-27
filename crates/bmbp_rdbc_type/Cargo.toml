@@ -1,0 +1,26 @@
+[package]
+name = "bmbp_rdbc_type"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description = "定义rdbc模型"
+license.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+
+bmbp_rdbc_sql = { workspace = true }
+
+# 日志
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+# 数据库
+tokio-postgres = { workspace = true }
+# 时间库
+chrono = { workspace = true }
+log = { workspace = true }
+uuid = { workspace = true }
