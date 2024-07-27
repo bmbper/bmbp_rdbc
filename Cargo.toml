@@ -16,7 +16,7 @@ openssl = "/opt/homebrew/Cellar/openssl@3/3.3.0"
 [workspace.dependencies]
 bmbp_rdbc_type = { version = "0.0.1", path = "crates/bmbp_rdbc_type" }
 bmbp_rdbc_orm = { version = "0.0.1", path = "crates/bmbp_rdbc_orm" }
-bmbp_rdbc_sql = { version = "0.0.1", path = "crates/bmbp_rdbc_sql" }
+bmbp_rdbc_sql = { version = "0.0.2", path = "crates/bmbp_rdbc_sql" }
 async-lock = "3.4.0"
 async-once-cell = "0.5.3"
 async-recursion = "1.1.1"
