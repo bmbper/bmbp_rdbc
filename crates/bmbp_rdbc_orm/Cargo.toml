@@ -12,7 +12,7 @@ documentation.workspace = true
 
 [dependencies]
 # sql
-bmbp_rdbc_sql = { workspace = true }
+bmbp_rdbc_sql = "0.0.1"
 bmbp_rdbc_type = { workspace = true }
 # 日志
 tracing = { workspace = true }
