@@ -1,5 +1,4 @@
 pub use crate::err::RdbcResult;
-use async_static::async_static;
 pub use bmbp_rdbc_sql::*;
 pub use bmbp_rdbc_type::*;
 pub use ds::*;
