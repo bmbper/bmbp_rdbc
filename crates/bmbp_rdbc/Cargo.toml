@@ -10,6 +10,9 @@ homepage.workspace = true
 repository.workspace = true
 documentation.workspace = true
 [dependencies]
-bmbp_rdbc_type = { workspace = true }
+bmbp_rdbc_adaptor = { workspace = true }
+bmbp_rdbc_marco = { workspace = true }
 bmbp_rdbc_orm = { workspace = true }
+bmbp_rdbc_script = { workspace = true }
 bmbp_rdbc_sql = { workspace = true }
+bmbp_rdbc_type = { workspace = true }
