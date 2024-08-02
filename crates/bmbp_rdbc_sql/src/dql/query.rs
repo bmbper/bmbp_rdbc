@@ -98,6 +98,11 @@ impl QueryWrapper {
 }
 
 impl QueryWrapper {
+    pub fn column<C>(&mut self, column: C) -> &mut Self where C: RdbcIdent {
+        self.select(column.get_ident());
+        self
+    }
+
     // RdbcColumn: From<RC>, RdbcValue: From<RV>, SS: ToString, ST: ToString, SC: ToString, SA: ToString
     pub fn select<RC>(&mut self, column: RC) -> &mut Self
         where

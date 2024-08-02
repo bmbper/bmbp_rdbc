@@ -1,6 +1,15 @@
 /// RdbcIdent get name which use for table name,column name,schema name
 pub trait RdbcIdent {
     fn get_ident(&self) -> String;
+    fn with_alias(&self, alias: &str) -> String {
+        format!("{}.{}", alias, self.get_ident())
+    }
+    fn with_as_alias(&self, with_alias: &str, as_alias: bool) -> String {
+        format!("{}.{} AS {}", with_alias, self.get_ident(), as_alias)
+    }
+    fn as_alias(&self, alias: &str) -> String {
+        format!("{} AS {}", self.get_ident(), alias)
+    }
 }
 
 impl<T> RdbcIdent for T where T: ToString {
