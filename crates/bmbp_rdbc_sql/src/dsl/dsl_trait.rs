@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::build::{mysql_build_sql, pg_build_sql};
 use crate::{
-    DatabaseType, QueryWrapper, RdbcColumn, RdbcConcatType, RdbcDmlValue, RdbcFilterInner,
+    RdbcDataBase, QueryWrapper, RdbcColumn, RdbcConcatType, RdbcDmlValue, RdbcFilterInner,
     RdbcTableInner, RdbcValue,
 };
 
@@ -1062,15 +1062,15 @@ pub trait RdbcTableWrapper {
     }
 }
 /// RdbcSQLParser 语句解析器
-pub trait RdbcSQLWrapper {
-    fn build_sql(&self, database_type: DatabaseType) -> (String, Vec<RdbcValue>) {
+pub trait RdbcSQL {
+    fn build_sql(&self, database_type: RdbcDataBase) -> (String, Vec<RdbcValue>) {
         let (sql, params) = self.build_script(database_type.clone());
         match database_type {
-            DatabaseType::Postgres => pg_build_sql(sql, params),
-            DatabaseType::MySQL => mysql_build_sql(sql, params),
+            RdbcDataBase::Postgres => pg_build_sql(sql, params),
+            RdbcDataBase::MySQL => mysql_build_sql(sql, params),
         }
     }
-    fn build_script(&self, database_type: DatabaseType) -> (String, HashMap<String, RdbcValue>) {
+    fn build_script(&self, database_type: RdbcDataBase) -> (String, HashMap<String, RdbcValue>) {
         ("".to_string(), HashMap::new())
     }
 }

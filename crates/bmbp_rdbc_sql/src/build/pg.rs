@@ -5,10 +5,10 @@ use uuid::Uuid;
 use crate::build::base::base_build_sql;
 use crate::build::vars::PG_PARAMS_TAG;
 use crate::{
-    DatabaseType, DeleteWrapper, InsertWrapper, QueryWrapper, RdbcColumn, RdbcColumnFilterItem,
+    RdbcDataBase, DeleteWrapper, InsertWrapper, QueryWrapper, RdbcColumn, RdbcColumnFilterItem,
     RdbcCompareType, RdbcConcatFunc, RdbcConcatType, RdbcDmlValue, RdbcFilterInner, RdbcFilterItem,
     RdbcFunc, RdbcFuncColumn, RdbcOrder, RdbcOrderType, RdbcQueryColumn, RdbcQueryTable,
-    RdbcReplaceFunc, RdbcSQLWrapper, RdbcSchemaTable, RdbcTableColumn, RdbcTableInner, RdbcTableJoinType,
+    RdbcReplaceFunc, RdbcSQL, RdbcSchemaTable, RdbcTableColumn, RdbcTableInner, RdbcTableJoinType,
     RdbcValue, RdbcValueColumn, RdbcValueFilterItem, UpdateWrapper,
 };
 
@@ -154,7 +154,7 @@ fn pg_build_table_query_table_sql(
     let (mut table_sql, mut table_params) = ("".to_string(), HashMap::new());
 
     let query = table.get_name();
-    let (query_sql, query_params) = query.build_script(DatabaseType::Postgres);
+    let (query_sql, query_params) = query.build_script(RdbcDataBase::Postgres);
 
     table_sql = format!("({})", query_sql);
     table_params.extend(query_params.into_iter());
@@ -739,7 +739,7 @@ fn pg_build_select_query_column_sql(
     with_alias: bool,
 ) -> (String, HashMap<String, RdbcValue>) {
     let (mut sql, mut params) = ("".to_string(), HashMap::new());
-    let (query_sql, query_params) = column.get_name().build_script(DatabaseType::Postgres);
+    let (query_sql, query_params) = column.get_name().build_script(RdbcDataBase::Postgres);
     sql = query_sql;
     params.extend(query_params.into_iter());
     if with_alias {
@@ -807,7 +807,7 @@ pub fn pg_build_insert_script(insert: &InsertWrapper) -> (String, HashMap<String
     } else {
         let query_value = insert.get_query();
         if let Some(query) = query_value {
-            let (query_sql, query_params) = query.build_script(DatabaseType::Postgres);
+            let (query_sql, query_params) = query.build_script(RdbcDataBase::Postgres);
             insert_sql = format!("{}{}", insert_sql, query_sql);
             insert_params.extend(query_params.into_iter());
         }
@@ -834,7 +834,7 @@ fn pg_build_insert_value(
                 insert_params.extend(col_params.into_iter());
             }
             RdbcColumn::Query(q) => {
-                let (query_sql, query_params) = q.get_name().build_script(DatabaseType::Postgres);
+                let (query_sql, query_params) = q.get_name().build_script(RdbcDataBase::Postgres);
                 value_vec.push(query_sql);
                 insert_params.extend(query_params.into_iter());
             }
@@ -889,7 +889,7 @@ pub fn pg_build_update_script(update: &UpdateWrapper) -> (String, HashMap<String
                                 }
                                 RdbcColumn::Query(q) => {
                                     let (query_sql, query_params) =
-                                        q.get_name().build_script(DatabaseType::Postgres);
+                                        q.get_name().build_script(RdbcDataBase::Postgres);
                                     set_sql.push(format!("{} = {}", column_set, query_sql));
                                     sql_prams.extend(query_params.into_iter());
                                 }

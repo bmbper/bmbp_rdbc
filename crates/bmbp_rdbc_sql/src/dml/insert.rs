@@ -3,12 +3,12 @@ use std::sync::RwLock;
 
 use crate::build::{mysql_build_insert_script, pg_build_insert_script};
 use crate::{
-    DatabaseType, QueryWrapper, RdbcDmlValue, RdbcSQLWrapper, RdbcTableWrapper, RdbcTableColumn, RdbcTableInner,
+    RdbcDataBase, QueryWrapper, RdbcDmlValue, RdbcSQL, RdbcTableWrapper, RdbcTableColumn, RdbcTableInner,
     RdbcValue,
 };
 
 pub struct InsertWrapper {
-    driver_: RwLock<Option<DatabaseType>>,
+    driver_: RwLock<Option<RdbcDataBase>>,
     table_: Vec<RdbcTableInner>,
     join_: Option<Vec<RdbcTableInner>>,
     column_: Vec<RdbcTableColumn>,
@@ -29,7 +29,7 @@ impl InsertWrapper {
             query_: None,
         }
     }
-    pub fn set_driver(&self, driver: DatabaseType) -> &Self {
+    pub fn set_driver(&self, driver: RdbcDataBase) -> &Self {
         *self.driver_.write().unwrap() = Some(driver);
         self
     }
@@ -94,11 +94,11 @@ impl RdbcTableWrapper for InsertWrapper {
     }
 }
 
-impl RdbcSQLWrapper for InsertWrapper {
-    fn build_script(&self, database_type: DatabaseType) -> (String, HashMap<String, RdbcValue>) {
+impl RdbcSQL for InsertWrapper {
+    fn build_script(&self, database_type: RdbcDataBase) -> (String, HashMap<String, RdbcValue>) {
         match database_type {
-            DatabaseType::Postgres => pg_build_insert_script(self),
-            DatabaseType::MySQL => mysql_build_insert_script(self),
+            RdbcDataBase::Postgres => pg_build_insert_script(self),
+            RdbcDataBase::MySQL => mysql_build_insert_script(self),
         }
     }
 }

@@ -2,13 +2,10 @@ use std::collections::HashMap;
 use std::sync::RwLock;
 
 use crate::build::{mysql_build_query_script, pg_build_query_script};
-use crate::{
-    DatabaseType, RdbcColumn, RdbcColumnOrder, RdbcConcatType, RdbcFilterWrapper, RdbcFilterInner,
-    RdbcOrder, RdbcSQLWrapper, RdbcTableWrapper, RdbcTableInner, RdbcValue, RdbcValueColumn,
-};
+use crate::{RdbcDataBase, RdbcIdent, RdbcColumn, RdbcColumnOrder, RdbcConcatType, RdbcFilterWrapper, RdbcFilterInner, RdbcOrder, RdbcSQL, RdbcTableWrapper, RdbcTableInner, RdbcValue, RdbcValueColumn, RdbcTable};
 
 pub struct QueryWrapper {
-    driver_: RwLock<Option<DatabaseType>>,
+    driver_: RwLock<Option<RdbcDataBase>>,
     select_: Vec<RdbcColumn>,
     table_: Vec<RdbcTableInner>,
     join_: Option<Vec<RdbcTableInner>>,
@@ -42,8 +39,13 @@ impl QueryWrapper {
         };
         query
     }
-    pub fn new_from() -> QueryWrapper {
-        QueryWrapper::new()
+    pub fn new_from<T>() -> QueryWrapper where T: RdbcTable {
+        let mut query = QueryWrapper::new();
+        query.table(T::get_table().get_ident());
+        for item in T::get_columns() {
+            query.select(item.get_ident());
+        }
+        query
     }
     fn init_order(&mut self) -> &mut Self {
         if self.order_.is_none() {
@@ -55,7 +57,7 @@ impl QueryWrapper {
 
 // Query的查询方法
 impl QueryWrapper {
-    pub fn set_driver(&self, driver: DatabaseType) -> &Self {
+    pub fn set_driver(&self, driver: RdbcDataBase) -> &Self {
         *self.driver_.write().unwrap() = Some(driver);
         self
     }
@@ -94,18 +96,19 @@ impl QueryWrapper {
         self.union_only.as_ref()
     }
 }
+
 impl QueryWrapper {
     // RdbcColumn: From<RC>, RdbcValue: From<RV>, SS: ToString, ST: ToString, SC: ToString, SA: ToString
     pub fn select<RC>(&mut self, column: RC) -> &mut Self
-    where
-        RdbcColumn: From<RC>,
+        where
+            RdbcColumn: From<RC>,
     {
         self.select_.push(RdbcColumn::from(column));
         self
     }
     pub fn select_vec<RC>(&mut self, columns: Vec<RC>) -> &mut Self
-    where
-        RdbcColumn: From<RC>,
+        where
+            RdbcColumn: From<RC>,
     {
         for column in columns {
             self.select(column);
@@ -113,9 +116,9 @@ impl QueryWrapper {
         self
     }
     pub fn select_table_column<ST, SC>(&mut self, table: ST, column: SC) -> &mut Self
-    where
-        SC: ToString,
-        ST: ToString,
+        where
+            SC: ToString,
+            ST: ToString,
     {
         self.select_.push(RdbcColumn::table_column(table, column));
         self
@@ -126,10 +129,10 @@ impl QueryWrapper {
         column: SC,
         alias: SA,
     ) -> &mut Self
-    where
-        ST: ToString,
-        SC: ToString,
-        SA: ToString,
+        where
+            ST: ToString,
+            SC: ToString,
+            SA: ToString,
     {
         self.select_
             .push(RdbcColumn::table_column_as_alias(table, column, alias));
@@ -141,10 +144,10 @@ impl QueryWrapper {
         table: ST,
         column: SC,
     ) -> &mut Self
-    where
-        SS: ToString,
-        ST: ToString,
-        SC: ToString,
+        where
+            SS: ToString,
+            ST: ToString,
+            SC: ToString,
     {
         self.select_
             .push(RdbcColumn::schema_table_column(schema, table, column));
@@ -157,11 +160,11 @@ impl QueryWrapper {
         column: SC,
         alias: SA,
     ) -> &mut Self
-    where
-        SS: ToString,
-        ST: ToString,
-        SC: ToString,
-        SA: ToString,
+        where
+            SS: ToString,
+            ST: ToString,
+            SC: ToString,
+            SA: ToString,
     {
         self.select_.push(RdbcColumn::schema_table_column_as_alias(
             schema, table, column, alias,
@@ -169,8 +172,8 @@ impl QueryWrapper {
         self
     }
     pub fn select_value<RV>(&mut self, column: RV) -> &mut Self
-    where
-        RdbcValue: From<RV>,
+        where
+            RdbcValue: From<RV>,
     {
         self.select_
             .push(RdbcColumn::Value(RdbcValueColumn::rdbc_value(
@@ -180,8 +183,8 @@ impl QueryWrapper {
     }
 
     pub fn order_by<SC>(&mut self, column: SC, is_asc: bool) -> &mut Self
-    where
-        RdbcColumn: From<SC>,
+        where
+            RdbcColumn: From<SC>,
     {
         self.init_order();
         let order = match is_asc {
@@ -192,8 +195,8 @@ impl QueryWrapper {
         self
     }
     pub fn order_asc<SC>(&mut self, column: SC) -> &mut Self
-    where
-        RdbcColumn: From<SC>,
+        where
+            RdbcColumn: From<SC>,
     {
         self.init_order();
         self.order_
@@ -203,8 +206,8 @@ impl QueryWrapper {
         self
     }
     pub fn order_desc<SC>(&mut self, column: SC) -> &mut Self
-    where
-        RdbcColumn: From<SC>,
+        where
+            RdbcColumn: From<SC>,
     {
         self.init_order();
         self.order_
@@ -214,20 +217,20 @@ impl QueryWrapper {
         self
     }
     pub fn order_slice<SC>(&mut self, column: &[SC], is_asc: bool) -> &mut Self
-    where
-        SC: ToString,
+        where
+            SC: ToString,
     {
         self
     }
     pub fn order_slice_asc<SC>(&mut self, column: &[SC]) -> &mut Self
-    where
-        SC: ToString,
+        where
+            SC: ToString,
     {
         self
     }
     pub fn order_slice_desc<SC>(&mut self, column: &[SC]) -> &mut Self
-    where
-        SC: ToString,
+        where
+            SC: ToString,
     {
         self
     }
@@ -259,8 +262,8 @@ impl QueryWrapper {
         self
     }
     pub fn group_by<RC>(&mut self, column: RC) -> &mut Self
-    where
-        RdbcColumn: From<RC>,
+        where
+            RdbcColumn: From<RC>,
     {
         self
     }
@@ -302,11 +305,11 @@ impl RdbcFilterWrapper for QueryWrapper {
     }
 }
 
-impl RdbcSQLWrapper for QueryWrapper {
-    fn build_script(&self, database_type: DatabaseType) -> (String, HashMap<String, RdbcValue>) {
+impl RdbcSQL for QueryWrapper {
+    fn build_script(&self, database_type: RdbcDataBase) -> (String, HashMap<String, RdbcValue>) {
         match database_type {
-            DatabaseType::Postgres => pg_build_query_script(self),
-            DatabaseType::MySQL => mysql_build_query_script(self),
+            RdbcDataBase::Postgres => pg_build_query_script(self),
+            RdbcDataBase::MySQL => mysql_build_query_script(self),
         }
     }
 }

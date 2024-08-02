@@ -3,12 +3,12 @@ use std::sync::RwLock;
 
 use crate::build::{mysql_build_delete_script, pg_build_delete_script};
 use crate::{
-    DatabaseType, RdbcColumn, RdbcConcatType, RdbcFilterWrapper, RdbcFilterInner, RdbcOrder, RdbcSQLWrapper,
+    RdbcDataBase, RdbcColumn, RdbcConcatType, RdbcFilterWrapper, RdbcFilterInner, RdbcOrder, RdbcSQL,
     RdbcTableWrapper, RdbcTableInner, RdbcValue,
 };
 
 pub struct DeleteWrapper {
-    driver_: RwLock<Option<DatabaseType>>,
+    driver_: RwLock<Option<RdbcDataBase>>,
     table_: Vec<RdbcTableInner>,
     join_: Option<Vec<RdbcTableInner>>,
     filter_: Option<RdbcFilterInner>,
@@ -36,7 +36,7 @@ impl DeleteWrapper {
         }
     }
 
-    pub fn set_driver(&self, driver: DatabaseType) -> &Self {
+    pub fn set_driver(&self, driver: RdbcDataBase) -> &Self {
         *self.driver_.write().unwrap() = Some(driver);
         self
     }
@@ -106,11 +106,11 @@ impl RdbcFilterWrapper for DeleteWrapper {
     }
 }
 
-impl RdbcSQLWrapper for DeleteWrapper {
-    fn build_script(&self, database_type: DatabaseType) -> (String, HashMap<String, RdbcValue>) {
+impl RdbcSQL for DeleteWrapper {
+    fn build_script(&self, database_type: RdbcDataBase) -> (String, HashMap<String, RdbcValue>) {
         match database_type {
-            DatabaseType::Postgres => pg_build_delete_script(self),
-            DatabaseType::MySQL => mysql_build_delete_script(self),
+            RdbcDataBase::Postgres => pg_build_delete_script(self),
+            RdbcDataBase::MySQL => mysql_build_delete_script(self),
         }
     }
 }

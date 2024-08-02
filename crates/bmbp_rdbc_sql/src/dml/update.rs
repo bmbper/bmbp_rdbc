@@ -3,12 +3,12 @@ use std::sync::RwLock;
 
 use crate::build::{mysql_build_update_script, pg_build_update_script};
 use crate::{
-    DatabaseType, RdbcColumn, RdbcConcatType, RdbcDmlValue, RdbcFilterWrapper, RdbcFilterInner, RdbcOrder,
-    RdbcSQLWrapper, RdbcTableWrapper, RdbcTableInner, RdbcValue,
+    RdbcDataBase, RdbcColumn, RdbcConcatType, RdbcDmlValue, RdbcFilterWrapper, RdbcFilterInner, RdbcOrder,
+    RdbcSQL, RdbcTableWrapper, RdbcTableInner, RdbcValue,
 };
 
 pub struct UpdateWrapper {
-    driver_: RwLock<Option<DatabaseType>>,
+    driver_: RwLock<Option<RdbcDataBase>>,
     set_values_: Vec<(RdbcColumn, Option<RdbcDmlValue>)>,
     table_: Vec<RdbcTableInner>,
     join_: Option<Vec<RdbcTableInner>>,
@@ -37,7 +37,7 @@ impl UpdateWrapper {
             params_: None,
         }
     }
-    pub fn set_driver(&self, driver: DatabaseType) -> &Self {
+    pub fn set_driver(&self, driver: RdbcDataBase) -> &Self {
         *self.driver_.write().unwrap() = Some(driver);
         self
     }
@@ -118,11 +118,11 @@ impl RdbcFilterWrapper for UpdateWrapper {
     }
 }
 
-impl RdbcSQLWrapper for UpdateWrapper {
-    fn build_script(&self, database_type: DatabaseType) -> (String, HashMap<String, RdbcValue>) {
+impl RdbcSQL for UpdateWrapper {
+    fn build_script(&self, database_type: RdbcDataBase) -> (String, HashMap<String, RdbcValue>) {
         match database_type {
-            DatabaseType::Postgres => pg_build_update_script(self),
-            DatabaseType::MySQL => mysql_build_update_script(self),
+            RdbcDataBase::Postgres => pg_build_update_script(self),
+            RdbcDataBase::MySQL => mysql_build_update_script(self),
         }
     }
 }
