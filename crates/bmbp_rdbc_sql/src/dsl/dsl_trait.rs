@@ -6,7 +6,7 @@ use crate::{
     RdbcTableInner, RdbcValue,
 };
 
-pub trait RdbcFilter {
+pub trait RdbcFilterWrapper {
     fn init_filter(&mut self) -> &mut Self;
     fn get_filter_mut(&mut self) -> &mut RdbcFilterInner;
     fn with_filter(&mut self, concat_type: RdbcConcatType) -> &mut Self;
@@ -801,8 +801,7 @@ pub trait RdbcFilter {
         self
     }
 }
-
-pub trait RdbcTable {
+pub trait RdbcTableWrapper {
     fn get_table_mut(&mut self) -> &mut Vec<RdbcTableInner>;
     fn get_join_mut(&mut self) -> &mut Vec<RdbcTableInner>;
     fn table<ST>(&mut self, table: ST) -> &mut Self
@@ -1062,9 +1061,8 @@ pub trait RdbcTable {
         self
     }
 }
-
 /// RdbcSQLParser 语句解析器
-pub trait RdbcSQL {
+pub trait RdbcSQLWrapper {
     fn build_sql(&self, database_type: DatabaseType) -> (String, Vec<RdbcValue>) {
         let (sql, params) = self.build_script(database_type.clone());
         match database_type {

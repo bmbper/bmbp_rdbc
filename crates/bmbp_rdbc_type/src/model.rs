@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use tokio_postgres::Row;
 use uuid::Uuid;
 
-use bmbp_rdbc_sql::{DeleteWrapper, InsertWrapper, QueryWrapper, RdbcTable, RdbcValue};
+use bmbp_rdbc_sql::{DeleteWrapper, InsertWrapper, QueryWrapper, RdbcTableWrapper, RdbcValue};
 
 use crate::{
     RDBC_DATA_CREATE_TIME, RDBC_DATA_CREATE_USER, RDBC_DATA_FLAG, RDBC_DATA_ID, RDBC_DATA_LEVEL,

@@ -3,7 +3,7 @@ use std::sync::RwLock;
 
 use crate::build::{mysql_build_insert_script, pg_build_insert_script};
 use crate::{
-    DatabaseType, QueryWrapper, RdbcDmlValue, RdbcSQL, RdbcTable, RdbcTableColumn, RdbcTableInner,
+    DatabaseType, QueryWrapper, RdbcDmlValue, RdbcSQLWrapper, RdbcTableWrapper, RdbcTableColumn, RdbcTableInner,
     RdbcValue,
 };
 
@@ -82,7 +82,7 @@ impl InsertWrapper {
         self
     }
 }
-impl RdbcTable for InsertWrapper {
+impl RdbcTableWrapper for InsertWrapper {
     fn get_table_mut(&mut self) -> &mut Vec<RdbcTableInner> {
         self.table_.as_mut()
     }
@@ -94,7 +94,7 @@ impl RdbcTable for InsertWrapper {
     }
 }
 
-impl RdbcSQL for InsertWrapper {
+impl RdbcSQLWrapper for InsertWrapper {
     fn build_script(&self, database_type: DatabaseType) -> (String, HashMap<String, RdbcValue>) {
         match database_type {
             DatabaseType::Postgres => pg_build_insert_script(self),

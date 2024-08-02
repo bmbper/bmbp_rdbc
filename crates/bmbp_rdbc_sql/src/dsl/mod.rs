@@ -8,6 +8,7 @@ mod dsl_model;
 mod dsl_trait;
 mod dsl_value;
 mod func;
+mod ident;
 
 #[derive(Clone)]
 pub enum DatabaseType {

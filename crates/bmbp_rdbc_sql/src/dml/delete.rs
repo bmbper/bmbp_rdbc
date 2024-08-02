@@ -3,8 +3,8 @@ use std::sync::RwLock;
 
 use crate::build::{mysql_build_delete_script, pg_build_delete_script};
 use crate::{
-    DatabaseType, RdbcColumn, RdbcConcatType, RdbcFilter, RdbcFilterInner, RdbcOrder, RdbcSQL,
-    RdbcTable, RdbcTableInner, RdbcValue,
+    DatabaseType, RdbcColumn, RdbcConcatType, RdbcFilterWrapper, RdbcFilterInner, RdbcOrder, RdbcSQLWrapper,
+    RdbcTableWrapper, RdbcTableInner, RdbcValue,
 };
 
 pub struct DeleteWrapper {
@@ -70,7 +70,7 @@ impl DeleteWrapper {
     }
 }
 
-impl RdbcTable for DeleteWrapper {
+impl RdbcTableWrapper for DeleteWrapper {
     fn get_table_mut(&mut self) -> &mut Vec<RdbcTableInner> {
         self.table_.as_mut()
     }
@@ -82,7 +82,7 @@ impl RdbcTable for DeleteWrapper {
     }
 }
 
-impl RdbcFilter for DeleteWrapper {
+impl RdbcFilterWrapper for DeleteWrapper {
     fn init_filter(&mut self) -> &mut Self {
         if self.filter_.is_none() {
             self.filter_ = Some(RdbcFilterInner::new());
@@ -106,7 +106,7 @@ impl RdbcFilter for DeleteWrapper {
     }
 }
 
-impl RdbcSQL for DeleteWrapper {
+impl RdbcSQLWrapper for DeleteWrapper {
     fn build_script(&self, database_type: DatabaseType) -> (String, HashMap<String, RdbcValue>) {
         match database_type {
             DatabaseType::Postgres => pg_build_delete_script(self),

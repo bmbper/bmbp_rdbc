@@ -3,8 +3,8 @@ use std::sync::RwLock;
 
 use crate::build::{mysql_build_update_script, pg_build_update_script};
 use crate::{
-    DatabaseType, RdbcColumn, RdbcConcatType, RdbcDmlValue, RdbcFilter, RdbcFilterInner, RdbcOrder,
-    RdbcSQL, RdbcTable, RdbcTableInner, RdbcValue,
+    DatabaseType, RdbcColumn, RdbcConcatType, RdbcDmlValue, RdbcFilterWrapper, RdbcFilterInner, RdbcOrder,
+    RdbcSQLWrapper, RdbcTableWrapper, RdbcTableInner, RdbcValue,
 };
 
 pub struct UpdateWrapper {
@@ -82,7 +82,7 @@ impl UpdateWrapper {
     }
 }
 
-impl RdbcTable for UpdateWrapper {
+impl RdbcTableWrapper for UpdateWrapper {
     fn get_table_mut(&mut self) -> &mut Vec<RdbcTableInner> {
         self.table_.as_mut()
     }
@@ -94,7 +94,7 @@ impl RdbcTable for UpdateWrapper {
     }
 }
 
-impl RdbcFilter for UpdateWrapper {
+impl RdbcFilterWrapper for UpdateWrapper {
     fn init_filter(&mut self) -> &mut Self {
         if self.filter_.is_none() {
             self.filter_ = Some(RdbcFilterInner::new());
@@ -118,7 +118,7 @@ impl RdbcFilter for UpdateWrapper {
     }
 }
 
-impl RdbcSQL for UpdateWrapper {
+impl RdbcSQLWrapper for UpdateWrapper {
     fn build_script(&self, database_type: DatabaseType) -> (String, HashMap<String, RdbcValue>) {
         match database_type {
             DatabaseType::Postgres => pg_build_update_script(self),

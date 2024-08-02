@@ -3,8 +3,8 @@ use std::sync::RwLock;
 
 use crate::build::{mysql_build_query_script, pg_build_query_script};
 use crate::{
-    DatabaseType, RdbcColumn, RdbcColumnOrder, RdbcConcatType, RdbcFilter, RdbcFilterInner,
-    RdbcOrder, RdbcSQL, RdbcTable, RdbcTableInner, RdbcValue, RdbcValueColumn,
+    DatabaseType, RdbcColumn, RdbcColumnOrder, RdbcConcatType, RdbcFilterWrapper, RdbcFilterInner,
+    RdbcOrder, RdbcSQLWrapper, RdbcTableWrapper, RdbcTableInner, RdbcValue, RdbcValueColumn,
 };
 
 pub struct QueryWrapper {
@@ -266,7 +266,7 @@ impl QueryWrapper {
     }
 }
 
-impl RdbcTable for QueryWrapper {
+impl RdbcTableWrapper for QueryWrapper {
     fn get_table_mut(&mut self) -> &mut Vec<RdbcTableInner> {
         self.table_.as_mut()
     }
@@ -278,7 +278,7 @@ impl RdbcTable for QueryWrapper {
     }
 }
 
-impl RdbcFilter for QueryWrapper {
+impl RdbcFilterWrapper for QueryWrapper {
     fn init_filter(&mut self) -> &mut Self {
         if self.filter_.is_none() {
             self.filter_ = Some(RdbcFilterInner::new());
@@ -302,7 +302,7 @@ impl RdbcFilter for QueryWrapper {
     }
 }
 
-impl RdbcSQL for QueryWrapper {
+impl RdbcSQLWrapper for QueryWrapper {
     fn build_script(&self, database_type: DatabaseType) -> (String, HashMap<String, RdbcValue>) {
         match database_type {
             DatabaseType::Postgres => pg_build_query_script(self),

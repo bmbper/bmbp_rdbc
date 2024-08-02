@@ -8,7 +8,7 @@ use crate::{
     DatabaseType, DeleteWrapper, InsertWrapper, QueryWrapper, RdbcColumn, RdbcColumnFilterItem,
     RdbcCompareType, RdbcConcatFunc, RdbcConcatType, RdbcDmlValue, RdbcFilterInner, RdbcFilterItem,
     RdbcFunc, RdbcFuncColumn, RdbcOrder, RdbcOrderType, RdbcQueryColumn, RdbcQueryTable,
-    RdbcReplaceFunc, RdbcSQL, RdbcSchemaTable, RdbcTableColumn, RdbcTableInner, RdbcTableJoinType,
+    RdbcReplaceFunc, RdbcSQLWrapper, RdbcSchemaTable, RdbcTableColumn, RdbcTableInner, RdbcTableJoinType,
     RdbcValue, RdbcValueColumn, RdbcValueFilterItem, UpdateWrapper,
 };
 
