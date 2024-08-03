@@ -1,10 +1,11 @@
-use proc_macro::{ TokenStream};
+use proc_macro::{TokenStream};
 use bmbp_marco_util::{build_struct_field_token, field_has_attrs_ident, parse_struct_fields};
 use case_style::CaseStyle;
 use proc_macro2::Ident;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::{format_ident, quote};
 use syn::{Field, parse_macro_input};
+use bmbp_rdbc_type::RdbcIdent;
 
 pub(crate) fn marco_table(meta_token: TokenStream, struct_token: TokenStream) -> TokenStream {
     let parse_struct_meta_token = struct_token.clone();
@@ -39,6 +40,7 @@ fn build_struct_column_enum(struct_ident: &Ident, fields: &[Field]) -> TokenStre
     };
     token
 }
+
 fn build_impl_rdbc_ident(struct_ident: &Ident, fields: &[Field]) -> TokenStream2 {
     let struct_columns_ident = format_ident!("{}Column", struct_ident);
     let match_column_fields = build_impl_rdbc_ident_field_ident(fields);
@@ -53,8 +55,35 @@ fn build_impl_rdbc_ident(struct_ident: &Ident, fields: &[Field]) -> TokenStream2
     };
     token
 }
+
 fn build_impl_rdbc_table(struct_ident: &Ident, table_name: &String, fields: &[Field]) -> TokenStream2 {
     let struct_columns_ident = format_ident!("{}Column", struct_ident);
+    let mut primary_key = build_primary_key(fields);
+    let mut key_method = vec![];
+    if !primary_key.is_empty() {
+        if primary_key.len() == 1 {
+            let id = primary_key[0].clone();
+            let token = quote! {
+                fn get_primary_key() -> impl RdbcIdent {
+                    #id.to_string()
+                }
+                 fn get_union_key() -> Vec<impl RdbcIdent> {
+                    vec![#id.to_string()]
+                }
+            };
+            key_method.push(token);
+        } else {
+            let token = quote! {
+                fn get_union_key() -> Vec<impl RdbcIdent> {
+                    vec![
+                        #(#primary_key.to_string()),*
+                    ]
+                }
+            };
+            key_method.push(token);
+        }
+    };
+
     let mut match_column_fields = build_impl_rdbc_table_field_ident(fields);
     let token = quote! {
         impl RdbcTable for #struct_ident {
@@ -66,10 +95,22 @@ fn build_impl_rdbc_table(struct_ident: &Ident, table_name: &String, fields: &[Fi
                     #(#struct_columns_ident::#match_column_fields),*
                 ]
             }
+            #(#key_method)*
         }
     };
     token
 }
+
+fn build_primary_key(fields: &[Field]) -> Vec<String> {
+    let mut primary_key = vec![];
+    for field in fields {
+        if field_has_attrs_ident(field, "id") || field_has_attrs_ident(field, "primary_key") {
+            primary_key.push(field.ident.as_ref().unwrap().to_string());
+        }
+    }
+    primary_key
+}
+
 fn parse_struct_table_name(meta: &TokenStream, struct_ident: &Ident) -> String {
     let mut table_name = meta.to_string().replace("\"", "");
     if table_name.is_empty() {
@@ -78,6 +119,7 @@ fn parse_struct_table_name(meta: &TokenStream, struct_ident: &Ident) -> String {
     table_name = CaseStyle::guess(table_name).unwrap().to_snakecase().to_uppercase();
     table_name
 }
+
 fn build_struct_column_enum_field_ident(fields: &[Field]) -> Vec<Ident> {
     let mut column_fields = vec![];
     for field in fields {
@@ -90,6 +132,7 @@ fn build_struct_column_enum_field_ident(fields: &[Field]) -> Vec<Ident> {
     }
     column_fields
 }
+
 fn build_impl_rdbc_ident_field_ident(fields: &[Field]) -> Vec<TokenStream2> {
     let mut column_fields = vec![];
     for field in fields {
@@ -106,6 +149,7 @@ fn build_impl_rdbc_ident_field_ident(fields: &[Field]) -> Vec<TokenStream2> {
     }
     column_fields
 }
+
 fn build_impl_rdbc_table_field_ident(fields: &[Field]) -> Vec<Ident> {
     let mut match_column_fields = vec![];
     for field in fields {

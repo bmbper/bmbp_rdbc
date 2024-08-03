@@ -22,4 +22,8 @@ impl<T> RdbcIdent for T where T: ToString {
 pub trait RdbcTable {
     fn get_table() -> impl RdbcIdent;
     fn get_columns() -> Vec<impl RdbcIdent>;
+    fn get_primary_key() -> impl RdbcIdent {
+        "".to_string()
+    }
+    fn get_union_key() -> Vec<impl RdbcIdent> ;
 }

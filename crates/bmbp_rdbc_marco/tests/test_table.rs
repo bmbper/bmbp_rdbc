@@ -6,7 +6,9 @@ use bmbp_rdbc_type::RdbcTable;
 pub fn test_table() {
     #[table("DemoAttrs")]
     pub struct Demo {
+        #[id]
         name: String,
+        #[id]
         title: String,
     }
     assert_eq!("DEMO_ATTRS".to_string(), Demo::get_table().get_ident());
