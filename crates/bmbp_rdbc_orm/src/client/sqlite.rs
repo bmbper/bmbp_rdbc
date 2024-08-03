@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 
-use bmbp_rdbc_type::RdbcOrmRow;
-use bmbp_rdbc_sql::{DeleteWrapper, InsertWrapper, QueryWrapper, RdbcValue, UpdateWrapper};
+use bmbp_rdbc_type::{RdbcOrmRow, RdbcValue};
+use bmbp_rdbc_sql::{DeleteWrapper, InsertWrapper, QueryWrapper, UpdateWrapper};
 
 use crate::err::RdbcResult;
 use crate::pool::RdbcConnInner;
