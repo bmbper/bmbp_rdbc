@@ -37,7 +37,7 @@ pub trait RdbcTableFilter {
             RdbcColumn: From<T>,
             RdbcColumn: From<V>,
     {
-        self.get_filter_mut().eq_column(column,value);
+        self.get_filter_mut().eq_column(RdbcColumn::from(column),RdbcColumn::from(value));
         self
     }
     fn eq_value<T, V>(&mut self, column: T, value: RdbcValue) -> &mut Self
