@@ -1,4 +1,5 @@
-use bmbp_rdbc_sql::{QueryWrapper, RdbcTableFilter, RdbcIdent, RdbcSQL, RdbcTable, RdbcTableWrapper};
+use bmbp_rdbc_sql::{QueryWrapper, RdbcSQL, RdbcTableFilter, RdbcTableWrapper};
+use bmbp_rdbc_type::{RdbcIdent, RdbcTable};
 
 #[test]
 fn test_query_table() {

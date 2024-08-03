@@ -1,4 +1,4 @@
-use bmbp_rdbc_sql::{RdbcIdent, RdbcTable};
+use bmbp_rdbc_type::{RdbcIdent, RdbcTable};
 
 #[test]
 fn test_ident() {
