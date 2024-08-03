@@ -2,7 +2,7 @@
 members = ["crates/*"]
 resolver = "2"
 [workspace.package]
-version = "0.2.1"
+version = "0.2.4"
 edition = "2021"
 authors = ["bmbp<rs_bmbp.163.com>"]
 description = "BMBP RDBC"
@@ -14,12 +14,12 @@ documentation = "https://github.com/bmbper/bmbp_rdbc"
 [workspace.build]
 openssl = "/opt/homebrew/Cellar/openssl@3/3.3.0"
 [workspace.dependencies]
-bmbp_rdbc_adaptor = { version = "0.2.1", path = "crates/bmbp_rdbc_adaptor" }
-bmbp_rdbc_marco = { version = "0.2.1", path = "crates/bmbp_rdbc_marco" }
-bmbp_rdbc_orm = { version = "0.2.2", path = "crates/bmbp_rdbc_orm" }
-bmbp_rdbc_script = { version = "0.2.1", path = "crates/bmbp_rdbc_script" }
-bmbp_rdbc_sql = { version = "0.2.3", path = "crates/bmbp_rdbc_sql" }
-bmbp_rdbc_type = { version = "0.2.2", path = "crates/bmbp_rdbc_type" }
+bmbp_rdbc_adaptor = { version = "0.2.4", path = "crates/bmbp_rdbc_adaptor" }
+bmbp_rdbc_marco = { version = "0.2.4", path = "crates/bmbp_rdbc_marco" }
+bmbp_rdbc_orm = { version = "0.2.4", path = "crates/bmbp_rdbc_orm" }
+bmbp_rdbc_script = { version = "0.2.4", path = "crates/bmbp_rdbc_script" }
+bmbp_rdbc_sql = { version = "0.2.4", path = "crates/bmbp_rdbc_sql" }
+bmbp_rdbc_type = { version = "0.2.4", path = "crates/bmbp_rdbc_type" }
 
 async-lock = "3.4.0"
 async-once-cell = "0.5.3"

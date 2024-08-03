@@ -1,6 +1,6 @@
 [package]
 name = "bmbp_rdbc_sql"
-version = "0.2.3"
+version.workspace = true
 edition.workspace = true
 authors.workspace = true
 description = "SQL构建器"

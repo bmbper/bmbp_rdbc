@@ -1,6 +1,6 @@
 [package]
 name = "bmbp_rdbc_type"
-version="0.2.2"
+version.workspace = true
 edition.workspace = true
 authors.workspace = true
 description = "定义rdbc模型"

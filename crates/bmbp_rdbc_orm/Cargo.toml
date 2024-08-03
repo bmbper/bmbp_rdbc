@@ -1,6 +1,6 @@
 [package]
 name = "bmbp_rdbc_orm"
-version="0.2.2"
+version.workspace = true
 edition.workspace = true
 authors.workspace = true
 description = "ORM"
@@ -13,7 +13,7 @@ documentation.workspace = true
 [dependencies]
 # sql
 bmbp_rdbc_type = { workspace = true }
-bmbp_rdbc_sql = "0.2.0"
+bmbp_rdbc_sql = { workspace = true }
 # 日志
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }

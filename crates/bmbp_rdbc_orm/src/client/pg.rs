@@ -6,10 +6,8 @@ use tokio_postgres::types::ToSql;
 use tokio_postgres::{connect, Client, NoTls};
 use tracing::info;
 
-use bmbp_rdbc_type::{RdbcOrmRow, RdbcPage};
-use bmbp_rdbc_sql::{
-    DatabaseType, DeleteWrapper, InsertWrapper, QueryWrapper, RdbcSQL, RdbcValue, UpdateWrapper,
-};
+use bmbp_rdbc_type::{RdbcDataBase, RdbcOrmRow, RdbcPage, RdbcValue};
+use bmbp_rdbc_sql::{DeleteWrapper, InsertWrapper, QueryWrapper,  RdbcSQL, UpdateWrapper};
 
 use crate::err::{RdbcError, RdbcErrorType, RdbcResult};
 use crate::pool::RdbcConnInner;
@@ -101,7 +99,7 @@ impl RdbcConnInner for PgDbClient {
         page_size: usize,
         query: &QueryWrapper,
     ) -> RdbcResult<(usize, Option<Vec<RdbcOrmRow>>)> {
-        let (pg_sql, page_prams) = query.build_sql(DatabaseType::Postgres);
+        let (pg_sql, page_prams) = query.build_sql(RdbcDataBase::Postgres);
         let count_sql = format!("SELECT COUNT(1) AS count FROM ({}) ", pg_sql);
         let query_sql = format!(
             "SELECT * FROM ({}) OFFSET {} LIMIT {} ",
@@ -130,13 +128,13 @@ impl RdbcConnInner for PgDbClient {
         &self,
         query: &QueryWrapper,
     ) -> RdbcResult<Option<Vec<RdbcOrmRow>>> {
-        let (pg_sql, page_prams) = query.build_sql(DatabaseType::Postgres);
+        let (pg_sql, page_prams) = query.build_sql(RdbcDataBase::Postgres);
         self.select_list_by_sql(pg_sql.as_str(), page_prams.as_slice())
             .await
     }
 
     async fn select_one_by_query(&self, query: &QueryWrapper) -> RdbcResult<Option<RdbcOrmRow>> {
-        let (sql, params) = query.build_sql(DatabaseType::Postgres);
+        let (sql, params) = query.build_sql(RdbcDataBase::Postgres);
         self.select_one_by_sql(sql.as_str(), params.as_slice())
             .await
     }
@@ -197,17 +195,17 @@ impl RdbcConnInner for PgDbClient {
     }
 
     async fn execute_insert(&self, insert: &InsertWrapper) -> RdbcResult<u64> {
-        let (sql, params) = insert.build_sql(DatabaseType::Postgres);
+        let (sql, params) = insert.build_sql(RdbcDataBase::Postgres);
         self.execute(sql.as_str(), params.as_slice()).await
     }
 
     async fn execute_update(&self, update: &UpdateWrapper) -> RdbcResult<u64> {
-        let (sql, params) = update.build_sql(DatabaseType::Postgres);
+        let (sql, params) = update.build_sql(RdbcDataBase::Postgres);
         self.execute(sql.as_str(), params.as_slice()).await
     }
 
     async fn execute_delete(&self, delete: &DeleteWrapper) -> RdbcResult<u64> {
-        let (sql, params) = delete.build_sql(DatabaseType::Postgres);
+        let (sql, params) = delete.build_sql(RdbcDataBase::Postgres);
         self.execute(sql.as_str(), params.as_slice()).await
     }
 }
