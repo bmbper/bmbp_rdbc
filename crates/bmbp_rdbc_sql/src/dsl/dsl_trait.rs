@@ -2,15 +2,16 @@ use std::collections::HashMap;
 
 use crate::build::{mysql_build_sql, pg_build_sql};
 use crate::{
-    RdbcDataBase, QueryWrapper, RdbcColumn, RdbcConcatType, RdbcDmlValue, RdbcFilterInner,
+    RdbcDataBase, QueryWrapper, RdbcColumn, RdbcConcatType, RdbcDmlValue, RdbcTableFilterImpl,
     RdbcTableInner, RdbcValue,
 };
 
-pub trait RdbcFilterWrapper {
+/// RdbcTableFilter query filter trait
+pub trait RdbcTableFilter {
     fn init_filter(&mut self) -> &mut Self;
-    fn get_filter_mut(&mut self) -> &mut RdbcFilterInner;
+    fn get_filter_mut(&mut self) -> &mut RdbcTableFilterImpl;
     fn with_filter(&mut self, concat_type: RdbcConcatType) -> &mut Self;
-    fn add_filter(&mut self, filter: RdbcFilterInner) -> &mut Self {
+    fn add_filter(&mut self, filter: RdbcTableFilterImpl) -> &mut Self {
         self.get_filter_mut().add_filter(filter);
         self
     }
@@ -36,6 +37,7 @@ pub trait RdbcFilterWrapper {
             RdbcColumn: From<T>,
             RdbcColumn: From<V>,
     {
+        self.get_filter_mut().eq_column(column,value);
         self
     }
     fn eq_value<T, V>(&mut self, column: T, value: RdbcValue) -> &mut Self

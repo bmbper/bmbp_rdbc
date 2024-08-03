@@ -1,4 +1,4 @@
-use bmbp_rdbc_sql::{QueryWrapper, RdbcIdent, RdbcSQL, RdbcTable, RdbcTableWrapper};
+use bmbp_rdbc_sql::{QueryWrapper, RdbcTableFilter, RdbcIdent, RdbcSQL, RdbcTable, RdbcTableWrapper};
 
 #[test]
 fn test_query_table() {
@@ -41,4 +41,9 @@ fn test_query_table() {
     query2.column(DemoVars::Name).column(DemoVars::Title.as_alias("name2"));
     query2.column(DemoVars::Name.with_alias("t1")).column(DemoVars::Title.as_alias("name2"));
     println!("=====>{:#?}", query2.build_sql(bmbp_rdbc_sql::RdbcDataBase::Postgres).0);
+
+    let mut query3 = QueryWrapper::new();
+    query3.select(DemoVars::Name);
+    query3.eq_(DemoVars::Name, "1");
+    println!("=====>{:#?}", query3.build_sql(bmbp_rdbc_sql::RdbcDataBase::Postgres).0)
 }

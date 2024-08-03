@@ -6,7 +6,7 @@ use crate::build::base::base_build_sql;
 use crate::build::vars::PG_PARAMS_TAG;
 use crate::{
     RdbcDataBase, DeleteWrapper, InsertWrapper, QueryWrapper, RdbcColumn, RdbcColumnFilterItem,
-    RdbcCompareType, RdbcConcatFunc, RdbcConcatType, RdbcDmlValue, RdbcFilterInner, RdbcFilterItem,
+    RdbcCompareType, RdbcConcatFunc, RdbcConcatType, RdbcDmlValue, RdbcTableFilterImpl, RdbcFilterItem,
     RdbcFunc, RdbcFuncColumn, RdbcOrder, RdbcOrderType, RdbcQueryColumn, RdbcQueryTable,
     RdbcReplaceFunc, RdbcSQL, RdbcSchemaTable, RdbcTableColumn, RdbcTableInner, RdbcTableJoinType,
     RdbcValue, RdbcValueColumn, RdbcValueFilterItem, UpdateWrapper,
@@ -174,7 +174,7 @@ fn pg_build_table_query_table_sql(
     (table_sql, table_params)
 }
 
-fn pg_build_filter_sql(filter: Option<&RdbcFilterInner>) -> (String, HashMap<String, RdbcValue>) {
+fn pg_build_filter_sql(filter: Option<&RdbcTableFilterImpl>) -> (String, HashMap<String, RdbcValue>) {
     let (mut filter_sql, mut filter_params) = ("".to_string(), HashMap::new());
     if let Some(rdbc_filter) = filter {
         let (item_vec, item_params) = pg_build_filter_items_sql(rdbc_filter.get_item());

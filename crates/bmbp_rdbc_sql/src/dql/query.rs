@@ -2,16 +2,16 @@ use std::collections::HashMap;
 use std::sync::RwLock;
 
 use crate::build::{mysql_build_query_script, pg_build_query_script};
-use crate::{RdbcDataBase, RdbcIdent, RdbcColumn, RdbcColumnOrder, RdbcConcatType, RdbcFilterWrapper, RdbcFilterInner, RdbcOrder, RdbcSQL, RdbcTableWrapper, RdbcTableInner, RdbcValue, RdbcValueColumn, RdbcTable};
+use crate::{RdbcDataBase, RdbcIdent, RdbcColumn, RdbcColumnOrder, RdbcConcatType, RdbcTableFilter, RdbcTableFilterImpl, RdbcOrder, RdbcSQL, RdbcTableWrapper, RdbcTableInner, RdbcValue, RdbcValueColumn, RdbcTable};
 
 pub struct QueryWrapper {
     driver_: RwLock<Option<RdbcDataBase>>,
     select_: Vec<RdbcColumn>,
     table_: Vec<RdbcTableInner>,
     join_: Option<Vec<RdbcTableInner>>,
-    filter_: Option<RdbcFilterInner>,
+    filter_: Option<RdbcTableFilterImpl>,
     group_by_: Option<Vec<RdbcColumn>>,
-    having_: Option<RdbcFilterInner>,
+    having_: Option<RdbcTableFilterImpl>,
     order_: Option<Vec<RdbcOrder>>,
     limit_: Option<u64>,
     offset_: Option<u64>,
@@ -20,6 +20,7 @@ pub struct QueryWrapper {
     params_: Option<HashMap<String, RdbcValue>>,
 }
 
+/// 构造函数
 impl QueryWrapper {
     pub fn new() -> QueryWrapper {
         let query = QueryWrapper {
@@ -27,7 +28,7 @@ impl QueryWrapper {
             select_: vec![],
             table_: vec![],
             join_: Some(vec![]),
-            filter_: Some(RdbcFilterInner::new()),
+            filter_: Some(RdbcTableFilterImpl::new()),
             group_by_: None,
             having_: None,
             order_: None,
@@ -71,13 +72,13 @@ impl QueryWrapper {
     pub fn get_join(&self) -> Option<&Vec<RdbcTableInner>> {
         self.join_.as_ref()
     }
-    pub fn get_filter(&self) -> Option<&RdbcFilterInner> {
+    pub fn get_filter(&self) -> Option<&RdbcTableFilterImpl> {
         self.filter_.as_ref()
     }
     pub fn get_group_by(&self) -> Option<&Vec<RdbcColumn>> {
         self.group_by_.as_ref()
     }
-    pub fn get_having(&self) -> Option<&RdbcFilterInner> {
+    pub fn get_having(&self) -> Option<&RdbcTableFilterImpl> {
         self.having_.as_ref()
     }
     pub fn get_order(&self) -> Option<&Vec<RdbcOrder>> {
@@ -286,23 +287,23 @@ impl RdbcTableWrapper for QueryWrapper {
     }
 }
 
-impl RdbcFilterWrapper for QueryWrapper {
+impl RdbcTableFilter for QueryWrapper {
     fn init_filter(&mut self) -> &mut Self {
         if self.filter_.is_none() {
-            self.filter_ = Some(RdbcFilterInner::new());
+            self.filter_ = Some(RdbcTableFilterImpl::new());
         }
         self
     }
-    fn get_filter_mut(&mut self) -> &mut RdbcFilterInner {
+    fn get_filter_mut(&mut self) -> &mut RdbcTableFilterImpl {
         self.init_filter();
         self.filter_.as_mut().unwrap()
     }
     fn with_filter(&mut self, concat_type: RdbcConcatType) -> &mut Self {
         let filter_ = {
             if self.filter_.is_some() {
-                RdbcFilterInner::concat_with_filter(concat_type, self.filter_.take().unwrap())
+                RdbcTableFilterImpl::concat_with_filter(concat_type, self.filter_.take().unwrap())
             } else {
-                RdbcFilterInner::concat(concat_type)
+                RdbcTableFilterImpl::concat(concat_type)
             }
         };
         self.filter_ = Some(filter_);

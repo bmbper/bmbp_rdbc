@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{QueryWrapper, RdbcFunc, RdbcReplaceFunc, RdbcValue};
+use crate::{QueryWrapper, RdbcFunc, RdbcIdent, RdbcReplaceFunc, RdbcValue};
 
 /// RdbcColumn SELECT 返回列
 
@@ -62,23 +62,13 @@ impl From<RdbcValueColumn> for RdbcColumn {
     }
 }
 
-impl From<String> for RdbcColumn {
-    fn from(name: String) -> Self {
-        RdbcColumn::Table(RdbcTableColumn::column(name))
+/// impl RdbcIdent impl RdbcColumn
+impl<T> From<T> for RdbcColumn where T:RdbcIdent  {
+    fn from(value: T) -> Self {
+        RdbcColumn::Table(RdbcTableColumn::column(value.get_ident()))
     }
 }
 
-impl From<&String> for RdbcColumn {
-    fn from(name: &String) -> Self {
-        RdbcColumn::Table(RdbcTableColumn::column(name.to_string()))
-    }
-}
-
-impl From<&str> for RdbcColumn {
-    fn from(name: &str) -> Self {
-        RdbcColumn::Table(RdbcTableColumn::column(name.to_string()))
-    }
-}
 
 impl RdbcColumn {
     pub fn column<T>(name: T) -> RdbcColumn
@@ -459,7 +449,7 @@ impl RdbcTableInner {
             RdbcTableInner::Query(query) => query.get_join(),
         }
     }
-    pub fn get_filter(&self) -> Option<&RdbcFilterInner> {
+    pub fn get_filter(&self) -> Option<&RdbcTableFilterImpl> {
         match self {
             RdbcTableInner::Table(table) => table.get_filter(),
             RdbcTableInner::Query(query) => query.get_filter(),
@@ -604,7 +594,7 @@ pub struct RdbcSchemaTable {
     name_: String,
     alias_: Option<String>,
     join_: Option<RdbcTableJoinType>,
-    filter_: Option<RdbcFilterInner>,
+    filter_: Option<RdbcTableFilterImpl>,
     params_: Option<HashMap<String, RdbcValue>>,
 }
 
@@ -621,7 +611,7 @@ impl RdbcSchemaTable {
     pub fn get_join(&self) -> Option<&RdbcTableJoinType> {
         self.join_.as_ref()
     }
-    pub fn get_filter(&self) -> Option<&RdbcFilterInner> {
+    pub fn get_filter(&self) -> Option<&RdbcTableFilterImpl> {
         self.filter_.as_ref()
     }
 }
@@ -636,7 +626,7 @@ impl RdbcSchemaTable {
             name_: table.to_string(),
             alias_: None,
             join_: None,
-            filter_: Some(RdbcFilterInner::new()),
+            filter_: Some(RdbcTableFilterImpl::new()),
             params_: None,
         }
     }
@@ -650,7 +640,7 @@ impl RdbcSchemaTable {
             name_: table.to_string(),
             alias_: Some(alias.to_string()),
             join_: None,
-            filter_: Some(RdbcFilterInner::new()),
+            filter_: Some(RdbcTableFilterImpl::new()),
             params_: None,
         }
     }
@@ -663,7 +653,7 @@ impl RdbcSchemaTable {
             name_: table.to_string(),
             alias_: None,
             join_: None,
-            filter_: Some(RdbcFilterInner::new()),
+            filter_: Some(RdbcTableFilterImpl::new()),
             params_: None,
         }
     }
@@ -678,7 +668,7 @@ impl RdbcSchemaTable {
             name_: table.to_string(),
             alias_: Some(alias.to_string()),
             join_: None,
-            filter_: Some(RdbcFilterInner::new()),
+            filter_: Some(RdbcTableFilterImpl::new()),
             params_: None,
         }
     }
@@ -691,7 +681,7 @@ impl RdbcSchemaTable {
             name_: table.to_string(),
             alias_: None,
             join_: Some(RdbcTableJoinType::Left),
-            filter_: Some(RdbcFilterInner::new()),
+            filter_: Some(RdbcTableFilterImpl::new()),
             params_: None,
         }
     }
@@ -705,7 +695,7 @@ impl RdbcSchemaTable {
             name_: table.to_string(),
             alias_: Some(alias.to_string()),
             join_: Some(RdbcTableJoinType::Left),
-            filter_: Some(RdbcFilterInner::new()),
+            filter_: Some(RdbcTableFilterImpl::new()),
             params_: None,
         }
     }
@@ -714,7 +704,7 @@ impl RdbcSchemaTable {
 impl RdbcSchemaTable {
     fn create_filter(&mut self, concat: RdbcConcatType) -> &mut Self {
         let filter = self.filter_.take().unwrap();
-        let new_filter = RdbcFilterInner::concat_with_filter(concat, filter);
+        let new_filter = RdbcTableFilterImpl::concat_with_filter(concat, filter);
         self.filter_ = Some(new_filter);
         self
     }
@@ -748,7 +738,7 @@ pub struct RdbcQueryTable {
     name_: QueryWrapper,
     alias_: Option<String>,
     join_: Option<RdbcTableJoinType>,
-    filter_: Option<RdbcFilterInner>,
+    filter_: Option<RdbcTableFilterImpl>,
 }
 
 impl RdbcQueryTable {
@@ -761,7 +751,7 @@ impl RdbcQueryTable {
     pub fn get_join(&self) -> Option<&RdbcTableJoinType> {
         self.join_.as_ref()
     }
-    pub fn get_filter(&self) -> Option<&RdbcFilterInner> {
+    pub fn get_filter(&self) -> Option<&RdbcTableFilterImpl> {
         self.filter_.as_ref()
     }
 }
@@ -797,13 +787,14 @@ pub enum RdbcConcatType {
     Or,
 }
 
-pub struct RdbcFilterInner {
+/// RdbcTableFilterImpl 表查询条件实现
+pub struct RdbcTableFilterImpl {
     concat_: RdbcConcatType,
     item_: Vec<RdbcFilterItem>,
     params_: Option<HashMap<String, RdbcValue>>,
 }
 
-impl RdbcFilterInner {
+impl RdbcTableFilterImpl {
     pub fn get_concat(&self) -> &RdbcConcatType {
         &self.concat_
     }
@@ -812,8 +803,8 @@ impl RdbcFilterInner {
     }
 }
 
-impl RdbcFilterInner {
-    pub fn add_filter(&mut self, filter: RdbcFilterInner) -> &mut Self {
+impl RdbcTableFilterImpl {
+    pub fn add_filter(&mut self, filter: RdbcTableFilterImpl) -> &mut Self {
         self.item_.push(RdbcFilterItem::Filter(filter));
         self
     }
@@ -874,23 +865,23 @@ impl RdbcFilterInner {
     }
 }
 
-impl RdbcFilterInner {
-    pub fn new() -> RdbcFilterInner {
-        RdbcFilterInner {
+impl RdbcTableFilterImpl {
+    pub fn new() -> RdbcTableFilterImpl {
+        RdbcTableFilterImpl {
             concat_: RdbcConcatType::And,
             item_: vec![],
             params_: None,
         }
     }
-    pub fn concat(concat: RdbcConcatType) -> RdbcFilterInner {
-        RdbcFilterInner {
+    pub fn concat(concat: RdbcConcatType) -> RdbcTableFilterImpl {
+        RdbcTableFilterImpl {
             concat_: concat,
             item_: vec![],
             params_: None,
         }
     }
-    pub fn concat_with_filter(concat: RdbcConcatType, filter: RdbcFilterInner) -> RdbcFilterInner {
-        RdbcFilterInner {
+    pub fn concat_with_filter(concat: RdbcConcatType, filter: RdbcTableFilterImpl) -> RdbcTableFilterImpl {
+        RdbcTableFilterImpl {
             concat_: concat,
             item_: vec![RdbcFilterItem::filter(filter)],
             params_: None,
@@ -901,11 +892,11 @@ impl RdbcFilterInner {
 pub enum RdbcFilterItem {
     Value(RdbcValueFilterItem),
     Column(RdbcColumnFilterItem),
-    Filter(RdbcFilterInner),
+    Filter(RdbcTableFilterImpl),
 }
 
 impl RdbcFilterItem {
-    fn filter(filter: RdbcFilterInner) -> RdbcFilterItem {
+    fn filter(filter: RdbcTableFilterImpl) -> RdbcFilterItem {
         RdbcFilterItem::Filter(filter)
     }
 }
