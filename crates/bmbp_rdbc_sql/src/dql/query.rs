@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::sync::RwLock;
-use bmbp_rdbc_type::{RdbcIdent, RdbcTable, RdbcValue};
+use bmbp_rdbc_type::{RdbcDataBase, RdbcIdent, RdbcTable, RdbcValue};
 
 use crate::build::{mysql_build_query_script, pg_build_query_script};
-use crate::{RdbcDataBase,  RdbcColumn, RdbcColumnOrder, RdbcConcatType, RdbcTableFilter, RdbcTableFilterImpl, RdbcOrder, RdbcSQL, RdbcTableWrapper, RdbcTableInner,  RdbcValueColumn};
+use crate::{  RdbcColumn, RdbcColumnOrder, RdbcConcatType, RdbcTableFilter, RdbcTableFilterImpl, RdbcOrder, RdbcSQL, RdbcTableWrapper, RdbcTableInner,  RdbcValueColumn};
 
 pub struct QueryWrapper {
     driver_: RwLock<Option<RdbcDataBase>>,
