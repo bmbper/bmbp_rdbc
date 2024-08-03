@@ -1,6 +1,6 @@
 [package]
 name = "bmbp_rdbc_orm"
-version.workspace = true
+version="0.0.2"
 edition.workspace = true
 authors.workspace = true
 description = "ORM"

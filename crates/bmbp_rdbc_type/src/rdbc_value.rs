@@ -1,7 +1,5 @@
 use std::fmt::Display;
-
 use chrono::Utc;
-
 #[derive(Debug, Clone)]
 pub enum RdbcValue {
     Int(i16),

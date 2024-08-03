@@ -3,13 +3,13 @@ use std::sync::Arc;
 
 use serde::Serialize;
 
-use bmbp_rdbc_type::{RdbcModel, RdbcOrmRow, RdbcPage};
+use bmbp_rdbc_type::{RdbcOrmRow, RdbcPage};
 use bmbp_rdbc_sql::{
-    DeleteWrapper, InsertWrapper, QueryWrapper, RdbcFilter, RdbcTable, UpdateWrapper,
+    DeleteWrapper, InsertWrapper, QueryWrapper, UpdateWrapper,
 };
 
 use crate::ds::RdbcDataSource;
-use crate::err::{RdbcError, RdbcErrorType, RdbcResult};
+use crate::err::{ RdbcResult};
 use crate::pool::{RdbcConn, RdbcConnPool};
 
 pub struct RdbcOrm {
@@ -112,25 +112,5 @@ impl RdbcOrm {
     }
     pub async fn execute_delete(&self, delete: &DeleteWrapper) -> RdbcResult<u64> {
         self.pool.get_conn().await?.execute_delete(delete).await
-    }
-    pub async fn delete_by_id<T>(&self, id: String) -> RdbcResult<u64>
-    where
-        T: RdbcModel,
-    {
-        if id.is_empty() {
-            return Err(RdbcError::new(
-                RdbcErrorType::PrimaryRequired,
-                "请指定要删除的记录",
-            ));
-        }
-        let mut delete_sql = DeleteWrapper::new();
-        delete_sql
-            .table(T::get_table_name())
-            .eq_(T::get_table_primary_key(), id);
-        self.pool
-            .get_conn()
-            .await?
-            .execute_delete(&delete_sql)
-            .await
     }
 }

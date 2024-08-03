@@ -1,6 +1,7 @@
 use std::collections::HashMap;
+use bmbp_rdbc_type::{RdbcIdent, RdbcValue};
 
-use crate::{QueryWrapper, RdbcFunc, RdbcIdent, RdbcReplaceFunc, RdbcValue};
+use crate::{QueryWrapper, RdbcFunc, };
 
 /// RdbcColumn SELECT 返回列
 

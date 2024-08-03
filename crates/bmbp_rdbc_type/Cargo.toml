@@ -1,6 +1,6 @@
 [package]
 name = "bmbp_rdbc_type"
-version.workspace = true
+version="0.2.2"
 edition.workspace = true
 authors.workspace = true
 description = "定义rdbc模型"
@@ -12,8 +12,6 @@ documentation.workspace = true
 
 [dependencies]
 serde = { workspace = true }
-bmbp_rdbc_sql ={workspace = true}
-# 日志
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 # 数据库

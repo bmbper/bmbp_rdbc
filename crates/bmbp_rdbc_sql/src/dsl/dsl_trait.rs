@@ -1,9 +1,10 @@
 use std::collections::HashMap;
+use bmbp_rdbc_type::RdbcValue;
 
 use crate::build::{mysql_build_sql, pg_build_sql};
 use crate::{
     RdbcDataBase, QueryWrapper, RdbcColumn, RdbcConcatType, RdbcDmlValue, RdbcTableFilterImpl,
-    RdbcTableInner, RdbcValue,
+    RdbcTableInner,
 };
 
 /// RdbcTableFilter query filter trait

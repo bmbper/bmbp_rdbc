@@ -1,4 +1,4 @@
-use crate::{RdbcColumn, RdbcFuncColumn, RdbcTableColumn, RdbcValue};
+use crate::{RdbcColumn, RdbcTableColumn};
 
 pub enum RdbcFunc {
     CONCAT(RdbcConcatFunc),

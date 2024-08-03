@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use uuid::Uuid;
+use bmbp_rdbc_type::RdbcValue;
 
 use crate::build::base::base_build_sql;
 use crate::build::vars::PG_PARAMS_TAG;
@@ -9,7 +10,7 @@ use crate::{
     RdbcCompareType, RdbcConcatFunc, RdbcConcatType, RdbcDmlValue, RdbcTableFilterImpl, RdbcFilterItem,
     RdbcFunc, RdbcFuncColumn, RdbcOrder, RdbcOrderType, RdbcQueryColumn, RdbcQueryTable,
     RdbcReplaceFunc, RdbcSQL, RdbcSchemaTable, RdbcTableColumn, RdbcTableInner, RdbcTableJoinType,
-    RdbcValue, RdbcValueColumn, RdbcValueFilterItem, UpdateWrapper,
+     RdbcValueColumn, RdbcValueFilterItem, UpdateWrapper,
 };
 
 pub fn pg_build_sql(sql: String, params: HashMap<String, RdbcValue>) -> (String, Vec<RdbcValue>) {

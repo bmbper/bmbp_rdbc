@@ -3,11 +3,24 @@ name = "bmbp_rdbc_marco"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
-description = "宏"
+description = "bmbp_rdbc_marco"
 license.workspace = true
 readme.workspace = true
 homepage.workspace = true
 repository.workspace = true
 documentation.workspace = true
-
+[lib]
+proc-macro = true
 [dependencies]
+syn = { version = "2.0.60", features = [
+    "full",
+    "parsing",
+    "printing",
+    "proc-macro",
+    "clone-impls",
+] }
+quote = "1.0.36"
+proc-macro2 = "1.0.81"
+case_style = "0.2.1"
+bmbp_marco_util = "0.0.5"
+bmbp_rdbc_type = {workspace = true}

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
+use bmbp_rdbc_type::RdbcValue;
 
-use crate::RdbcValue;
 
 pub(crate) fn base_build_sql(
     tag: &str,

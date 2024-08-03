@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 use std::sync::RwLock;
+use bmbp_rdbc_type::RdbcValue;
 
 use crate::build::{mysql_build_update_script, pg_build_update_script};
 use crate::{
     RdbcDataBase, RdbcColumn, RdbcConcatType, RdbcDmlValue, RdbcTableFilter, RdbcTableFilterImpl, RdbcOrder,
-    RdbcSQL, RdbcTableWrapper, RdbcTableInner, RdbcValue,
+    RdbcSQL, RdbcTableWrapper, RdbcTableInner,
 };
 
 pub struct UpdateWrapper {
