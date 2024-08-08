@@ -7,7 +7,7 @@ use tokio_postgres::{connect, Client, NoTls};
 use tracing::info;
 
 use bmbp_rdbc_type::{RdbcDataBase, RdbcOrmRow, RdbcPage, RdbcValue};
-use bmbp_rdbc_sql::{DeleteWrapper, InsertWrapper, QueryWrapper,  RdbcSQL, UpdateWrapper};
+use bmbp_rdbc_sql::{DeleteWrapper, InsertWrapper, QueryWrapper, RdbcSQL, UpdateWrapper};
 
 use crate::err::{RdbcError, RdbcErrorType, RdbcResult};
 use crate::pool::RdbcConnInner;
@@ -39,12 +39,12 @@ impl PgDbClient {
     fn build_url(ds: Arc<RdbcDataSource>) -> RdbcResult<String> {
         Ok(format!(
             "postgresql://{}:{}@{}:{}/{}?connect_timeout={}",
-            ds.user(),
-            ds.password(),
-            ds.host(),
-            ds.port(),
-            ds.database(),
-            ds.max_wait_time().unwrap_or(5_000),
+            ds.get_username().as_ref().unwrap_or(&"".to_string()),
+            ds.get_password().as_ref().unwrap_or(&"".to_string()),
+            ds.get_host().as_ref().unwrap_or(&"".to_string()),
+            ds.get_port().as_ref().unwrap_or(&5432),
+            ds.get_database().as_ref().unwrap_or(&"PUBLIC".to_string()),
+            ds.get_max_wait_time().unwrap_or(5_000),
         ))
     }
 }

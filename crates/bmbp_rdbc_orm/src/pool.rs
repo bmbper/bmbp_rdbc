@@ -8,11 +8,10 @@ use serde::Serialize;
 use tokio_postgres::types::IsNull::No;
 use tracing::info;
 
-use bmbp_rdbc_sql::{DeleteWrapper, InsertWrapper, QueryWrapper,  UpdateWrapper};
-use bmbp_rdbc_type::{RdbcOrmRow, RdbcPage, RdbcValue};
+use bmbp_rdbc_sql::{DeleteWrapper, InsertWrapper, QueryWrapper, UpdateWrapper};
+use bmbp_rdbc_type::{RdbcDataSource, RdbcOrmRow, RdbcPage, RdbcValue};
 
 use crate::client;
-use crate::ds::RdbcDataSource;
 use crate::err::{RdbcError, RdbcErrorType, RdbcResult};
 
 /// RdbcConnInner 定义数据库连接抽象
@@ -191,11 +190,11 @@ impl RdbcConnPool {
     pub async fn init(&self) -> RdbcResult<()> {
         let ds = self.data_source.clone();
         tracing::info!(
-            "初始化连接池 => 数据库类型：{}， 初始连接数: {} ",
-            ds.driver().value(),
-            ds.init_conn_size().unwrap_or(5)
+            "初始化连接池 => 数据库类型：{:?}， 初始连接数: {} ",
+            ds.get_typ(),
+           ds.get_init_conn_size().unwrap_or(5),
         );
-        let init_conn_size = ds.init_conn_size().unwrap_or(5);
+        let init_conn_size = ds.get_init_conn_size().unwrap_or(5);
         *self.conn_size.write().unwrap() = init_conn_size.clone();
         self.create_conn_by_size(init_conn_size).await?;
         tracing::info!(
@@ -209,11 +208,11 @@ impl RdbcConnPool {
         let mut conn_op = self.conn_map.write().unwrap().pop();
         let timer = Instant::now();
         while conn_op.is_none() {
-            if self.conn_size() < self.data_source.max_conn_size().unwrap_or(10) {
+            if self.conn_size() < self.data_source.get_max_conn_size().unwrap_or(10) {
                 self.extend_conn_pool().await?;
             } else {
                 let times = timer.elapsed().as_millis();
-                let max_wait_time = self.data_source.max_wait_time().unwrap_or(1000) as u128;
+                let max_wait_time = self.data_source.get_max_wait_time().unwrap_or(1000) as u128;
                 if times > max_wait_time {
                     tracing::info!("获取数据库连接超时，最大等待时间：{}ms", max_wait_time);
                     return Err(RdbcError::new(RdbcErrorType::TimeOut, "获取数据库连接超时"));
@@ -250,8 +249,8 @@ impl RdbcConnPool {
 
     async fn extend_conn_pool(&self) -> RdbcResult<()> {
         let ds = self.data_source.clone();
-        let max_conn_size = ds.max_conn_size().unwrap_or(10);
-        let mut grow_size = ds.grow_conn_size().unwrap_or(5);
+        let max_conn_size = ds.get_max_conn_size().unwrap_or(10);
+        let mut grow_size = ds.get_grow_conn_size().unwrap_or(5);
         let mut conn_size = self.conn_size.read().unwrap().clone();
         if conn_size >= max_conn_size {
             tracing::info!(
@@ -298,22 +297,21 @@ pub mod tests {
 
     use crate::err::RdbcResult;
     use crate::pool::RdbcConnPool;
-    use crate::{RdbcDataBaseDriver, RdbcDataSource, RdbcOrm};
+    use crate::{RdbcDataSource, RdbcOrm};
 
     fn build_datasource() -> RdbcDataSource {
         let mut ds = RdbcDataSource::new();
-        ds.set_driver(RdbcDataBaseDriver::Postgres);
-        ds.set_host("127.0.0.1".to_string())
-            .set_port(5432)
-            .set_user("bmbp".to_string())
-            .set_password("zgk0130!".to_string())
-            .set_database("bmbp".to_string())
-            .set_schema("public".to_string())
-            .set_ignore_case(true);
-        ds.set_init_conn_size(5)
-            .set_max_conn_size(10)
-            .set_max_wait_time(10_000)
-            .set_max_idle_conn(1);
+        ds.set_host(Some("127.0.0.1".to_string()))
+            .set_port(Some(5432))
+            .set_username(Some("bmbp".to_string()))
+            .set_password(Some("zgk0130!".to_string()))
+            .set_database(Some("bmbp".to_string()))
+            .set_schema(Some("public".to_string()))
+            .set_ignore_case(Some(true));
+        ds.set_init_conn_size(Some(5))
+            .set_max_conn_size(Some(10))
+            .set_max_wait_time(Some(10_000))
+            .set_max_idle_conn(Some(1));
 
         ds
     }

@@ -3,12 +3,12 @@ use std::sync::Arc;
 
 use serde::Serialize;
 
-use bmbp_rdbc_type::{RdbcOrmRow, RdbcPage};
+use bmbp_rdbc_type::{RdbcDataSource, RdbcOrmRow, RdbcPage};
 use bmbp_rdbc_sql::{
     DeleteWrapper, InsertWrapper, QueryWrapper, UpdateWrapper,
 };
 
-use crate::ds::RdbcDataSource;
+
 use crate::err::{ RdbcResult};
 use crate::pool::{RdbcConn, RdbcConnPool};
 
