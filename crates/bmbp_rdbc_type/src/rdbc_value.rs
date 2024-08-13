@@ -1,5 +1,7 @@
+use std::collections::HashMap;
 use std::fmt::Display;
 use chrono::Utc;
+
 #[derive(Debug, Clone)]
 pub enum RdbcValue {
     Int(i16),
@@ -9,28 +11,35 @@ pub enum RdbcValue {
     String(String),
     DateTime(chrono::DateTime<Utc>),
     Bool(bool),
+    Vec(Vec<RdbcValue>),
+    Map(HashMap<String, RdbcValue>),
     Null,
 }
+
 impl From<i8> for RdbcValue {
     fn from(i: i8) -> RdbcValue {
         RdbcValue::Int(i as i16)
     }
 }
+
 impl From<u8> for RdbcValue {
     fn from(i: u8) -> RdbcValue {
         RdbcValue::Int(i as i16)
     }
 }
+
 impl From<i16> for RdbcValue {
     fn from(i: i16) -> RdbcValue {
         RdbcValue::Int(i)
     }
 }
+
 impl From<u16> for RdbcValue {
     fn from(i: u16) -> RdbcValue {
         RdbcValue::Int(i as i16)
     }
 }
+
 impl From<i32> for RdbcValue {
     fn from(i: i32) -> RdbcValue {
         RdbcValue::BigInt(i as i64)
@@ -132,6 +141,7 @@ impl From<i64> for RdbcValue {
         RdbcValue::BigInt(i)
     }
 }
+
 impl From<u64> for RdbcValue {
     fn from(i: u64) -> RdbcValue {
         RdbcValue::BigInt(i as i64)
@@ -143,6 +153,7 @@ impl From<usize> for RdbcValue {
         RdbcValue::BigInt(i as i64)
     }
 }
+
 impl From<Option<usize>> for RdbcValue {
     fn from(s: Option<usize>) -> RdbcValue {
         match s {
@@ -151,11 +162,13 @@ impl From<Option<usize>> for RdbcValue {
         }
     }
 }
+
 impl From<&usize> for RdbcValue {
     fn from(i: &usize) -> RdbcValue {
         RdbcValue::BigInt(i.clone() as i64)
     }
 }
+
 impl From<Option<&usize>> for RdbcValue {
     fn from(i: Option<&usize>) -> RdbcValue {
         match i {
@@ -170,6 +183,7 @@ impl From<String> for RdbcValue {
         RdbcValue::String(s)
     }
 }
+
 impl From<&String> for RdbcValue {
     fn from(s: &String) -> RdbcValue {
         RdbcValue::String(s.to_string())
@@ -184,6 +198,7 @@ impl From<Option<&String>> for RdbcValue {
         }
     }
 }
+
 impl From<Option<String>> for RdbcValue {
     fn from(s: Option<String>) -> RdbcValue {
         match s {
@@ -201,6 +216,7 @@ impl From<&Option<String>> for RdbcValue {
         }
     }
 }
+
 impl From<&str> for RdbcValue {
     fn from(s: &str) -> RdbcValue {
         RdbcValue::String(s.to_string())
