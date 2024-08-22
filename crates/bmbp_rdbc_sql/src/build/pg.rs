@@ -6,11 +6,11 @@ use bmbp_rdbc_type::{RdbcDataBase, RdbcValue};
 use crate::build::base::base_build_sql;
 use crate::build::vars::PG_PARAMS_TAG;
 use crate::{
-     DeleteWrapper, InsertWrapper, QueryWrapper, RdbcColumn, RdbcColumnFilterItem,
+    DeleteWrapper, InsertWrapper, QueryWrapper, RdbcColumn, RdbcColumnFilterItem,
     RdbcCompareType, RdbcConcatFunc, RdbcConcatType, RdbcDmlValue, RdbcTableFilterImpl, RdbcFilterItem,
     RdbcFunc, RdbcFuncColumn, RdbcOrder, RdbcOrderType, RdbcQueryColumn, RdbcQueryTable,
     RdbcReplaceFunc, RdbcSQL, RdbcSchemaTable, RdbcTableColumn, RdbcTableInner, RdbcTableJoinType,
-     RdbcValueColumn, RdbcValueFilterItem, UpdateWrapper,
+    RdbcValueColumn, RdbcValueFilterItem, UpdateWrapper,
 };
 
 pub fn pg_build_sql(sql: String, params: HashMap<String, RdbcValue>) -> (String, Vec<RdbcValue>) {
@@ -699,6 +699,7 @@ fn pg_build_select_value_column_sql(
         RdbcValue::Null => "null".to_string(),
         RdbcValue::BigInt(v) => v.to_string(),
         RdbcValue::BigFloat(v) => v.to_string(),
+        _ => "".to_string()
     };
     if with_alias {
         if let Some(alias) = column.get_alias() {
@@ -1076,6 +1077,7 @@ fn pg_build_func_concat_sql(
     }
     (func_sql, func_params)
 }
+
 fn pg_build_func_replace_sql(
     func: &RdbcReplaceFunc,
     with_alias: bool,

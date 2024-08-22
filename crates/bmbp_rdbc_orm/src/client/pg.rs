@@ -60,6 +60,8 @@ impl PgDbClient {
             RdbcValue::DateTime(i) => Some(i as &(dyn ToSql + Sync)),
             RdbcValue::Bool(i) => Some(i as &(dyn ToSql + Sync)),
             RdbcValue::Null => Some(&"" as &(dyn ToSql + Sync)),
+            RdbcValue::Vec(_) => Some(&"" as &(dyn ToSql + Sync)),
+            RdbcValue::Map(_) => Some(&"" as &(dyn ToSql + Sync)),
         }
     }
     async fn execute(&self, sql: &str, params: &[RdbcValue]) -> RdbcResult<u64> {
