@@ -38,7 +38,7 @@ pub trait RdbcTableFilter {
             RdbcColumn: From<T>,
             RdbcColumn: From<V>,
     {
-        self.get_filter_mut().eq_column(RdbcColumn::from(column),RdbcColumn::from(value));
+        self.get_filter_mut().eq_column(RdbcColumn::from(column), RdbcColumn::from(value));
         self
     }
     fn eq_value<T, V>(&mut self, column: T, value: RdbcValue) -> &mut Self
@@ -666,13 +666,16 @@ pub trait RdbcTableFilter {
             RdbcColumn: From<T>,
             RdbcValue: From<V>,
     {
+        self.get_filter_mut().in_v(column, value);
         self
     }
     fn in_v_slice<T, V>(&mut self, column: T, value: &[V]) -> &mut Self
         where
             RdbcColumn: From<T>,
             RdbcValue: From<V>,
+            V: Clone
     {
+        self.get_filter_mut().in_v_slice(column, value);
         self
     }
     fn in_query<T, V>(&mut self, column: T, value: QueryWrapper) -> &mut Self

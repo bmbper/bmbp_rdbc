@@ -649,3 +649,4 @@ impl From<&RdbcValue> for Option<String> {
         }
     }
 }
+
