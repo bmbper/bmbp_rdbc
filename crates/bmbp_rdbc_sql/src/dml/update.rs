@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::sync::RwLock;
 use bmbp_rdbc_type::{RdbcDataBase, RdbcValue};
 
-use crate::build::{mysql_build_update_script, pg_build_update_script};
 use crate::{
      RdbcColumn, RdbcConcatType, RdbcDmlValue, RdbcTableFilter, RdbcTableFilterImpl, RdbcOrder,
      RdbcTableWrapper, RdbcTableInner,

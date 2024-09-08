@@ -1,11 +1,9 @@
-use std::collections::HashMap;
 use std::sync::RwLock;
-use bmbp_rdbc_type::{RdbcDataBase, RdbcValue};
 
-use crate::build::{mysql_build_insert_script, pg_build_insert_script};
+use bmbp_rdbc_type::RdbcDataBase;
+
 use crate::{
-   QueryWrapper, RdbcDmlValue,  RdbcTableWrapper, RdbcTableColumn, RdbcTableInner,
-
+    QueryWrapper, RdbcDmlValue, RdbcTableColumn, RdbcTableInner, RdbcTableWrapper,
 };
 
 pub struct InsertWrapper {

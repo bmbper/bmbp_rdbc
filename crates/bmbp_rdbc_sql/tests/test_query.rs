@@ -1,5 +1,5 @@
-use bmbp_rdbc_sql::{QueryWrapper, RdbcTableFilter};
-use bmbp_rdbc_type::{RdbcIdent, RdbcTable};
+use bmbp_rdbc_sql::{QueryWrapper, RdbcTableFilter, SQLBuilder};
+use bmbp_rdbc_type::{RdbcDataBase, RdbcIdent, RdbcTable};
 
 pub struct Demo {
     name: String,
@@ -90,3 +90,23 @@ fn test_query_right() {}
 
 #[test]
 fn test_query_exists() {}
+
+#[test]
+fn test_query_not_exists() {}
+
+#[test]
+fn test_query_group_by() {}
+
+#[test]
+fn test_query_having() {}
+
+#[test]
+fn test_query_order() {}
+
+#[test]
+fn test_build_query_script() {
+    let query = QueryWrapper::new_from::<Demo>();
+    let builder = SQLBuilder::get_builder(RdbcDataBase::Postgres);
+    let (sql, _) = builder.build_query_script(query);
+    println!("sql:{}", sql);
+}
