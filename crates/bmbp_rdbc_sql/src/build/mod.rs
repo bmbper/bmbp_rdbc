@@ -5,3 +5,4 @@ mod base;
 mod mysql;
 mod pg;
 mod vars;
+mod types;

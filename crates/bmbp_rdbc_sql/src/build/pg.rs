@@ -9,7 +9,7 @@ use crate::{
     DeleteWrapper, InsertWrapper, QueryWrapper, RdbcColumn, RdbcColumnFilterItem,
     RdbcCompareType, RdbcConcatFunc, RdbcConcatType, RdbcDmlValue, RdbcTableFilterImpl, RdbcFilterItem,
     RdbcFunc, RdbcFuncColumn, RdbcOrder, RdbcOrderType, RdbcQueryColumn, RdbcQueryTable,
-    RdbcReplaceFunc, RdbcSQL, RdbcSchemaTable, RdbcTableColumn, RdbcTableInner, RdbcTableJoinType,
+    RdbcReplaceFunc,  RdbcSchemaTable, RdbcTableColumn, RdbcTableInner, RdbcTableJoinType,
     RdbcValueColumn, RdbcValueFilterItem, UpdateWrapper,
 };
 
@@ -155,7 +155,7 @@ fn pg_build_table_query_table_sql(
     let (mut table_sql, mut table_params) = ("".to_string(), HashMap::new());
 
     let query = table.get_name();
-    let (query_sql, query_params) = query.build_script(RdbcDataBase::Postgres);
+    let (query_sql, query_params) = ("".to_string(), HashMap::new());//query.build_script(RdbcDataBase::Postgres);
 
     table_sql = format!("({})", query_sql);
     table_params.extend(query_params.into_iter());

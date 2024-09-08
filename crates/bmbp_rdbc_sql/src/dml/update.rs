@@ -5,7 +5,7 @@ use bmbp_rdbc_type::{RdbcDataBase, RdbcValue};
 use crate::build::{mysql_build_update_script, pg_build_update_script};
 use crate::{
      RdbcColumn, RdbcConcatType, RdbcDmlValue, RdbcTableFilter, RdbcTableFilterImpl, RdbcOrder,
-    RdbcSQL, RdbcTableWrapper, RdbcTableInner,
+     RdbcTableWrapper, RdbcTableInner,
 };
 
 pub struct UpdateWrapper {
@@ -116,14 +116,5 @@ impl RdbcTableFilter for UpdateWrapper {
         };
         self.filter_ = Some(filter_);
         self
-    }
-}
-
-impl RdbcSQL for UpdateWrapper {
-    fn build_script(&self, database_type: RdbcDataBase) -> (String, HashMap<String, RdbcValue>) {
-        match database_type {
-            RdbcDataBase::Postgres => pg_build_update_script(self),
-            RdbcDataBase::MySQL => mysql_build_update_script(self),
-        }
     }
 }

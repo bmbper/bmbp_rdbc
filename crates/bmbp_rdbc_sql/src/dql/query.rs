@@ -2,8 +2,7 @@ use std::collections::HashMap;
 use std::sync::RwLock;
 use bmbp_rdbc_type::{RdbcDataBase, RdbcIdent, RdbcTable, RdbcValue};
 
-use crate::build::{mysql_build_query_script, pg_build_query_script};
-use crate::{  RdbcColumn, RdbcColumnOrder, RdbcConcatType, RdbcTableFilter, RdbcTableFilterImpl, RdbcOrder, RdbcSQL, RdbcTableWrapper, RdbcTableInner,  RdbcValueColumn};
+use crate::{RdbcColumn, RdbcColumnOrder, RdbcConcatType, RdbcTableFilter, RdbcTableFilterImpl, RdbcOrder,  RdbcTableWrapper, RdbcTableInner, RdbcValueColumn};
 
 pub struct QueryWrapper {
     driver_: RwLock<Option<RdbcDataBase>>,
@@ -309,14 +308,5 @@ impl RdbcTableFilter for QueryWrapper {
         };
         self.filter_ = Some(filter_);
         self
-    }
-}
-
-impl RdbcSQL for QueryWrapper {
-    fn build_script(&self, database_type: RdbcDataBase) -> (String, HashMap<String, RdbcValue>) {
-        match database_type {
-            RdbcDataBase::Postgres => pg_build_query_script(self),
-            RdbcDataBase::MySQL => mysql_build_query_script(self),
-        }
     }
 }

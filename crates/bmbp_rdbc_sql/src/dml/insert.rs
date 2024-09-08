@@ -4,7 +4,7 @@ use bmbp_rdbc_type::{RdbcDataBase, RdbcValue};
 
 use crate::build::{mysql_build_insert_script, pg_build_insert_script};
 use crate::{
-   QueryWrapper, RdbcDmlValue, RdbcSQL, RdbcTableWrapper, RdbcTableColumn, RdbcTableInner,
+   QueryWrapper, RdbcDmlValue,  RdbcTableWrapper, RdbcTableColumn, RdbcTableInner,
 
 };
 
@@ -95,11 +95,3 @@ impl RdbcTableWrapper for InsertWrapper {
     }
 }
 
-impl RdbcSQL for InsertWrapper {
-    fn build_script(&self, database_type: RdbcDataBase) -> (String, HashMap<String, RdbcValue>) {
-        match database_type {
-            RdbcDataBase::Postgres => pg_build_insert_script(self),
-            RdbcDataBase::MySQL => mysql_build_insert_script(self),
-        }
-    }
-}

@@ -4,7 +4,7 @@ use bmbp_rdbc_type::{RdbcDataBase, RdbcValue};
 
 use crate::build::{mysql_build_delete_script, pg_build_delete_script};
 use crate::{
-   RdbcColumn, RdbcConcatType, RdbcTableFilter, RdbcTableFilterImpl, RdbcOrder, RdbcSQL,
+   RdbcColumn, RdbcConcatType, RdbcTableFilter, RdbcTableFilterImpl, RdbcOrder,
     RdbcTableWrapper, RdbcTableInner,
 };
 
@@ -104,14 +104,5 @@ impl RdbcTableFilter for DeleteWrapper {
         };
         self.filter_ = Some(filter_);
         self
-    }
-}
-
-impl RdbcSQL for DeleteWrapper {
-    fn build_script(&self, database_type: RdbcDataBase) -> (String, HashMap<String, RdbcValue>) {
-        match database_type {
-            RdbcDataBase::Postgres => pg_build_delete_script(self),
-            RdbcDataBase::MySQL => mysql_build_delete_script(self),
-        }
     }
 }

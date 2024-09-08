@@ -2,6 +2,10 @@ use std::collections::HashMap;
 use bmbp_rdbc_type::RdbcValue;
 
 
+pub trait SQLBuilder {}
+pub struct  PgSQLBuilder{}
+pub struct  MysqlSQLBuilder{}
+
 pub(crate) fn base_build_sql(
     tag: &str,
     sql: String,
