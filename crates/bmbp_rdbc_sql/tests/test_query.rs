@@ -1,4 +1,4 @@
-use bmbp_rdbc_sql::{QueryWrapper, RdbcTableFilter, SQLBuilder};
+use bmbp_rdbc_sql::{MysqlBuilder, QueryWrapper, RdbcTableFilter, SQLBuilder};
 use bmbp_rdbc_type::{RdbcDataBase, RdbcIdent, RdbcTable};
 
 pub struct Demo {
@@ -106,7 +106,6 @@ fn test_query_order() {}
 #[test]
 fn test_build_query_script() {
     let query = QueryWrapper::new_from::<Demo>();
-    let builder = SQLBuilder::get_builder(RdbcDataBase::Postgres);
-    let (sql, _) = builder.build_query_script(query);
+    let (sql, _) = SQLBuilder::build_query_script::<MysqlBuilder>(&query);
     println!("sql:{}", sql);
 }
