@@ -721,7 +721,7 @@ impl RdbcSchemaTable {
             RdbcColumn: From<RC>,
             RdbcValue: From<RV>,
     {
-        self.filter_.as_mut().unwrap().eq_(column, value);
+        self.filter_.as_mut().unwrap().eq_(RdbcColumn::from(column), RdbcValue::from(value));
         self
     }
     pub fn eq_column(&mut self, col: RdbcColumn, val: RdbcColumn) -> &mut Self {
@@ -797,7 +797,6 @@ pub struct RdbcTableFilterImpl {
     item_: Vec<RdbcFilterItem>,
     params_: Option<HashMap<String, RdbcValue>>,
 }
-
 impl RdbcTableFilterImpl {
     pub fn get_concat(&self) -> &RdbcConcatType {
         &self.concat_
@@ -805,87 +804,155 @@ impl RdbcTableFilterImpl {
     pub fn get_item(&self) -> &Vec<RdbcFilterItem> {
         &self.item_
     }
-}
 
-impl RdbcTableFilterImpl {
     pub fn add_filter(&mut self, filter: RdbcTableFilterImpl) -> &mut Self {
         self.item_.push(RdbcFilterItem::Filter(filter));
         self
     }
-    pub(crate) fn eq_<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
+    pub(crate) fn eq_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self
     {
         self.item_.push(RdbcFilterItem::eq_(column, value));
-        self
-    }
-    pub(crate) fn ne_<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self.item_.push(RdbcFilterItem::ne_(column, value));
         self
     }
     pub fn eq_column(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
         self.item_.push(RdbcFilterItem::eq_column(column, value));
         self
     }
-    pub fn like_value<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
-        where
-            RdbcColumn: From<RC>,
-            RdbcValue: From<RV>,
+    pub(crate) fn ne_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self
     {
-        self.item_.push(RdbcFilterItem::like_value(column, value));
+        self.item_.push(RdbcFilterItem::ne_(column, value));
         self
     }
-    pub fn like_left_col<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
-        where
-            RdbcColumn: From<RC>,
-            RdbcColumn: From<RV>,
+    pub(crate) fn ne_column(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self
+    {
+        self.item_.push(RdbcFilterItem::ne_column(column, value));
+        self
+    }
+    pub(crate) fn ge_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self
+    {
+        self.item_.push(RdbcFilterItem::ge_(column, value));
+        self
+    }
+    pub(crate) fn ge_column(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self
+    {
+        self.item_.push(RdbcFilterItem::ge_column(column, value));
+        self
+    }
+    pub(crate) fn gt_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self
+    {
+        self.item_.push(RdbcFilterItem::gt_(column, value));
+        self
+    }
+    pub(crate) fn gt_column(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self
+    {
+        self.item_.push(RdbcFilterItem::gt_column(column, value));
+        self
+    }
+    pub(crate) fn le_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self
+    {
+        self.item_.push(RdbcFilterItem::le_(column, value));
+        self
+    }
+    pub(crate) fn le_column(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self
+    {
+        self.item_.push(RdbcFilterItem::le_column(column, value));
+        self
+    }
+    pub(crate) fn lt_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self
+    {
+        self.item_.push(RdbcFilterItem::lt_(column, value));
+        self
+    }
+    pub(crate) fn lt_column(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self
+    {
+        self.item_.push(RdbcFilterItem::lt_column(column, value));
+        self
+    }
+    pub(crate) fn null_(&mut self, column: RdbcColumn) -> &mut Self
+    {
+        self.item_.push(RdbcFilterItem::null_(column));
+        self
+    }
+    pub(crate) fn not_null_(&mut self, column: RdbcColumn) -> &mut Self
+    {
+        self.item_.push(RdbcFilterItem::not_null_(column));
+        self
+    }
+    pub fn between_(&mut self, column: RdbcColumn, value_start: RdbcValue,value_end: RdbcValue) -> &mut Self
+    {
+        self.item_.push(RdbcFilterItem::between_(column, value_start,value_end));
+        self
+    }
+    pub fn not_between_(&mut self, column: RdbcColumn, value_start: RdbcValue,value_end: RdbcValue) -> &mut Self
+    {
+        self.item_.push(RdbcFilterItem::not_between_(column, value_start,value_end));
+        self
+    }
+    pub fn like_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self
+    {
+        self.item_.push(RdbcFilterItem::like_(column, value));
+        self
+    }
+    pub fn like_left_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self
     {
         self.item_
-            .push(RdbcFilterItem::like_left_col(column, value));
+            .push(RdbcFilterItem::like_left_(column, value));
         self
     }
-    pub fn like_left_value<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
-        where
-            RdbcColumn: From<RC>,
-            RdbcValue: From<RV>,
+    pub fn like_right_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self
     {
         self.item_
-            .push(RdbcFilterItem::like_left_value(column, value));
+            .push(RdbcFilterItem::like_right_(column, value));
         self
     }
-    pub fn not_like_left_value<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
-        where
-            RdbcColumn: From<RC>,
-            RdbcValue: From<RV>,
+    pub fn not_like_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self
+    {
+        self.item_.push(RdbcFilterItem::not_like_(column, value));
+        self
+    }
+    pub fn not_like_left_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self
     {
         self.item_
-            .push(RdbcFilterItem::not_like_left_value(column, value));
+            .push(RdbcFilterItem::not_like_left_(column, value));
         self
     }
-    pub fn in_v<RC, RV>(&mut self, column: RC, value: Vec<RV>) -> &mut Self where
-        RdbcColumn: From<RC>,
-        RdbcValue: From<RV> {
+    pub fn not_like_right_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self
+    {
+        self.item_
+            .push(RdbcFilterItem::not_like_right_(column, value));
+        self
+    }
+
+    pub fn in_v(&mut self, column: RdbcColumn, value: Vec<RdbcValue>) -> &mut Self {
         self.item_
             .push(RdbcFilterItem::in_v(column, value));
         self
     }
-
-    pub fn in_v_slice<RC, RV>(&mut self, column: RC, value: &[RV]) -> &mut Self where
-        RdbcColumn: From<RC>,
-        RdbcValue: From<RV>,
-        RV: Clone {
+    pub fn in_query(&mut self, column: RdbcColumn, value: QueryWrapper) -> &mut Self {
         self.item_
-            .push(RdbcFilterItem::in_v_slice(column, value));
+            .push(RdbcFilterItem::in_query(column, value));
         self
     }
-}
-
-impl RdbcTableFilterImpl {
+    pub fn not_in_v(&mut self, column: RdbcColumn, value: Vec<RdbcValue>) -> &mut Self {
+        self.item_
+            .push(RdbcFilterItem::not_in_v(column, value));
+        self
+    }
+    pub fn not_in_query(&mut self, column: RdbcColumn, value: QueryWrapper) -> &mut Self {
+        self.item_
+            .push(RdbcFilterItem::not_in_query(column, value));
+        self
+    }
+    pub fn exists_(&mut self, column: RdbcColumn, value: QueryWrapper) -> &mut Self {
+        self.item_
+            .push(RdbcFilterItem::exists_(column, value));
+        self
+    }
+    pub fn not_exists_(&mut self, column: RdbcColumn, value: QueryWrapper) -> &mut Self {
+        self.item_
+            .push(RdbcFilterItem::not_exists_(column, value));
+        self
+    }
     pub fn new() -> RdbcTableFilterImpl {
         RdbcTableFilterImpl {
             concat_: RdbcConcatType::And,
@@ -913,7 +980,9 @@ pub enum RdbcFilterItem {
     Value(RdbcValueFilterItem),
     Column(RdbcColumnFilterItem),
     Filter(RdbcTableFilterImpl),
+    Query(RdbcQueryFilterItem),
 }
+
 
 impl RdbcFilterItem {
     fn filter(filter: RdbcTableFilterImpl) -> RdbcFilterItem {
@@ -922,106 +991,103 @@ impl RdbcFilterItem {
 }
 
 impl RdbcFilterItem {
-    pub(crate) fn eq_<T, V>(column: T, value: V) -> RdbcFilterItem
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
+    pub(crate) fn eq_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
         RdbcFilterItem::Value(RdbcValueFilterItem::eq_(column, value))
     }
-    pub(crate) fn ne_<T, V>(column: T, value: V) -> RdbcFilterItem
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
+    pub fn eq_column(column: RdbcColumn, value: RdbcColumn) -> RdbcFilterItem {
+        RdbcFilterItem::Column(RdbcColumnFilterItem::eq_column(column, value))
+    }
+    pub(crate) fn ne_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
         RdbcFilterItem::Value(RdbcValueFilterItem::ne_(column, value))
     }
-    pub fn eq_column(column: RdbcColumn, value: RdbcColumn) -> RdbcFilterItem {
-        RdbcFilterItem::Column(RdbcColumnFilterItem {
-            column_: column,
-            compare_: RdbcCompareType::Eq,
-            value: Some(value),
-        })
+    pub fn ne_column(column: RdbcColumn, value: RdbcColumn) -> RdbcFilterItem {
+        RdbcFilterItem::Column(RdbcColumnFilterItem::ne_column(column, value))
     }
-    pub fn like_left_col<RC, RV>(column: RC, value: RV) -> RdbcFilterItem
-        where
-            RdbcColumn: From<RC>,
-            RdbcColumn: From<RV>,
-    {
-        RdbcFilterItem::Column(RdbcColumnFilterItem {
-            column_: RdbcColumn::from(column),
-            compare_: RdbcCompareType::LikeLeft,
-            value: Some(RdbcColumn::from(value)),
-        })
+    pub(crate) fn ge_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
+        RdbcFilterItem::Value(RdbcValueFilterItem::ge_(column, value))
     }
-    pub fn like_value<RC, RV>(column: RC, value: RV) -> RdbcFilterItem
-        where
-            RdbcColumn: From<RC>,
-            RdbcValue: From<RV>,
-    {
-        RdbcFilterItem::Value(RdbcValueFilterItem {
-            column_: RdbcColumn::from(column),
-            compare_: RdbcCompareType::Like,
-            value: Some(RdbcValue::from(value)),
-            ignore_null: true,
-        })
+    pub fn ge_column(column: RdbcColumn, value: RdbcColumn) -> RdbcFilterItem {
+        RdbcFilterItem::Column(RdbcColumnFilterItem::ge_column(column, value))
     }
-    pub fn like_left_value<RC, RV>(column: RC, value: RV) -> RdbcFilterItem
-        where
-            RdbcColumn: From<RC>,
-            RdbcValue: From<RV>,
-    {
-        RdbcFilterItem::Value(RdbcValueFilterItem {
-            column_: RdbcColumn::from(column),
-            compare_: RdbcCompareType::LikeLeft,
-            value: Some(RdbcValue::from(value)),
-            ignore_null: true,
-        })
+    pub(crate) fn gt_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
+        RdbcFilterItem::Value(RdbcValueFilterItem::gt_(column, value))
     }
-    pub fn not_like_left_value<RC, RV>(column: RC, value: RV) -> RdbcFilterItem
-        where
-            RdbcColumn: From<RC>,
-            RdbcValue: From<RV>,
-    {
-        RdbcFilterItem::Value(RdbcValueFilterItem {
-            column_: RdbcColumn::from(column),
-            compare_: RdbcCompareType::NotLikeLeft,
-            value: Some(RdbcValue::from(value)),
-            ignore_null: true,
-        })
+    pub fn gt_column(column: RdbcColumn, value: RdbcColumn) -> RdbcFilterItem {
+        RdbcFilterItem::Column(RdbcColumnFilterItem::gt_column(column, value))
     }
-    pub fn in_v<RC, RV>(column: RC, value_vec: Vec<RV>) -> RdbcFilterItem
-        where
-            RdbcColumn: From<RC>,
-            RdbcValue: From<RV>,
-    {
-        let mut temp_value = vec![];
-        for item in value_vec {
-            temp_value.push(RdbcValue::from(item));
-        }
-        RdbcFilterItem::Value(RdbcValueFilterItem {
-            column_: RdbcColumn::from(column),
-            compare_: RdbcCompareType::In,
-            value: Some(RdbcValue::Vec(temp_value)),
-            ignore_null: true,
-        })
+    pub(crate) fn le_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
+        RdbcFilterItem::Value(RdbcValueFilterItem::le_(column, value))
     }
-    pub fn in_v_slice<RC, RV>(column: RC, value_vec: &[RV]) -> RdbcFilterItem
-        where
-            RdbcColumn: From<RC>,
-            RdbcValue: From<RV>,
-            RV: Clone
+    pub fn le_column(column: RdbcColumn, value: RdbcColumn) -> RdbcFilterItem {
+        RdbcFilterItem::Column(RdbcColumnFilterItem::le_column(column, value))
+    }
+    pub(crate) fn lt_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
+        RdbcFilterItem::Value(RdbcValueFilterItem::lt_(column, value))
+    }
+    pub fn lt_column(column: RdbcColumn, value: RdbcColumn) -> RdbcFilterItem {
+        RdbcFilterItem::Column(RdbcColumnFilterItem::lt_column(column, value))
+    }
+
+    pub fn null_(column: RdbcColumn) -> RdbcFilterItem {
+        RdbcFilterItem::Column(RdbcColumnFilterItem::null_(column))
+    }
+    pub fn not_null_(column: RdbcColumn) -> RdbcFilterItem {
+        RdbcFilterItem::Column(RdbcColumnFilterItem::not_null_(column))
+    }
+    pub fn like_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem
     {
-        let mut temp_value = vec![];
-        for item in value_vec {
-            temp_value.push(RdbcValue::from(item.clone()));
-        }
-        RdbcFilterItem::Value(RdbcValueFilterItem {
-            column_: RdbcColumn::from(column),
-            compare_: RdbcCompareType::In,
-            value: Some(RdbcValue::Vec(temp_value)),
-            ignore_null: true,
-        })
+        RdbcFilterItem::Value(RdbcValueFilterItem::like_(column, value))
+    }
+    pub fn like_left_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem
+    {
+        RdbcFilterItem::Value(RdbcValueFilterItem::like_left_(column, value))
+    }
+    pub fn like_right_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem
+    {
+        RdbcFilterItem::Value(RdbcValueFilterItem::like_right_(column, value))
+    }
+
+    pub fn not_like_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem
+    {
+        RdbcFilterItem::Value(RdbcValueFilterItem::not_like_(column, value))
+    }
+    pub fn not_like_left_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem
+    {
+        RdbcFilterItem::Value(RdbcValueFilterItem::not_like_left_(column, value))
+    }
+    pub fn not_like_right_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem
+    {
+        RdbcFilterItem::Value(RdbcValueFilterItem::not_like_right_(column, value))
+    }
+    pub(crate) fn between_(column: RdbcColumn, value_start: RdbcValue, value_end: RdbcValue) -> RdbcFilterItem {
+        RdbcFilterItem::Value(RdbcValueFilterItem::between_(column, value_start, value_end))
+    }
+    pub(crate) fn not_between_(column: RdbcColumn, value_start: RdbcValue, value_end: RdbcValue) -> RdbcFilterItem {
+        RdbcFilterItem::Value(RdbcValueFilterItem::not_between_(column, value_start,value_end))
+    }
+    pub fn in_v(column: RdbcColumn, value_vec: Vec<RdbcValue>) -> RdbcFilterItem
+    {
+        RdbcFilterItem::Value(RdbcValueFilterItem::in_v(column, value_vec))
+    }
+    pub fn in_query(column: RdbcColumn, query_wrapper: QueryWrapper) -> RdbcFilterItem
+    {
+        RdbcFilterItem::Query(RdbcQueryFilterItem::in_query(column, query_wrapper))
+    }
+    pub fn not_in_v(column: RdbcColumn, value_vec: Vec<RdbcValue>) -> RdbcFilterItem
+    {
+        RdbcFilterItem::Value(RdbcValueFilterItem::not_in_v(column, value_vec))
+    }
+    pub fn not_in_query(column: RdbcColumn, value: QueryWrapper) -> RdbcFilterItem
+    {
+        RdbcFilterItem::Query(RdbcQueryFilterItem::not_in_query(column, value))
+    }
+    pub fn exists_(column: RdbcColumn, value: QueryWrapper) -> RdbcFilterItem
+    {
+        RdbcFilterItem::Query(RdbcQueryFilterItem::exists_query(column, value))
+    }
+    pub fn not_exists_(column: RdbcColumn, value: QueryWrapper) -> RdbcFilterItem
+    {
+        RdbcFilterItem::Query(RdbcQueryFilterItem::not_exists_query(column, value))
     }
 }
 
@@ -1033,28 +1099,137 @@ pub struct RdbcValueFilterItem {
 }
 
 impl RdbcValueFilterItem {
-    pub fn eq_<T, V>(column: T, value: V) -> RdbcValueFilterItem
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
+    pub fn eq_(column: RdbcColumn, value: RdbcValue) -> RdbcValueFilterItem {
         RdbcValueFilterItem {
-            column_: RdbcColumn::from(column),
+            column_: column,
             compare_: RdbcCompareType::Eq,
-            value: Some(RdbcValue::from(value)),
+            value: Some(value),
             ignore_null: false,
         }
     }
-    pub fn ne_<T, V>(column: T, value: V) -> RdbcValueFilterItem
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
+    pub fn ne_(column: RdbcColumn, value: RdbcValue) -> RdbcValueFilterItem {
+        RdbcValueFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::NotEq,
+            value: Some(value),
+            ignore_null: false,
+        }
+    }
+    pub fn ge_(column: RdbcColumn, value: RdbcValue) -> RdbcValueFilterItem {
+        RdbcValueFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::GtEq,
+            value: Some(value),
+            ignore_null: false,
+        }
+    }
+
+    pub fn gt_(column: RdbcColumn, value: RdbcValue) -> RdbcValueFilterItem {
+        RdbcValueFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::Gt,
+            value: Some(value),
+            ignore_null: false,
+        }
+    }
+
+    pub fn le_(column: RdbcColumn, value: RdbcValue) -> RdbcValueFilterItem {
+        RdbcValueFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::LtEq,
+            value: Some(value),
+            ignore_null: false,
+        }
+    }
+
+    pub fn lt_(column: RdbcColumn, value: RdbcValue) -> RdbcValueFilterItem {
+        RdbcValueFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::Lt,
+            value: Some(value),
+            ignore_null: false,
+        }
+    }
+    pub fn like_(column: RdbcColumn, value: RdbcValue) -> RdbcValueFilterItem {
+        RdbcValueFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::Like,
+            value: Some(value),
+            ignore_null: false,
+        }
+    }
+    pub fn like_left_(column: RdbcColumn, value: RdbcValue) -> RdbcValueFilterItem {
+        RdbcValueFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::LikeLeft,
+            value: Some(value),
+            ignore_null: false,
+        }
+    }
+    pub fn like_right_(column: RdbcColumn, value: RdbcValue) -> RdbcValueFilterItem {
+        RdbcValueFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::LikeRight,
+            value: Some(value),
+            ignore_null: false,
+        }
+    }
+    pub fn not_like_(column: RdbcColumn, value: RdbcValue) -> RdbcValueFilterItem {
+        RdbcValueFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::NotLike,
+            value: Some(value),
+            ignore_null: false,
+        }
+    }
+    pub fn not_like_left_(column: RdbcColumn, value: RdbcValue) -> RdbcValueFilterItem {
+        RdbcValueFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::NotLikeLeft,
+            value: Some(value),
+            ignore_null: false,
+        }
+    }
+    pub fn not_like_right_(column: RdbcColumn, value: RdbcValue) -> RdbcValueFilterItem {
+        RdbcValueFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::NotLikeRight,
+            value: Some(value),
+            ignore_null: false,
+        }
+    }
+    pub fn between_(column: RdbcColumn, value_start: RdbcValue, value_end: RdbcValue) -> RdbcValueFilterItem{
+        let value = RdbcValue::Vec(vec![value_start, value_end]);
+        RdbcValueFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::Between,
+            value: Some(value),
+            ignore_null: false,
+        }
+    }
+    pub fn not_between_(column: RdbcColumn, value_start: RdbcValue, value_end: RdbcValue) -> RdbcValueFilterItem{
+        let value = RdbcValue::Vec(vec![value_start, value_end]);
+        RdbcValueFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::NotBetween,
+            value: Some(value),
+            ignore_null: false,
+        }
+    }
+    pub fn in_v(column: RdbcColumn, value_vec: Vec<RdbcValue>) -> RdbcValueFilterItem {
         RdbcValueFilterItem {
             column_: RdbcColumn::from(column),
-            compare_: RdbcCompareType::NotEq,
-            value: Some(RdbcValue::from(value)),
-            ignore_null: false,
+            compare_: RdbcCompareType::In,
+            value: Some(RdbcValue::Vec(value_vec)),
+            ignore_null: true,
+        }
+    }
+    pub fn not_in_v(column: RdbcColumn, value_vec: Vec<RdbcValue>) -> RdbcValueFilterItem {
+        RdbcValueFilterItem {
+            column_: RdbcColumn::from(column),
+            compare_: RdbcCompareType::NotIn,
+            value: Some(RdbcValue::Vec(value_vec)),
+            ignore_null: true,
         }
     }
 }
@@ -1081,6 +1256,65 @@ pub struct RdbcColumnFilterItem {
 }
 
 impl RdbcColumnFilterItem {
+    pub fn eq_column(column: RdbcColumn, value: RdbcColumn) -> RdbcColumnFilterItem {
+        RdbcColumnFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::Eq,
+            value: Some(value),
+        }
+    }
+    pub fn ne_column(column: RdbcColumn, value: RdbcColumn) -> RdbcColumnFilterItem {
+        RdbcColumnFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::NotEq,
+            value: Some(value),
+        }
+    }
+    pub fn ge_column(column: RdbcColumn, value: RdbcColumn) -> RdbcColumnFilterItem {
+        RdbcColumnFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::GtEq,
+            value: Some(value),
+        }
+    }
+    pub fn gt_column(column: RdbcColumn, value: RdbcColumn) -> RdbcColumnFilterItem {
+        RdbcColumnFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::Gt,
+            value: Some(value),
+        }
+    }
+    pub fn le_column(column: RdbcColumn, value: RdbcColumn) -> RdbcColumnFilterItem {
+        RdbcColumnFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::LtEq,
+            value: Some(value),
+        }
+    }
+    pub fn lt_column(column: RdbcColumn, value: RdbcColumn) -> RdbcColumnFilterItem {
+        RdbcColumnFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::Lt,
+            value: Some(value),
+        }
+    }
+    pub fn null_(column: RdbcColumn) -> RdbcColumnFilterItem {
+        RdbcColumnFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::IsNull,
+            value: None,
+        }
+    }
+    pub fn not_null_(column: RdbcColumn) -> RdbcColumnFilterItem {
+        RdbcColumnFilterItem {
+            column_: column,
+            compare_: RdbcCompareType::IsNotNull,
+            value: None,
+        }
+    }
+}
+
+impl RdbcColumnFilterItem {
     pub fn get_column(&self) -> &RdbcColumn {
         &self.column_
     }
@@ -1089,6 +1323,44 @@ impl RdbcColumnFilterItem {
     }
     pub fn get_value(&self) -> Option<&RdbcColumn> {
         self.value.as_ref()
+    }
+}
+
+
+pub struct RdbcQueryFilterItem {
+    column_: RdbcColumn,
+    compare_: RdbcCompareType,
+    value: Option<QueryWrapper>,
+}
+
+impl RdbcQueryFilterItem {
+    fn in_query(rdbc_column: RdbcColumn, query_wrapper: QueryWrapper) -> RdbcQueryFilterItem {
+        RdbcQueryFilterItem {
+            column_: rdbc_column,
+            compare_: RdbcCompareType::In,
+            value: Some(query_wrapper),
+        }
+    }
+    fn not_in_query(rdbc_column: RdbcColumn, query_wrapper: QueryWrapper) -> RdbcQueryFilterItem {
+        RdbcQueryFilterItem {
+            column_: rdbc_column,
+            compare_: RdbcCompareType::NotIn,
+            value: Some(query_wrapper),
+        }
+    }
+    fn exists_query(rdbc_column: RdbcColumn, query_wrapper: QueryWrapper) -> RdbcQueryFilterItem {
+        RdbcQueryFilterItem {
+            column_: rdbc_column,
+            compare_: RdbcCompareType::Exists,
+            value: Some(query_wrapper),
+        }
+    }
+    fn not_exists_query(rdbc_column: RdbcColumn, query_wrapper: QueryWrapper) -> RdbcQueryFilterItem {
+        RdbcQueryFilterItem {
+            column_: rdbc_column,
+            compare_: RdbcCompareType::NotExists,
+            value: Some(query_wrapper),
+        }
     }
 }
 
@@ -1111,6 +1383,8 @@ pub enum RdbcCompareType {
     IsNotNull,
     Exists,
     NotExists,
+    Between,
+    NotBetween,
 }
 
 pub enum RdbcOrder {

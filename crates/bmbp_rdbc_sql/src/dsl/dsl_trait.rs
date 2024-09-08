@@ -25,785 +25,273 @@ pub trait RdbcTableFilter {
         self.with_filter(RdbcConcatType::And);
         self
     }
-    fn eq_<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self.get_filter_mut().eq_(column, value);
-        self
-    }
-    fn eq_col<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcColumn: From<V>,
-    {
-        self.get_filter_mut().eq_column(RdbcColumn::from(column), RdbcColumn::from(value));
-        self
-    }
-    fn eq_value<T, V>(&mut self, column: T, value: RdbcValue) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn eq_raw<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            V: ToString,
-    {
-        self
-    }
-    fn col_eq<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn col_eq_col<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn col_eq_value(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self
-    }
-    fn col_eq_raw<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            V: ToString,
-    {
-        self
-    }
-    fn col_eq_rdbc_col(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
-        self
-    }
-
-    fn ne_<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self.get_filter_mut().ne_(column, value);
-        self
-    }
-    fn ne_col<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn ne_value<T, V>(&mut self, column: T, value: RdbcValue) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn ne_raw<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            V: ToString,
-    {
-        self
-    }
-    fn col_ne<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn col_ne_col<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn col_ne_value(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self
-    }
-    fn col_ne_raw<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            V: ToString,
-    {
-        self
-    }
-    fn col_ne_rdbc_col(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
-        self
-    }
-
-    fn ge<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn ge_col<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn ge_value<T, V>(&mut self, column: T, value: RdbcValue) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn ge_raw<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            V: ToString,
-    {
-        self
-    }
-    fn col_ge<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn col_ge_col<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn col_ge_value(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self
-    }
-    fn col_ge_raw<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            V: ToString,
-    {
-        self
-    }
-    fn col_ge_rdbc_col(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
-        self
-    }
-    fn gt<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn gt_col<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn gt_value<T, V>(&mut self, column: T, value: RdbcValue) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn gt_raw<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            V: ToString,
-    {
-        self
-    }
-    fn col_gt<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn col_gt_col<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn col_gt_value(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self
-    }
-    fn col_gt_raw<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            V: ToString,
-    {
-        self
-    }
-    fn col_gt_rdbc_col(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
-        self
-    }
-    fn le<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn le_col<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn le_value<T, V>(&mut self, column: T, value: RdbcValue) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn le_raw<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            V: ToString,
-    {
-        self
-    }
-    fn col_le<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn col_le_col<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn col_le_value(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self
-    }
-    fn col_le_raw<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            V: ToString,
-    {
-        self
-    }
-    fn col_le_rdbc_col(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
-        self
-    }
-
-    fn lt<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn lt_col<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn lt_value<T, V>(&mut self, column: T, value: RdbcValue) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn lt_raw<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            V: ToString,
-    {
-        self
-    }
-    fn col_lt<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn col_lt_col<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn col_lt_value(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self
-    }
-    fn col_lt_raw<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            V: ToString,
-    {
-        self
-    }
-    fn col_lt_rdbc_col(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
-        self
-    }
-
-    fn like<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self.get_filter_mut().like_value(column, value);
-        self
-    }
-    fn like_col<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn like_value<T, V>(&mut self, column: T, value: RdbcValue) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn like_raw<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            V: ToString,
-    {
-        self
-    }
-    fn col_like<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn col_like_col<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn col_like_value(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self
-    }
-    fn col_like_raw<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            V: ToString,
-    {
-        self
-    }
-    fn col_like_rdbc_col(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
-        self
-    }
-    fn like_left<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+    fn eq_<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
         where
             RdbcColumn: From<RC>,
             RdbcValue: From<RV>,
     {
+        self.get_filter_mut().eq_(RdbcColumn::from(column), RdbcValue::from(value));
         self
     }
-    fn like_left_col<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+    fn eq_col<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
         where
             RdbcColumn: From<RC>,
             RdbcColumn: From<RV>,
     {
-        self.get_filter_mut().like_left_col(column, value);
+        self.get_filter_mut().eq_column(RdbcColumn::from(column), RdbcColumn::from(value));
         self
     }
-    fn like_left_value<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+
+    fn ne_<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+        where
+            RdbcColumn: From<RC>,
+            RdbcValue: From<RV>
+    {
+        self.get_filter_mut().ne_(RdbcColumn::from(column), RdbcValue::from(value));
+        self
+    }
+    fn ne_col<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+        where
+            RdbcColumn: From<RC>,
+            RdbcColumn: From<RV>
+    {
+        self.get_filter_mut().ne_column(RdbcColumn::from(column), RdbcColumn::from(value));
+        self
+    }
+
+    fn ge_<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+        where
+            RdbcColumn: From<RC>,
+            RdbcValue: From<RV>
+    {
+        self.get_filter_mut().ge_(RdbcColumn::from(column), RdbcValue::from(value));
+        self
+    }
+    fn ge_col<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+        where
+            RdbcColumn: From<RC>,
+            RdbcColumn: From<RV>
+    {
+        self.get_filter_mut().ge_column(RdbcColumn::from(column), RdbcColumn::from(value));
+        self
+    }
+    fn gt_<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+        where
+            RdbcColumn: From<RC>,
+            RdbcValue: From<RV>
+    {
+        self.get_filter_mut().gt_(RdbcColumn::from(column), RdbcValue::from(value));
+        self
+    }
+    fn gt_col<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+        where
+            RdbcColumn: From<RC>,
+            RdbcColumn: From<RV>
+    {
+        self.get_filter_mut().gt_column(RdbcColumn::from(column), RdbcColumn::from(value));
+        self
+    }
+    fn le_<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+        where
+            RdbcColumn: From<RC>,
+            RdbcValue: From<RV>
+    {
+        self
+            .get_filter_mut()
+            .le_(RdbcColumn::from(column), RdbcValue::from(value));
+        self
+    }
+    fn le_col<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+        where
+            RdbcColumn: From<RC>,
+            RdbcColumn: From<RV>
+    {
+        self
+            .get_filter_mut()
+            .le_column(RdbcColumn::from(column), RdbcColumn::from(value));
+        self
+    }
+
+    fn lt_<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+        where
+            RdbcColumn: From<RC>,
+            RdbcValue: From<RV>
+    {
+        self
+            .get_filter_mut()
+            .lt_(RdbcColumn::from(column), RdbcValue::from(value));
+        self
+    }
+    fn lt_col<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+        where
+            RdbcColumn: From<RC>,
+            RdbcColumn: From<RV>
+    {
+        self
+            .get_filter_mut()
+            .lt_column(RdbcColumn::from(column), RdbcColumn::from(value));
+        self
+    }
+    fn like_<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+        where
+            RdbcColumn: From<RC>,
+            RdbcValue: From<RV>
+    {
+        self.get_filter_mut().like_(RdbcColumn::from(column), RdbcValue::from(value));
+        self
+    }
+    fn like_left_<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
         where
             RdbcColumn: From<RC>,
             RdbcValue: From<RV>,
     {
-        self.get_filter_mut().like_left_value(column, value);
+        self.get_filter_mut().like_left_(RdbcColumn::from(column), RdbcValue::from(value));
         self
     }
-    fn like_left_raw<T, V>(&mut self, column: T, value: V) -> &mut Self
+    fn like_right_<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
         where
-            RdbcColumn: From<T>,
-            V: ToString,
+            RdbcColumn: From<RC>,
+            RdbcValue: From<RV>
+    {
+        self.get_filter_mut().like_right_(RdbcColumn::from(column), RdbcValue::from(value));
+        self
+    }
+    fn not_like_<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+        where
+            RdbcColumn: From<RC>,
+            RdbcValue: From<RV>
+    {
+        self.get_filter_mut().not_like_(RdbcColumn::from(column), RdbcValue::from(value));
+        self
+    }
+    fn not_like_left_<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+        where
+            RdbcColumn: From<RC>,
+            RdbcValue: From<RV>,
+    {
+        self.get_filter_mut().not_like_left_(RdbcColumn::from(column), RdbcValue::from(value));
+        self
+    }
+    fn not_like_right_<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+        where
+            RdbcColumn: From<RC>,
+            RdbcValue: From<RV>
+    {
+        self.get_filter_mut().not_like_right_(RdbcColumn::from(column), RdbcValue::from(value));
+        self
+    }
+    fn null_<RC>(&mut self, column: RC) -> &mut Self
+        where
+            RdbcColumn: From<RC>,
     {
         self
+            .get_filter_mut()
+            .null_(RdbcColumn::from(column));
+        self
     }
-    fn col_like_left<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
+    fn not_null_<RC>(&mut self, column: RC) -> &mut Self
         where
-            RdbcValue: From<V>,
+            RdbcColumn: From<RC>,
     {
         self
+            .get_filter_mut()
+            .not_null_(RdbcColumn::from(column));
+        self
     }
-    fn col_like_left_col<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
+    fn between_<RC, RVS, RVE>(&mut self, column: RC, value_start: RVS, value_end: RVE) -> &mut Self
         where
-            RdbcColumn: From<V>,
+            RdbcColumn: From<RC>,
+            RdbcValue: From<RVS>,
+            RdbcValue: From<RVE>,
     {
         self
-    }
-    fn col_like_left_value(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
+            .get_filter_mut()
+            .between_(RdbcColumn::from(column),RdbcValue::from(value_start),RdbcValue::from(value_end));
         self
     }
-    fn col_like_left_raw<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
+    fn not_between_<RC, RVS, RVE>(&mut self, column: RC, value_start: RVS, value_end: RVE) -> &mut Self
         where
-            V: ToString,
+            RdbcColumn: From<RC>,
+            RdbcValue: From<RVS>,
+            RdbcValue: From<RVE>,
     {
         self
-    }
-    fn col_like_left_rdbc_col(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
+            .get_filter_mut()
+            .not_between_(RdbcColumn::from(column),RdbcValue::from(value_start),RdbcValue::from(value_end));
         self
     }
-    fn like_right<T, V>(&mut self, column: T, value: V) -> &mut Self
+    fn in_v<RC, RV>(&mut self, column: RC, value: Vec<RV>) -> &mut Self
         where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
+            RdbcColumn: From<RC>,
+            RdbcValue: From<RV>
     {
+        let v_vec = value.into_iter().map(|v| RdbcValue::from(v)).collect();
+        self.get_filter_mut().in_v(RdbcColumn::from(column), v_vec);
         self
     }
-    fn like_right_col<T, V>(&mut self, column: T, value: V) -> &mut Self
+    fn in_v_slice<RC, RV>(&mut self, column: RC, value: &[RV]) -> &mut Self
         where
-            RdbcColumn: From<T>,
-            RdbcColumn: From<V>,
+            RdbcColumn: From<RC>,
+            RdbcValue: From<RV>,
+            RV: Clone
     {
+        let v_vec = value.into_iter().map(|v| RdbcValue::from(v.clone())).collect();
+        self.get_filter_mut().in_v(RdbcColumn::from(column), v_vec);
         self
     }
-    fn like_right_value<T, V>(&mut self, column: T, value: RdbcValue) -> &mut Self
+    fn in_query<RC>(&mut self, column: RC, value: QueryWrapper) -> &mut Self
         where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
+            RdbcColumn: From<RC>,
     {
+        self.get_filter_mut().in_query(RdbcColumn::from(column), value);
         self
     }
-    fn like_right_raw<T, V>(&mut self, column: T, value: V) -> &mut Self
+    fn not_in_v<RC, RV>(&mut self, column: RC, value: Vec<RV>) -> &mut Self
         where
-            RdbcColumn: From<T>,
-            V: ToString,
+            RdbcColumn: From<RC>,
+            RdbcValue: From<RV>
     {
+        let v_vec = value.into_iter().map(|v| RdbcValue::from(v)).collect();
+        self.get_filter_mut().not_in_v(RdbcColumn::from(column), v_vec);
         self
     }
-    fn col_like_right<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
+    fn not_in_v_slice<RC, RV>(&mut self, column: RC, value: &[RV]) -> &mut Self
         where
-            RdbcValue: From<V>,
+            RdbcColumn: From<RC>,
+            RdbcValue: From<RV>,
+            RV: Clone
     {
-        self
-    }
-    fn col_like_right_col<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn col_like_right_value(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self
-    }
-    fn col_like_right_raw<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            V: ToString,
-    {
-        self
-    }
-    fn col_like_right_rdbc_col(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
-        self
-    }
-    fn not_like<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn not_like_col<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn not_like_value<T, V>(&mut self, column: T, value: RdbcValue) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn not_like_raw<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            V: ToString,
-    {
-        self
-    }
-    fn col_not_like<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn col_not_like_col<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn col_not_like_value(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self
-    }
-    fn col_not_like_raw<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            V: ToString,
-    {
-        self
-    }
-    fn col_not_like_rdbc_col(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
-        self
-    }
-    fn not_like_left<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcDmlValue: From<V>,
-    {
-        self
-    }
-    fn not_like_left_col<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn not_like_left_value<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self.get_filter_mut().not_like_left_value(column, value);
-        self
-    }
-    fn not_like_left_raw<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            V: ToString,
-    {
-        self
-    }
-    fn col_not_like_left<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn col_not_like_left_col<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn col_not_like_left_value(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self
-    }
-    fn col_not_like_left_raw<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            V: ToString,
-    {
-        self
-    }
-    fn col_not_like_left_rdbc_col(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
-        self
-    }
-    fn not_like_right<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn not_like_right_col<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn not_like_right_value<T, V>(&mut self, column: T, value: RdbcValue) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn not_like_right_raw<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            V: ToString,
-    {
-        self
-    }
-    fn col_not_like_right<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn col_not_like_right_col<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            RdbcColumn: From<V>,
-    {
-        self
-    }
-    fn col_not_like_right_value(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self
-    }
-    fn col_not_like_right_raw<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            V: ToString,
-    {
-        self
-    }
-    fn col_not_like_right_rdbc_col(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
+        let v_vec = value.into_iter().map(|v| RdbcValue::from(v.clone())).collect();
+        self.get_filter_mut().not_in_v(RdbcColumn::from(column), v_vec);
         self
     }
 
-    fn in_v<T, V>(&mut self, column: T, value: Vec<V>) -> &mut Self
+
+    fn not_in_query<RC>(&mut self, column: RC, value: QueryWrapper) -> &mut Self
         where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
+            RdbcColumn: From<RC>,
     {
-        self.get_filter_mut().in_v(column, value);
-        self
-    }
-    fn in_v_slice<T, V>(&mut self, column: T, value: &[V]) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-            V: Clone
-    {
-        self.get_filter_mut().in_v_slice(column, value);
-        self
-    }
-    fn in_query<T, V>(&mut self, column: T, value: QueryWrapper) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-    {
-        self
-    }
-    fn in_raw<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            V: ToString,
-    {
-        self
-    }
-    fn col_in_v<V>(&mut self, column: RdbcColumn, value: Vec<V>) -> &mut Self
-        where
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn col_in_slice<V>(&mut self, column: RdbcColumn, value: &[V]) -> &mut Self
-        where
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn col_in_query(&mut self, column: RdbcColumn, value: QueryWrapper) -> &mut Self {
-        self
-    }
-    fn col_in_raw<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            V: ToString,
-    {
+        self.get_filter_mut().not_in_query(RdbcColumn::from(column), value);
         self
     }
 
-    fn not_in_v<T, V>(&mut self, column: T, value: Vec<V>) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn not_in_v_slice<T, V>(&mut self, column: T, value: &[V]) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn not_in_query<T, V>(&mut self, column: T, value: QueryWrapper) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-    {
-        self
-    }
-    fn not_in_raw<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            V: ToString,
-    {
-        self
-    }
-    fn col_not_in_v<V>(&mut self, column: RdbcColumn, value: Vec<V>) -> &mut Self
-        where
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn col_not_in_slice<V>(&mut self, column: RdbcColumn, value: &[V]) -> &mut Self
-        where
-            RdbcValue: From<V>,
-    {
-        self
-    }
-    fn col_not_in_query(&mut self, column: RdbcColumn, value: QueryWrapper) -> &mut Self {
-        self
-    }
-    fn col_not_in_raw<V>(&mut self, column: RdbcColumn, value: V) -> &mut Self
-        where
-            V: ToString,
-    {
-        self
-    }
-    fn is_null<T>(&mut self, column: T) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-    {
-        self
-    }
-    fn col_is_null(&mut self, column: RdbcColumn) -> &mut Self {
-        self
-    }
-    fn not_null<T>(&mut self, column: T) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-    {
-        self
-    }
-    fn col_not_null(&mut self, column: RdbcColumn) -> &mut Self {
-        self
-    }
 
-    fn exists_<T>(&mut self, column: T, value: QueryWrapper) -> &mut Self
+    fn exists_<RC>(&mut self, column: RC, value: QueryWrapper) -> &mut Self
         where
-            RdbcColumn: From<T>,
+            RdbcColumn: From<RC>,
     {
         self
-    }
-    fn exists_raw<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            T: ToString,
-    {
+            .get_filter_mut()
+            .exists_(RdbcColumn::from(column), value);
         self
     }
-    fn not_exists_<T>(&mut self, column: T, value: QueryWrapper) -> &mut Self
+    fn not_exists_<RC>(&mut self, column: RC, value: QueryWrapper) -> &mut Self
         where
-            RdbcColumn: From<T>,
+            RdbcColumn: From<RC>,
     {
         self
-    }
-    fn not_exists_raw<T, V>(&mut self, column: T, value: V) -> &mut Self
-        where
-            RdbcColumn: From<T>,
-            T: ToString,
-    {
+            .get_filter_mut()
+            .not_exists_(RdbcColumn::from(column), value);
         self
     }
 }

@@ -217,6 +217,10 @@ fn pg_build_filter_item_sql(filter_item: &RdbcFilterItem) -> (String, HashMap<St
             let (item_sql, item_params) = pg_build_filter_sql(Some(filter));
             (format!("({})", item_sql), item_params)
         }
+        RdbcFilterItem::Query(query) => {
+            //TODO
+            ("".to_string(), HashMap::new())
+        }
     }
 }
 
@@ -436,6 +440,11 @@ fn pg_build_filter_column_sql(
                 }
             }
         }
+        RdbcCompareType::Between => {
+        }
+        RdbcCompareType::NotBetween => {
+        }
+
     }
 
     (item_sql, item_params)
@@ -608,6 +617,11 @@ fn pg_build_filter_value_sql(value: &RdbcValueFilterItem) -> (String, HashMap<St
                 item_params.insert(column_key.clone(), value.clone());
             }
         }
+        RdbcCompareType::Between => {
+        }
+        RdbcCompareType::NotBetween => {
+        }
+
     }
     (item_sql, item_params)
 }
