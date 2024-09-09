@@ -1,13 +1,14 @@
 use std::collections::HashMap;
 use bmbp_rdbc_type::{RdbcValue};
-pub use mysql::*;
-pub use pg::*;
+pub use db_mysql::*;
+pub use db_pg::*;
 pub use crate::build::types::{RdbcSQLBuilder};
 use crate::{DeleteWrapper, InsertWrapper, QueryWrapper, UpdateWrapper};
 
-mod mysql;
-mod pg;
+mod db_mysql;
+mod db_pg;
 mod types;
+mod util;
 
 pub struct SQLBuilder {}
 
