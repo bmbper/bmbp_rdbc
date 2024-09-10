@@ -26,10 +26,7 @@ impl RdbcTable for Demo {
     }
 
     fn get_columns() -> Vec<impl RdbcIdent> {
-        vec![
-            DemoVars::Name,
-            DemoVars::Title,
-        ]
+        vec![DemoVars::Name, DemoVars::Title]
     }
 
     fn get_primary_key() -> impl RdbcIdent {
@@ -80,13 +77,11 @@ fn test_query_in() {
     query.not_null_(DemoVars::Name);
 }
 
-
 #[test]
 fn test_query_left() {}
 
 #[test]
 fn test_query_right() {}
-
 
 #[test]
 fn test_query_exists() {}
