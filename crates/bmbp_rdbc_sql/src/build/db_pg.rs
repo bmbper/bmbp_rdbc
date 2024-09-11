@@ -1,9 +1,5 @@
 use crate::build::types::RdbcSQLBuilder;
-use crate::{
-    table, DeleteWrapper, InsertWrapper, QueryWrapper, RdbcColumn, RdbcFunc, RdbcFuncColumn,
-    RdbcOrder, RdbcQueryColumn, RdbcTableColumn, RdbcTableFilterImpl, RdbcTableInner,
-    RdbcValueColumn, UpdateWrapper,
-};
+use crate::{table, DeleteWrapper, InsertWrapper, QueryWrapper, RdbcColumn, RdbcFunc, RdbcFuncColumn, RdbcOrder, RdbcQueryColumn, RdbcTableColumn, RdbcTableFilterImpl, RdbcTableInner, RdbcValueColumn, UpdateWrapper, RdbcSchemaTable, RdbcQueryTable};
 use bmbp_rdbc_type::RdbcValue;
 use std::collections::HashMap;
 
@@ -124,7 +120,7 @@ impl PgScriptBuilder {
     fn build_query_table_script(
         from_tables: &Vec<RdbcTableInner>,
     ) -> (String, HashMap<String, RdbcValue>) {
-        PgTableSqlBUilder::build_table_script(from_tables)
+        PgTableSqlBuilder::build_table_script(from_tables)
     }
     fn build_query_filter_script(
         filter: Option<&RdbcTableFilterImpl>,
@@ -227,19 +223,33 @@ impl PgSelectSqlBuilder {
     }
 }
 
-struct PgTableSqlBUilder;
-impl PgTableSqlBUilder {
+struct PgTableSqlBuilder;
+
+impl PgTableSqlBuilder {
     fn build_table_script(from_tables: &[RdbcTableInner]) -> (String, HashMap<String, RdbcValue>) {
         let mut table_vec: Vec<String> = vec![];
         let mut table_params = HashMap::new();
         for table in from_tables {
-            match table {
-                RdbcTableInner::Table(t) => {}
-                RdbcTableInner::Query(q) => {}
-            }
+            let (t_sql, t_params) = match table {
+                RdbcTableInner::Table(t) => {
+                    Self::build_schema_table_script(t)
+                }
+                RdbcTableInner::Query(q) => {
+                    Self::build_query_table_script(q)
+                }
+            };
+            table_vec.push(t_sql);
+            table_params.extend(t_params);
         }
 
         (table_vec.join("\n"), table_params)
+    }
+    fn build_schema_table_script(t: &RdbcSchemaTable) -> (String, HashMap<String, RdbcValue>) {
+        ("".to_string(), HashMap::new())
+    }
+
+    fn build_query_table_script(t: &RdbcQueryTable) -> (String, HashMap<String, RdbcValue>) {
+        ("".to_string(), HashMap::new())
     }
 }
 
