@@ -6,8 +6,8 @@ use tokio_postgres::types::ToSql;
 use tokio_postgres::{connect, Client, NoTls};
 use tracing::info;
 
-use bmbp_rdbc_type::{RdbcDataBase, RdbcOrmRow, RdbcPage, RdbcValue};
-use bmbp_rdbc_sql::{DeleteWrapper, InsertWrapper, QueryWrapper, RdbcSQL, UpdateWrapper};
+use bmbp_rdbc_type::{RdbcDataBase, RdbcOrmRow,  RdbcValue};
+use bmbp_rdbc_sql::{DeleteWrapper, InsertWrapper, QueryWrapper, UpdateWrapper};
 
 use crate::err::{RdbcError, RdbcErrorType, RdbcResult};
 use crate::pool::RdbcConnInner;

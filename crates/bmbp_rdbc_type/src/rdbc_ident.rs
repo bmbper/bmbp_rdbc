@@ -25,5 +25,8 @@ pub trait RdbcTable {
     fn get_primary_key() -> impl RdbcIdent {
         "".to_string()
     }
-    fn get_union_key() -> Vec<impl RdbcIdent> ;
+    fn get_union_key() -> Vec<impl RdbcIdent> {
+        let v:Vec<String> = vec![];
+        v
+    }
 }
