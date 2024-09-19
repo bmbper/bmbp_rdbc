@@ -1,10 +1,10 @@
+use bmbp_rdbc_type::{RdbcDataBase, RdbcValue};
 use std::collections::HashMap;
 use std::sync::RwLock;
-use bmbp_rdbc_type::{RdbcDataBase, RdbcValue};
 
 use crate::{
-   RdbcColumn, RdbcConcatType, RdbcTableFilter, RdbcTableFilterImpl, RdbcOrder,
-    RdbcTableWrapper, RdbcTableInner,
+    RdbcColumn, RdbcConcatType, RdbcOrder, RdbcTableFilter, RdbcTableFilterImpl, RdbcTableInner,
+    RdbcTableWrapper,
 };
 
 pub struct DeleteWrapper {
@@ -59,11 +59,11 @@ impl DeleteWrapper {
     pub fn get_order(&self) -> Option<&Vec<RdbcOrder>> {
         self.order_.as_ref()
     }
-    pub fn get_limit(&self) -> Option<u64> {
-        self.limit_
+    pub fn get_limit(&self) -> Option<&u64> {
+        self.limit_.as_ref()
     }
-    pub fn get_offset(&self) -> Option<u64> {
-        self.offset_
+    pub fn get_offset(&self) -> Option<&u64> {
+        self.offset_.as_ref()
     }
     pub fn get_params(&self) -> Option<&HashMap<String, RdbcValue>> {
         self.params_.as_ref()

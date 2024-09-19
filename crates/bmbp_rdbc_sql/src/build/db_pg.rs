@@ -7,8 +7,39 @@ use crate::{
 use bmbp_rdbc_type::RdbcValue;
 use std::collections::HashMap;
 use std::vec;
+use uuid::Uuid;
 
 pub struct PgRdbcSQLBuilder;
+impl PgRdbcSQLBuilder {
+    fn convert_script_to_sql(
+        script_sql: &String,
+        script_params: &HashMap<String, RdbcValue>,
+    ) -> (String, Vec<RdbcValue>) {
+        let mut sql = script_sql.clone();
+        let mut sql_parmas = vec![];
+        for (index, key) in script_params.keys().enumerate() {
+            let v = script_params.get(key).unwrap_or(&RdbcValue::Null).clone();
+            let params_str = format!("#{{{}}}", key);
+            let params_index = format!("${{{}}}", index + 1);
+            sql = sql.replace(&params_str, &params_index);
+            sql_parmas.push(v);
+        }
+        (sql, sql_parmas)
+    }
+    fn convert_script_to_raw_sql(
+        script_sql: &String,
+        script_params: &HashMap<String, RdbcValue>,
+    ) -> String {
+        let mut raw_sql = script_sql.clone();
+        for key in script_params.keys() {
+            let v = script_params.get(key).unwrap_or(&RdbcValue::Null).clone();
+            let params_str = format!("#{{{}}}", key);
+            let value_index = PgRawValueBuilder::raw_value(&v);
+            raw_sql = raw_sql.replace(&params_str, &value_index);
+        }
+        raw_sql
+    }
+}
 
 impl RdbcSQLBuilder for PgRdbcSQLBuilder {
     fn build_query_script(query_wrapper: &QueryWrapper) -> (String, HashMap<String, RdbcValue>) {
@@ -16,47 +47,53 @@ impl RdbcSQLBuilder for PgRdbcSQLBuilder {
     }
 
     fn build_insert_script(insert_wrapper: &InsertWrapper) -> (String, HashMap<String, RdbcValue>) {
-        todo!()
+        PgScriptBuilder::build_insert(insert_wrapper)
     }
 
     fn build_update_script(update_wrapper: &UpdateWrapper) -> (String, HashMap<String, RdbcValue>) {
-        todo!()
+        PgScriptBuilder::build_update(update_wrapper)
     }
 
     fn build_delete_script(delete_wrapper: &DeleteWrapper) -> (String, HashMap<String, RdbcValue>) {
-        todo!()
+        PgScriptBuilder::build_delete(delete_wrapper)
     }
 
     fn build_query_sql(query_wrapper: &QueryWrapper) -> (String, Vec<RdbcValue>) {
-        todo!()
+        let (query_sql, query_params) = Self::build_query_script(query_wrapper);
+        Self::convert_script_to_sql(&query_sql, &query_params)
     }
-
     fn build_insert_sql(insert_wrapper: &InsertWrapper) -> (String, Vec<RdbcValue>) {
-        todo!()
+        let (insert_sql, insert_params) = Self::build_insert_script(insert_wrapper);
+        Self::convert_script_to_sql(&insert_sql, &insert_params)
     }
-
     fn build_update_sql(update_wrapper: &UpdateWrapper) -> (String, Vec<RdbcValue>) {
-        todo!()
+        let (update_sql, update_params) = Self::build_update_script(update_wrapper);
+        Self::convert_script_to_sql(&update_sql, &update_params)
     }
 
     fn build_delete_sql(delete_wrapper: &DeleteWrapper) -> (String, Vec<RdbcValue>) {
-        todo!()
+        let (delete_sql, delete_params) = Self::build_delete_script(delete_wrapper);
+        Self::convert_script_to_sql(&delete_sql, &delete_params)
     }
 
     fn build_raw_query(query_wrapper: &QueryWrapper) -> String {
-        todo!()
+        let (query_sql, query_params) = Self::build_query_script(query_wrapper);
+        Self::convert_script_to_raw_sql(&query_sql, &query_params)
     }
 
     fn build_raw_insert(insert_wrapper: &InsertWrapper) -> String {
-        todo!()
+        let (insert_sql, insert_params) = Self::build_insert_script(insert_wrapper);
+        Self::convert_script_to_raw_sql(&insert_sql, &insert_params)
     }
 
     fn build_raw_update(update_wrapper: &UpdateWrapper) -> String {
-        todo!()
+        let (update_sql, update_params) = Self::build_update_script(update_wrapper);
+        Self::convert_script_to_raw_sql(&update_sql, &update_params)
     }
 
     fn build_raw_delete(delete_wrapper: &DeleteWrapper) -> String {
-        todo!()
+        let (delete_sql, delete_params) = Self::build_delete_script(delete_wrapper);
+        Self::convert_script_to_raw_sql(&delete_sql, &delete_params)
     }
 }
 
@@ -67,37 +104,99 @@ impl PgScriptBuilder {
         let mut query_sql = vec![];
         let mut query_params = HashMap::new();
         // select
-        let (select_sql, select_params) = Self::build_select(query_wrapper.get_select());
-        query_sql.push(select_sql);
-        query_params.extend(select_params);
+        let (select_sql, select_params) =
+            Self::build_select(query_wrapper.get_select(), query_wrapper.get_distinct());
+        if !select_sql.is_empty() {
+            query_sql.push(select_sql);
+            query_params.extend(select_params);
+        }
         // from
         let (from_table_sql, from_table_params) = Self::build_table(query_wrapper.get_table());
-        query_sql.push(from_table_sql);
-        query_params.extend(from_table_params);
+        if !from_table_sql.is_empty() {
+            query_sql.push(from_table_sql);
+            query_params.extend(from_table_params);
+        }
+        // join
+        let (join_table_sql, join_table_params) =
+            Self::build_table_join(query_wrapper.get_join().unwrap_or(&vec![]));
+        if !join_table_sql.is_empty() {
+            query_sql.push(join_table_sql);
+            query_params.extend(join_table_params);
+        }
         // where
         let (filter_sql, filter_params) = Self::build_filter(query_wrapper.get_filter());
-        query_sql.push(filter_sql);
-        query_params.extend(filter_params);
+        if !filter_sql.is_empty() {
+            query_sql.push(filter_sql);
+            query_params.extend(filter_params);
+        }
 
         // group by
         let (group_sql, group_params) = Self::build_group(query_wrapper.get_group_by());
-        query_sql.push(group_sql);
-        query_params.extend(group_params);
+        if !group_sql.is_empty() {
+            query_sql.push(group_sql);
+            query_params.extend(group_params);
+        }
+
         // having
         let (having_sql, having_params) = Self::build_having(query_wrapper.get_having());
-        query_sql.push(having_sql);
-        query_params.extend(having_params);
+        if !having_sql.is_empty() {
+            query_sql.push(having_sql);
+            query_params.extend(having_params);
+        }
+
         // order by
         let (order_sql, order_params) = Self::build_order(query_wrapper.get_order());
-        query_sql.push(order_sql);
-        query_params.extend(order_params);
+        if !order_sql.is_empty() {
+            query_sql.push(order_sql);
+            query_params.extend(order_params);
+        }
         // limit sql
         let (limit_sql, limit_params) = Self::build_limit(query_wrapper.get_limit());
-        query_sql.push(limit_sql);
-        query_params.extend(limit_params);
+        if !limit_sql.is_empty() {
+            query_sql.push(limit_sql);
+            query_params.extend(limit_params);
+        }
+
+        let (offset_sql, offset_params) = Self::build_offset(query_wrapper.get_offset());
+        if !offset_sql.is_empty() {
+            query_sql.push(offset_sql);
+            query_params.extend(offset_params);
+        }
+
+        let mut union_all_sql = vec![];
+        let mut union_all_params = HashMap::new();
+        if let Some(union_vec) = query_wrapper.get_union_all() {
+            for union_wrapper in union_vec {
+                let (union_sql, union_params) = Self::build_query(union_wrapper);
+                union_all_sql.push(union_sql);
+                union_all_params.extend(union_params);
+            }
+        }
+        if !union_all_sql.is_empty() {
+            let union_sql = union_all_sql.join("\n UNION ALL \n");
+            query_sql.push(format!(" UNION ALL {}", union_sql));
+            query_params.extend(union_all_params);
+        }
+        let mut union_only_sql = vec![];
+        let mut union_only_params = HashMap::new();
+        if let Some(union_vec) = query_wrapper.get_union_only() {
+            for union_wrapper in union_vec {
+                let (union_sql, union_params) = Self::build_query(union_wrapper);
+                union_only_sql.push(union_sql);
+                union_only_params.extend(union_params);
+            }
+        }
+        if !union_only_sql.is_empty() {
+            let union_sql = union_only_sql.join("\n UNION \n");
+            query_sql.push(format!(" UNION {}", union_sql));
+            query_params.extend(union_only_params);
+        }
         (query_sql.join("\n"), query_params)
     }
-    fn build_select(select_columns: &Vec<RdbcColumn>) -> (String, HashMap<String, RdbcValue>) {
+    fn build_select(
+        select_columns: &Vec<RdbcColumn>,
+        is_distinct: bool,
+    ) -> (String, HashMap<String, RdbcValue>) {
         let mut select_sql = vec![];
         let mut select_params = HashMap::new();
         for column in select_columns {
@@ -111,9 +210,20 @@ impl PgScriptBuilder {
             select_params.extend(column_params);
         }
         if select_sql.is_empty() {
-            ("*".to_string(), HashMap::new())
+            if is_distinct {
+                ("SELECT DISTINCT * ".to_string(), HashMap::new())
+            } else {
+                ("SELECT * ".to_string(), HashMap::new())
+            }
         } else {
-            (format!("SELECT {}", select_sql.join(",")), select_params)
+            if is_distinct {
+                (
+                    format!("SELECT DISTINCT {}", select_sql.join(",")),
+                    select_params,
+                )
+            } else {
+                (format!("SELECT {}", select_sql.join(",")), select_params)
+            }
         }
     }
     fn build_table(from_tables: &Vec<RdbcTableInner>) -> (String, HashMap<String, RdbcValue>) {
@@ -122,6 +232,9 @@ impl PgScriptBuilder {
             from_sql = format!(" FROM {}", from_sql);
         }
         (from_sql, from_prams)
+    }
+    fn build_table_join(from_tables: &Vec<RdbcTableInner>) -> (String, HashMap<String, RdbcValue>) {
+        PgScriptTableBuilder::build_table(from_tables)
     }
     fn build_filter(filter: Option<&RdbcTableFilterImpl>) -> (String, HashMap<String, RdbcValue>) {
         let (mut filter_sql, filter_params) = PgScriptFilterBuilder::build_filter(filter);
@@ -157,6 +270,216 @@ impl PgScriptBuilder {
             limit_sql = format!(" LIMIT {}", limit_sql);
         }
         (limit_sql, limit_params)
+    }
+    fn build_offset(offset: Option<&u64>) -> (String, HashMap<String, RdbcValue>) {
+        let (mut offset_sql, limit_params) = PgScriptLimitBuilder::build_limit(offset);
+        if !offset_sql.is_empty() {
+            offset_sql = format!(" OFFSET {}", offset_sql);
+        }
+        (offset_sql, limit_params)
+    }
+    fn build_insert(insert_wrapper: &InsertWrapper) -> (String, HashMap<String, RdbcValue>) {
+        let mut insert_params = HashMap::new();
+        let (table_sql, table_params) =
+            PgScriptTableBuilder::build_table(&insert_wrapper.get_table());
+        let mut insert_sql = format!("INSERT INTO {}", table_sql);
+        insert_params.extend(table_params);
+
+        let mut c_v_c_sql = vec![];
+        let mut c_v_v_sql = vec![];
+        let mut c_v_params = HashMap::new();
+        let c_v_vec = insert_wrapper.get_column_values();
+        if !c_v_vec.is_empty() {
+            for (c, v) in c_v_vec.iter() {
+                let (tc_sql, tc_params) = PgScriptColumnBuilder::build_table_column(c);
+                c_v_c_sql.push(tc_sql);
+                c_v_params.extend(tc_params);
+                match v {
+                    crate::RdbcDmlValue::VALUE(rdbc_value) => {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        let v_sql = format!("#{{{}}}", col_id.clone());
+                        c_v_v_sql.push(v_sql);
+                        c_v_params.insert(col_id, rdbc_value.clone());
+                    }
+                    crate::RdbcDmlValue::COLUMN(rdbc_column) => {
+                        let (col_v_sql, _) = PgScriptColumnBuilder::build_column(rdbc_column);
+                        c_v_v_sql.push(col_v_sql);
+                    }
+                }
+            }
+        }
+
+        let mut c_sql = vec![];
+        let mut c_params = HashMap::new();
+        let columns = insert_wrapper.get_column();
+        for item in columns {
+            let (c_tmp_sql, c_tmp_params) = PgScriptColumnBuilder::build_table_column(item);
+            c_sql.push(c_tmp_sql);
+            c_params.extend(c_tmp_params);
+        }
+        // insert into table(columns) value select * from table1
+        if let Some(query) = insert_wrapper.get_query() {
+            let (query_sql, query_params) = Self::build_query(query);
+            if !c_sql.is_empty() {
+                insert_sql = format!("{} ({}) ", insert_sql, c_sql.join(","));
+            }
+            insert_sql = format!("{} VALUE {}", insert_sql, query_sql);
+            insert_params.extend(query_params);
+            (insert_sql, insert_params)
+        } else {
+            c_v_c_sql.extend_from_slice(c_sql.as_slice());
+            c_v_params.extend(c_params);
+            for item in insert_wrapper.get_values() {
+                match item {
+                    crate::RdbcDmlValue::VALUE(rdbc_value) => {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        let v_sql = format!("#{{{}}}", col_id.clone());
+                        c_v_v_sql.push(v_sql);
+                        c_v_params.insert(col_id, rdbc_value.clone());
+                    }
+                    crate::RdbcDmlValue::COLUMN(rdbc_column) => {
+                        let (col_v_sql, _) = PgScriptColumnBuilder::build_column(rdbc_column);
+                        c_v_v_sql.push(col_v_sql);
+                    }
+                }
+            }
+            insert_params.extend(c_v_params);
+
+            if !c_v_c_sql.is_empty() {
+                insert_sql = format!("{} ({}) ", insert_sql, c_v_c_sql.join(","));
+            }
+
+            insert_sql = format!("{} VALUES ({})", insert_sql, c_v_v_sql.join(","));
+            (insert_sql, insert_params)
+        }
+    }
+
+    fn build_update(update_wrapper: &UpdateWrapper) -> (String, HashMap<String, RdbcValue>) {
+        let mut update_sql = vec![];
+        let mut update_prams = HashMap::new();
+        let update_tables = update_wrapper.get_table();
+        let mut major_table = vec![];
+        let mut from_table = vec![];
+        if !update_tables.is_empty() {
+            major_table.push(update_tables.get(0).unwrap());
+            for index in 1..update_tables.len() {
+                from_table.push(update_tables.get(index).unwrap());
+            }
+        }
+
+        // update table
+        let (table_sql, table_prams) =
+            PgScriptTableBuilder::build_table_by_slice(major_table.as_slice());
+        if !table_sql.is_empty() {
+            update_sql.push(format!(" UPDATE {}", table_sql));
+            update_prams.extend(table_prams);
+        }
+
+        // set_values
+        let mut set_sql = vec![];
+        let mut set_params = HashMap::new();
+        for (col, value_op) in update_wrapper.get_set_values() {
+            let (col_sql, col_params) = PgScriptColumnBuilder::build_column(col);
+            if let Some(value) = value_op {
+                match value {
+                    crate::RdbcDmlValue::VALUE(rdbc_value) => {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        set_sql.push(format!("{} = #{{{}}}", col_sql, col_id));
+                        set_params.insert(col_id, rdbc_value.clone());
+                    }
+                    crate::RdbcDmlValue::COLUMN(rdbc_column) => {
+                        let (col_v_sql, _) = PgScriptColumnBuilder::build_column(rdbc_column);
+                        set_sql.push(format!("{} = #{{{}}}", col_sql, col_v_sql));
+                    }
+                }
+            } else {
+                set_sql.push(format!("{} = NULL", col_sql));
+                set_params.extend(col_params);
+            }
+        }
+        if !set_sql.is_empty() {
+            update_sql.push(format!("SET {} ", set_sql.join(",")));
+            update_prams.extend(set_params);
+        }
+        // from table
+        // update table
+        let (from_sql, from_prams) =
+            PgScriptTableBuilder::build_table_by_slice(from_table.as_slice());
+        if !from_sql.is_empty() {
+            update_sql.push(format!(" FROM {}", from_sql));
+            update_prams.extend(from_prams);
+        }
+        // join
+        let (join_table_sql, join_table_params) =
+            Self::build_table_join(update_wrapper.get_join().unwrap_or(&vec![]));
+        update_sql.push(join_table_sql);
+        update_prams.extend(join_table_params);
+
+        // where
+        let (filter_sql, filter_params) = Self::build_filter(update_wrapper.get_filter());
+        update_sql.push(filter_sql);
+        update_prams.extend(filter_params);
+        // group by
+        let (group_sql, group_params) = Self::build_group(update_wrapper.get_group_by());
+        update_sql.push(group_sql);
+        update_prams.extend(group_params);
+        // having
+        let (having_sql, having_params) = Self::build_having(update_wrapper.get_having());
+        update_sql.push(having_sql);
+        update_prams.extend(having_params);
+        // order by
+        let (order_sql, order_params) = Self::build_order(update_wrapper.get_order());
+        update_sql.push(order_sql);
+        update_prams.extend(order_params);
+        // limit sql
+        let (limit_sql, limit_params) = Self::build_limit(update_wrapper.get_limit());
+        update_sql.push(limit_sql);
+        update_prams.extend(limit_params);
+        let (offset_sql, offset_params) = Self::build_offset(update_wrapper.get_offset());
+        update_sql.push(offset_sql);
+        update_prams.extend(offset_params);
+        (update_sql.join("\n"), update_prams)
+    }
+
+    fn build_delete(delete_wrapper: &DeleteWrapper) -> (String, HashMap<String, RdbcValue>) {
+        let mut delete_sql = vec![];
+        let mut delete_params = HashMap::new();
+        // DELETE
+        delete_sql.push("DELETE".to_string());
+        // from
+        let (from_table_sql, from_table_params) = Self::build_table(delete_wrapper.get_table());
+        delete_sql.push(from_table_sql);
+        delete_params.extend(from_table_params);
+
+        // join
+        let (join_table_sql, join_table_params) =
+            Self::build_table_join(delete_wrapper.get_join().unwrap_or(&vec![]));
+        delete_sql.push(join_table_sql);
+        delete_params.extend(join_table_params);
+        // where
+        let (filter_sql, filter_params) = Self::build_filter(delete_wrapper.get_filter());
+        delete_sql.push(filter_sql);
+        delete_params.extend(filter_params);
+        // group by
+        let (group_sql, group_params) = Self::build_group(delete_wrapper.get_group_by());
+        delete_sql.push(group_sql);
+        delete_params.extend(group_params);
+        // having
+        let (having_sql, having_params) = Self::build_having(delete_wrapper.get_having());
+        delete_sql.push(having_sql);
+        delete_params.extend(having_params);
+        // order by
+        let (order_sql, order_params) = Self::build_order(delete_wrapper.get_order());
+        delete_sql.push(order_sql);
+        delete_params.extend(order_params);
+        // limit sql
+        let (limit_sql, limit_params) = Self::build_limit(delete_wrapper.get_limit());
+        delete_sql.push(limit_sql);
+        delete_params.extend(limit_params);
+        let (offset_sql, offset_params) = Self::build_offset(delete_wrapper.get_offset());
+        delete_sql.push(offset_sql);
+        delete_params.extend(offset_params);
+        (delete_sql.join("\n"), delete_params)
     }
 }
 
@@ -202,7 +525,9 @@ impl PgScriptSelectBuilder {
 struct PgScriptTableBuilder;
 
 impl PgScriptTableBuilder {
-    fn build_table(from_tables: &[RdbcTableInner]) -> (String, HashMap<String, RdbcValue>) {
+    fn build_table_by_slice(
+        from_tables: &[&RdbcTableInner],
+    ) -> (String, HashMap<String, RdbcValue>) {
         let mut table_vec = vec![];
         let mut join_table_vec = vec![];
         for table in from_tables {
@@ -219,8 +544,16 @@ impl PgScriptTableBuilder {
         (table_sql, table_params)
     }
 
+    fn build_table(from_tables: &Vec<RdbcTableInner>) -> (String, HashMap<String, RdbcValue>) {
+        let mut table_slice = vec![];
+        for item in from_tables {
+            table_slice.push(item);
+        }
+        Self::build_table_by_slice(table_slice.as_slice())
+    }
+
     fn build_table_vec_script(
-        from_tables: Vec<&RdbcTableInner>,
+        from_tables: Vec<&&RdbcTableInner>,
     ) -> (String, HashMap<String, RdbcValue>) {
         let mut table_vec: Vec<String> = vec![];
         let mut table_params = HashMap::new();
@@ -235,7 +568,7 @@ impl PgScriptTableBuilder {
         (table_vec.join(",\n"), table_params)
     }
     fn build_table_join_vec_script(
-        from_tables: Vec<&RdbcTableInner>,
+        from_tables: Vec<&&RdbcTableInner>,
     ) -> (String, HashMap<String, RdbcValue>) {
         let mut table_vec: Vec<String> = vec![];
         let mut table_params = HashMap::new();
@@ -322,11 +655,361 @@ impl PgScriptTableBuilder {
 
 struct PgScriptFilterBuilder;
 impl PgScriptFilterBuilder {
-    fn build_filter(filter: Option<&RdbcTableFilterImpl>) -> (String, HashMap<String, RdbcValue>) {
-        if filter.is_none() {
+    fn build_filter(
+        filter_op: Option<&RdbcTableFilterImpl>,
+    ) -> (String, HashMap<String, RdbcValue>) {
+        if filter_op.is_none() {
             return ("".to_string(), HashMap::new());
         }
-        ("".to_string(), HashMap::new())
+        let filter = filter_op.as_ref().unwrap();
+
+        let concat = match filter.get_concat() {
+            crate::RdbcConcatType::And => " AND ".to_string(),
+            crate::RdbcConcatType::Or => " OR ".to_string(),
+        };
+
+        let mut filter_vec: Vec<String> = vec![];
+        let mut filter_params = HashMap::new();
+
+        for item in filter.get_item() {
+            let (item_sql, item_params) = Self::build_filter_item(item);
+            filter_vec.push(item_sql);
+            filter_params.extend(item_params);
+        }
+
+        if let Some(params) = filter.get_params() {
+            filter_params.extend(params.clone());
+        }
+        (filter_vec.join(concat.as_str()), filter_params)
+    }
+
+    fn build_filter_item(
+        filter_item: &crate::RdbcFilterItem,
+    ) -> (String, HashMap<String, RdbcValue>) {
+        match filter_item {
+            crate::RdbcFilterItem::Value(v) => Self::build_filter_value_item(v),
+            crate::RdbcFilterItem::Column(v) => Self::build_filter_column_item(v),
+            crate::RdbcFilterItem::Filter(v) => Self::build_filter_table_item(v),
+            crate::RdbcFilterItem::Query(v) => Self::build_filter_query_item(v),
+        }
+    }
+
+    fn build_filter_value_item(
+        value_filter: &crate::RdbcValueFilterItem,
+    ) -> (String, HashMap<String, RdbcValue>) {
+        let column = value_filter.get_column();
+        let (mut col_sql, mut col_params) = PgScriptColumnBuilder::build_column(column);
+        let compare = value_filter.get_compare();
+        let value = value_filter.get_value();
+        let ignore = value_filter.get_ignore_null();
+        match compare {
+            crate::RdbcCompareType::Eq => {
+                if let Some(v) = value {
+                    if (v.is_null() && !ignore) || !v.is_null() {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        col_sql = format!("{} = #{{{}}}", col_sql, col_id.clone());
+                        col_params.insert(col_id, v.clone());
+                    }
+                } else {
+                    if !ignore {
+                        col_sql = format!("{} IS NULL", col_sql);
+                    }
+                }
+            }
+            crate::RdbcCompareType::NotEq => {
+                if let Some(v) = value {
+                    if (v.is_null() && !ignore) || !v.is_null() {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        col_sql = format!("{} != #{{{}}}", col_sql, col_id.clone());
+                        col_params.insert(col_id, v.clone());
+                    }
+                } else {
+                    if !ignore {
+                        col_sql = format!("{} IS NOT NULL", col_sql);
+                    }
+                }
+            }
+            crate::RdbcCompareType::Gt => {
+                if let Some(v) = value {
+                    if (v.is_null() && !ignore) || !v.is_null() {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        col_sql = format!("{} > #{{{}}}", col_sql, col_id.clone());
+                        col_params.insert(col_id, v.clone());
+                    }
+                } else {
+                    if !ignore {
+                        col_sql = format!("{} IS NULL", col_sql);
+                    }
+                }
+            }
+            crate::RdbcCompareType::GtEq => {
+                if let Some(v) = value {
+                    if (v.is_null() && !ignore) || !v.is_null() {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        col_sql = format!("{} >= #{{{}}}", col_sql, col_id.clone());
+                        col_params.insert(col_id, v.clone());
+                    }
+                } else {
+                    if !ignore {
+                        col_sql = format!("{} IS NULL", col_sql);
+                    }
+                }
+            }
+            crate::RdbcCompareType::Lt => {
+                if let Some(v) = value {
+                    if (v.is_null() && !ignore) || !v.is_null() {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        col_sql = format!("{} < #{{{}}}", col_sql, col_id.clone());
+                        col_params.insert(col_id, v.clone());
+                    }
+                } else {
+                    if !ignore {
+                        col_sql = format!("{} IS NULL", col_sql);
+                    }
+                }
+            }
+            crate::RdbcCompareType::LtEq => {
+                if let Some(v) = value {
+                    if (v.is_null() && !ignore) || !v.is_null() {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        col_sql = format!("{} <= #{{{}}}", col_sql, col_id.clone());
+                        col_params.insert(col_id, v.clone());
+                    }
+                } else {
+                    if !ignore {
+                        col_sql = format!("{} IS NULL", col_sql);
+                    }
+                }
+            }
+            crate::RdbcCompareType::Like => {
+                if let Some(v) = value {
+                    if (v.is_null() && !ignore) || !v.is_null() {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        col_sql =
+                            format!("{} LIKE CONCAT('%','#{{{}}}','%')", col_sql, col_id.clone());
+                        col_params.insert(col_id, v.clone());
+                    }
+                } else {
+                    if !ignore {
+                        col_sql = format!("{} IS NULL", col_sql);
+                    }
+                }
+            }
+            crate::RdbcCompareType::LikeLeft => {
+                if let Some(v) = value {
+                    if (v.is_null() && !ignore) || !v.is_null() {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        col_sql = format!("{} LIKE CONCAT('#{{{}}}','%')", col_sql, col_id.clone());
+                        col_params.insert(col_id, v.clone());
+                    }
+                } else {
+                    if !ignore {
+                        col_sql = format!("{} IS NULL", col_sql);
+                    }
+                }
+            }
+            crate::RdbcCompareType::LikeRight => {
+                if let Some(v) = value {
+                    if (v.is_null() && !ignore) || !v.is_null() {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        col_sql = format!("{} LIKE CONCAT('%','#{{{}}}')", col_sql, col_id.clone());
+                        col_params.insert(col_id, v.clone());
+                    }
+                } else {
+                    if !ignore {
+                        col_sql = format!("{} IS NULL", col_sql);
+                    }
+                }
+            }
+            crate::RdbcCompareType::NotLike => {
+                if let Some(v) = value {
+                    if (v.is_null() && !ignore) || !v.is_null() {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        col_sql = format!(
+                            "{} NOT LIKE CONCAT('%','#{{{}}}','%')",
+                            col_sql,
+                            col_id.clone()
+                        );
+                        col_params.insert(col_id, v.clone());
+                    }
+                } else {
+                    if !ignore {
+                        col_sql = format!("{} IS NOT NULL", col_sql);
+                    }
+                }
+            }
+            crate::RdbcCompareType::NotLikeLeft => {
+                if let Some(v) = value {
+                    if (v.is_null() && !ignore) || !v.is_null() {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        col_sql =
+                            format!("{} NOT LIKE CONCAT('#{{{}}}','%')", col_sql, col_id.clone());
+                        col_params.insert(col_id, v.clone());
+                    }
+                } else {
+                    if !ignore {
+                        col_sql = format!("{} IS NOT NULL", col_sql);
+                    }
+                }
+            }
+            crate::RdbcCompareType::NotLikeRight => {
+                if let Some(v) = value {
+                    if (v.is_null() && !ignore) || !v.is_null() {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        col_sql =
+                            format!("{} NOT LIKE CONCAT('%','#{{{}}}')", col_sql, col_id.clone());
+                        col_params.insert(col_id, v.clone());
+                    }
+                } else {
+                    if !ignore {
+                        col_sql = format!("{} IS NOT NULL", col_sql);
+                    }
+                }
+            }
+            crate::RdbcCompareType::In => {
+                if let Some(v) = value {
+                    if (v.is_null() && !ignore) || !v.is_null() {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        col_sql = format!("{} ANY (#{{{}}})", col_sql, col_id.clone());
+
+                        col_params.insert(col_id, RdbcValue::Vec(v.convert_to_vec()));
+                    }
+                } else {
+                    if !ignore {
+                        col_sql = format!("{} IS NULL", col_sql);
+                    }
+                }
+            }
+            crate::RdbcCompareType::NotIn => {
+                if let Some(v) = value {
+                    if (v.is_null() && !ignore) || !v.is_null() {
+                        let col_id = Uuid::new_v4().simple().to_string();
+                        col_sql = format!("{} NOT ANY (#{{{}}})", col_sql, col_id.clone());
+
+                        col_params.insert(col_id, RdbcValue::Vec(v.convert_to_vec()));
+                    }
+                } else {
+                    if !ignore {
+                        col_sql = format!("{} IS NOT NULL", col_sql);
+                    }
+                }
+            }
+            crate::RdbcCompareType::IsNull => {
+                col_sql = format!("{} IS NULL", col_sql);
+            }
+            crate::RdbcCompareType::IsNotNull => {
+                col_sql = format!("{} IS NOT NULL", col_sql);
+            }
+            crate::RdbcCompareType::Exists => {
+                let col_id = Uuid::new_v4().simple().to_string();
+                col_sql = format!("{} EXISTS (${{{}}})", col_id, col_sql);
+            }
+            crate::RdbcCompareType::NotExists => {
+                let col_id = Uuid::new_v4().simple().to_string();
+                col_sql = format!("{} NOT EXISTS (${{{}}})", col_id, col_sql);
+            }
+            crate::RdbcCompareType::Between => {
+                if let Some(v) = value {
+                    if (v.is_null() && !ignore) || !v.is_null() {
+                        let col_id_start = Uuid::new_v4().simple().to_string();
+                        let col_id_end = Uuid::new_v4().simple().to_string();
+                        let col_value = v.convert_to_vec();
+                        if col_value.len().clone() >= 2 {
+                            col_sql = format!(
+                                "{} BETWEEN #{{{}}} AND #{{{}}} ",
+                                col_sql,
+                                col_id_start.clone(),
+                                col_id_end.clone()
+                            );
+                            col_params.insert(col_id_start, col_value[0].clone());
+                            col_params.insert(col_id_end, col_value[1].clone());
+                        } else if col_value.len().clone() == 1 {
+                            col_sql = format!("{} BETWEEN #{{{}}} ", col_sql, col_id_start.clone());
+                            col_params.insert(col_id_start, col_value[0].clone());
+                        } else {
+                            col_sql = format!("{} BETWEEN  ", col_sql);
+                        }
+                    }
+                } else {
+                    if !ignore {
+                        col_sql = format!("{} IS  NULL", col_sql);
+                    }
+                }
+            }
+            crate::RdbcCompareType::NotBetween => {
+                if let Some(v) = value {
+                    if (v.is_null() && !ignore) || !v.is_null() {
+                        let col_id_start = Uuid::new_v4().simple().to_string();
+                        let col_id_end = Uuid::new_v4().simple().to_string();
+                        let col_value = v.convert_to_vec();
+                        if col_value.len().clone() >= 2 {
+                            col_sql = format!(
+                                "{} NOT BETWEEN #{{{}}} AND #{{{}}} ",
+                                col_sql,
+                                col_id_start.clone(),
+                                col_id_end.clone()
+                            );
+                            col_params.insert(col_id_start, col_value[0].clone());
+                            col_params.insert(col_id_end, col_value[1].clone());
+                        } else if col_value.len().clone() == 1 {
+                            col_sql =
+                                format!("{} NOT BETWEEN #{{{}}} ", col_sql, col_id_start.clone());
+                            col_params.insert(col_id_start, col_value[0].clone());
+                        } else {
+                            col_sql = format!("{} NOT BETWEEN  ", col_sql);
+                        }
+                    }
+                } else {
+                    if !ignore {
+                        col_sql = format!("{} IS NOT NULL", col_sql);
+                    }
+                }
+            }
+        }
+        (col_sql, col_params)
+    }
+
+    fn build_filter_column_item(
+        filter_column: &crate::RdbcColumnFilterItem,
+    ) -> (String, HashMap<String, RdbcValue>) {
+        let (filter_sql, mut filter_params) =
+            PgScriptColumnBuilder::build_column(filter_column.get_column());
+        let compare = filter_column.get_compare().name();
+        if let Some(v) = filter_column.get_value() {
+            let (value_sql, value_params) = PgScriptColumnBuilder::build_column(v);
+            filter_params.extend(value_params);
+            (
+                format!("{} {} {}", filter_sql, compare, value_sql),
+                filter_params,
+            )
+        } else {
+            (format!("{} {} {}", filter_sql, compare, ""), filter_params)
+        }
+    }
+
+    fn build_filter_table_item(
+        filter_value: &RdbcTableFilterImpl,
+    ) -> (String, HashMap<String, RdbcValue>) {
+        let (filter_sql, filter_params) = Self::build_filter(Some(filter_value));
+        (format!("({})", filter_sql), filter_params)
+    }
+
+    fn build_filter_query_item(
+        query_filter: &crate::RdbcQueryFilterItem,
+    ) -> (String, HashMap<String, RdbcValue>) {
+        let (filter_sql, mut filter_params) =
+            PgScriptColumnBuilder::build_column(query_filter.get_column());
+        let compare = query_filter.get_compare().name();
+        if let Some(query) = query_filter.get_value() {
+            let (query_sql, query_params) = PgScriptBuilder::build_query(query);
+            filter_params.extend(query_params);
+            (
+                format!("{} {} ({})", filter_sql, compare, query_sql),
+                filter_params,
+            )
+        } else {
+            (format!("{} {} {}", filter_sql, compare, ""), filter_params)
+        }
     }
 }
 
@@ -418,8 +1101,7 @@ impl PgScriptFucBuilder {
 
     fn build_replace(func_column: &crate::RdbcReplaceFunc) -> (String, HashMap<String, RdbcValue>) {
         let column = func_column.get_column();
-        let (column_sql, column_params) =
-            PgScriptColumnBuilder::build_column(PgScriptColumnBuilder::build_table_column(column));
+        let (column_sql, column_params) = PgScriptColumnBuilder::build_table_column(column);
         let old_value = func_column.get_old_value();
         let new_value = func_column.get_new_value();
         (
@@ -533,8 +1215,33 @@ impl PgScriptValueBuilder {
     }
 }
 
-struct PgSQLBuilder;
-impl PgSQLBuilder {}
-
-struct PgRawSqlBuilder;
-impl PgRawSqlBuilder {}
+struct PgRawValueBuilder;
+impl PgRawValueBuilder {
+    pub fn raw_value(value: &RdbcValue) -> String {
+        let value_index = match value {
+            RdbcValue::Int(v) => v.to_string(),
+            RdbcValue::BigInt(v) => v.to_string(),
+            RdbcValue::Float(v) => v.to_string(),
+            RdbcValue::BigFloat(v) => v.to_string(),
+            RdbcValue::String(v) => format!("'{}'", v),
+            RdbcValue::DateTime(v) => v.to_string(),
+            RdbcValue::Bool(v) => v.to_string(),
+            RdbcValue::Vec(v) => {
+                let mut v_vec: Vec<String> = vec![];
+                for item in v {
+                    v_vec.push(PgRawValueBuilder::raw_value(item));
+                }
+                v_vec.join(",")
+            }
+            RdbcValue::Map(v) => {
+                let mut v_vec: Vec<String> = vec![];
+                for item in v.values() {
+                    v_vec.push(PgRawValueBuilder::raw_value(item));
+                }
+                v_vec.join(",")
+            }
+            RdbcValue::Null => " NULL ".to_string(),
+        };
+        value_index
+    }
+}

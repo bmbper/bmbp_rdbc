@@ -1,6 +1,6 @@
+use chrono::Utc;
 use std::collections::HashMap;
 use std::fmt::Display;
-use chrono::Utc;
 
 #[derive(Debug, Clone)]
 pub enum RdbcValue {
@@ -27,10 +27,8 @@ impl RdbcValue {
             RdbcValue::DateTime(i) => i.to_string(),
             RdbcValue::Bool(i) => i.to_string(),
             RdbcValue::Null => "".to_string(),
-            RdbcValue::Vec(v) => {
-                "".to_string()
-            }
-            RdbcValue::Map(v) => { "".to_string() }
+            RdbcValue::Vec(v) => "".to_string(),
+            RdbcValue::Map(v) => "".to_string(),
         }
     }
     pub fn get_isize(&self) -> Option<isize> {
@@ -49,6 +47,61 @@ impl RdbcValue {
             RdbcValue::Float(i) => Some(i.clone() as usize),
             RdbcValue::BigFloat(i) => Some(i.clone() as usize),
             _ => None,
+        }
+    }
+    pub fn is_null(&self) -> bool {
+        match self {
+            RdbcValue::Null => true,
+            _ => false,
+        }
+    }
+    pub fn is_vec(&self) -> bool {
+        match self {
+            RdbcValue::Vec(v) => true,
+            _ => false,
+        }
+    }
+    pub fn is_map(&self) -> bool {
+        match self {
+            RdbcValue::Map(v) => true,
+            _ => false,
+        }
+    }
+
+    pub fn convert_to_vec(&self) -> Vec<RdbcValue> {
+        match self {
+            RdbcValue::Int(_) => {
+                vec![self.clone()]
+            }
+            RdbcValue::BigInt(_) => {
+                vec![self.clone()]
+            }
+            RdbcValue::Float(_) => {
+                vec![self.clone()]
+            }
+            RdbcValue::BigFloat(_) => {
+                vec![self.clone()]
+            }
+            RdbcValue::String(_) => {
+                vec![self.clone()]
+            }
+            RdbcValue::DateTime(_) => {
+                vec![self.clone()]
+            }
+            RdbcValue::Bool(_) => {
+                vec![self.clone()]
+            }
+            RdbcValue::Vec(v) => v.clone(),
+            RdbcValue::Map(mv) => {
+                let mut v_vec = vec![];
+                for v in mv.values() {
+                    v_vec.push(v.clone());
+                }
+                v_vec
+            }
+            RdbcValue::Null => {
+                vec![]
+            }
         }
     }
 }
@@ -267,7 +320,6 @@ impl From<&str> for RdbcValue {
     }
 }
 
-
 impl From<&RdbcValue> for String {
     fn from(value: &RdbcValue) -> Self {
         value.get_string()
@@ -286,7 +338,7 @@ impl From<&RdbcValue> for bool {
             RdbcValue::DateTime(_) => false,
             RdbcValue::Null => false,
             RdbcValue::Vec(v) => v.is_empty(),
-            RdbcValue::Map(v) => v.is_empty()
+            RdbcValue::Map(v) => v.is_empty(),
         }
     }
 }
@@ -649,4 +701,3 @@ impl From<&RdbcValue> for Option<String> {
         }
     }
 }
-

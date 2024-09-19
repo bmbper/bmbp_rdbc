@@ -12,7 +12,10 @@ pub trait RdbcIdent {
     }
 }
 
-impl<T> RdbcIdent for T where T: ToString {
+impl<T> RdbcIdent for T
+where
+    T: ToString,
+{
     fn get_ident(&self) -> String {
         return self.to_string();
     }
@@ -26,7 +29,7 @@ pub trait RdbcTable {
         "".to_string()
     }
     fn get_union_key() -> Vec<impl RdbcIdent> {
-        let v:Vec<String> = vec![];
+        let v: Vec<String> = vec![];
         v
     }
 }

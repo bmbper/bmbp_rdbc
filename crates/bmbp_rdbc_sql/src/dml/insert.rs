@@ -2,9 +2,7 @@ use std::sync::RwLock;
 
 use bmbp_rdbc_type::RdbcDataBase;
 
-use crate::{
-    QueryWrapper, RdbcDmlValue, RdbcTableColumn, RdbcTableInner, RdbcTableWrapper,
-};
+use crate::{QueryWrapper, RdbcDmlValue, RdbcTableColumn, RdbcTableInner, RdbcTableWrapper};
 
 pub struct InsertWrapper {
     driver_: RwLock<Option<RdbcDataBase>>,
@@ -56,9 +54,9 @@ impl InsertWrapper {
         self
     }
 
-    pub fn insert_column<TC>(&mut self, column: TC) -> &mut Self
+    pub fn insert_column<RC>(&mut self, column: RC) -> &mut Self
     where
-        RdbcTableColumn: From<TC>,
+        RdbcTableColumn: From<RC>,
     {
         self.column_.push(RdbcTableColumn::from(column));
         self
@@ -71,9 +69,9 @@ impl InsertWrapper {
         self
     }
 
-    pub fn insert_column_value<TC, RV>(&mut self, column: TC, value: RV) -> &mut Self
+    pub fn insert_column_value<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
     where
-        RdbcTableColumn: From<TC>,
+        RdbcTableColumn: From<RC>,
         RdbcDmlValue: From<RV>,
     {
         self.column_values
@@ -92,4 +90,3 @@ impl RdbcTableWrapper for InsertWrapper {
         self.join_.as_mut().unwrap()
     }
 }
-

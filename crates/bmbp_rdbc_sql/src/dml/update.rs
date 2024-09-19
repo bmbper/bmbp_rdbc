@@ -1,10 +1,10 @@
+use bmbp_rdbc_type::{RdbcDataBase, RdbcValue};
 use std::collections::HashMap;
 use std::sync::RwLock;
-use bmbp_rdbc_type::{RdbcDataBase, RdbcValue};
 
 use crate::{
-     RdbcColumn, RdbcConcatType, RdbcDmlValue, RdbcTableFilter, RdbcTableFilterImpl, RdbcOrder,
-     RdbcTableWrapper, RdbcTableInner,
+    RdbcColumn, RdbcConcatType, RdbcDmlValue, RdbcOrder, RdbcTableFilter, RdbcTableFilterImpl,
+    RdbcTableInner, RdbcTableWrapper,
 };
 
 pub struct UpdateWrapper {
@@ -62,11 +62,11 @@ impl UpdateWrapper {
     pub fn get_order(&self) -> Option<&Vec<RdbcOrder>> {
         self.order_.as_ref()
     }
-    pub fn get_limit(&self) -> Option<u64> {
-        self.limit_
+    pub fn get_limit(&self) -> Option<&u64> {
+        self.limit_.as_ref()
     }
-    pub fn get_offset(&self) -> Option<u64> {
-        self.offset_
+    pub fn get_offset(&self) -> Option<&u64> {
+        self.offset_.as_ref()
     }
 }
 

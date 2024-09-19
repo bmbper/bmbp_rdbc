@@ -1,8 +1,11 @@
+use bmbp_rdbc_type::{RdbcDataBase, RdbcIdent, RdbcTable, RdbcValue};
 use std::collections::HashMap;
 use std::sync::RwLock;
-use bmbp_rdbc_type::{RdbcDataBase, RdbcIdent, RdbcTable, RdbcValue};
 
-use crate::{RdbcColumn, RdbcColumnOrder, RdbcConcatType, RdbcTableFilter, RdbcTableFilterImpl, RdbcOrder,  RdbcTableWrapper, RdbcTableInner, RdbcValueColumn};
+use crate::{
+    RdbcColumn, RdbcColumnOrder, RdbcConcatType, RdbcOrder, RdbcTableFilter, RdbcTableFilterImpl,
+    RdbcTableInner, RdbcTableWrapper, RdbcValueColumn,
+};
 
 pub struct QueryWrapper {
     driver_: RwLock<Option<RdbcDataBase>>,
@@ -17,6 +20,7 @@ pub struct QueryWrapper {
     offset_: Option<u64>,
     union_all: Option<Vec<QueryWrapper>>,
     union_only: Option<Vec<QueryWrapper>>,
+    distinct_: bool,
     params_: Option<HashMap<String, RdbcValue>>,
 }
 
@@ -37,10 +41,14 @@ impl QueryWrapper {
             union_all: None,
             union_only: None,
             params_: None,
+            distinct_: false,
         };
         query
     }
-    pub fn new_from<T>() -> QueryWrapper where T: RdbcTable {
+    pub fn new_from<T>() -> QueryWrapper
+    where
+        T: RdbcTable,
+    {
         let mut query = QueryWrapper::new();
         query.table(T::get_table().get_ident());
         for item in T::get_columns() {
@@ -96,25 +104,41 @@ impl QueryWrapper {
     pub fn get_union_only(&self) -> Option<&Vec<QueryWrapper>> {
         self.union_only.as_ref()
     }
+    pub fn get_distinct(&self) -> bool {
+        self.distinct_.clone()
+    }
+    pub fn get_mut_params(&mut self) -> &mut HashMap<String, RdbcValue> {
+        if self.params_.is_none() {
+            self.params_ = Some(HashMap::new());
+        }
+        return self.params_.as_mut().unwrap();
+    }
 }
 
 impl QueryWrapper {
-    pub fn column<C>(&mut self, column: C) -> &mut Self where C: RdbcIdent {
+    pub fn set_distinct(&mut self, distinct: bool) -> &mut Self {
+        self.distinct_ = distinct;
+        self
+    }
+    pub fn column<C>(&mut self, column: C) -> &mut Self
+    where
+        C: RdbcIdent,
+    {
         self.select(column.get_ident());
         self
     }
 
     // RdbcColumn: From<RC>, RdbcValue: From<RV>, SS: ToString, ST: ToString, SC: ToString, SA: ToString
     pub fn select<RC>(&mut self, column: RC) -> &mut Self
-        where
-            RdbcColumn: From<RC>,
+    where
+        RdbcColumn: From<RC>,
     {
         self.select_.push(RdbcColumn::from(column));
         self
     }
     pub fn select_vec<RC>(&mut self, columns: Vec<RC>) -> &mut Self
-        where
-            RdbcColumn: From<RC>,
+    where
+        RdbcColumn: From<RC>,
     {
         for column in columns {
             self.select(column);
@@ -122,9 +146,9 @@ impl QueryWrapper {
         self
     }
     pub fn select_table_column<ST, SC>(&mut self, table: ST, column: SC) -> &mut Self
-        where
-            SC: ToString,
-            ST: ToString,
+    where
+        SC: ToString,
+        ST: ToString,
     {
         self.select_.push(RdbcColumn::table_column(table, column));
         self
@@ -135,10 +159,10 @@ impl QueryWrapper {
         column: SC,
         alias: SA,
     ) -> &mut Self
-        where
-            ST: ToString,
-            SC: ToString,
-            SA: ToString,
+    where
+        ST: ToString,
+        SC: ToString,
+        SA: ToString,
     {
         self.select_
             .push(RdbcColumn::table_column_as_alias(table, column, alias));
@@ -150,10 +174,10 @@ impl QueryWrapper {
         table: ST,
         column: SC,
     ) -> &mut Self
-        where
-            SS: ToString,
-            ST: ToString,
-            SC: ToString,
+    where
+        SS: ToString,
+        ST: ToString,
+        SC: ToString,
     {
         self.select_
             .push(RdbcColumn::schema_table_column(schema, table, column));
@@ -166,11 +190,11 @@ impl QueryWrapper {
         column: SC,
         alias: SA,
     ) -> &mut Self
-        where
-            SS: ToString,
-            ST: ToString,
-            SC: ToString,
-            SA: ToString,
+    where
+        SS: ToString,
+        ST: ToString,
+        SC: ToString,
+        SA: ToString,
     {
         self.select_.push(RdbcColumn::schema_table_column_as_alias(
             schema, table, column, alias,
@@ -178,8 +202,8 @@ impl QueryWrapper {
         self
     }
     pub fn select_value<RV>(&mut self, column: RV) -> &mut Self
-        where
-            RdbcValue: From<RV>,
+    where
+        RdbcValue: From<RV>,
     {
         self.select_
             .push(RdbcColumn::Value(RdbcValueColumn::rdbc_value(
@@ -187,10 +211,22 @@ impl QueryWrapper {
             )));
         self
     }
+    pub fn select_value_alias<RV, RA>(&mut self, column: RV, alias: RA) -> &mut Self
+    where
+        RdbcValue: From<RV>,
+        RA: RdbcIdent,
+    {
+        self.select_
+            .push(RdbcColumn::Value(RdbcValueColumn::rdbc_value_alias(
+                RdbcValue::from(column),
+                alias.get_ident(),
+            )));
+        self
+    }
 
     pub fn order_by<SC>(&mut self, column: SC, is_asc: bool) -> &mut Self
-        where
-            RdbcColumn: From<SC>,
+    where
+        RdbcColumn: From<SC>,
     {
         self.init_order();
         let order = match is_asc {
@@ -201,8 +237,8 @@ impl QueryWrapper {
         self
     }
     pub fn order_asc<SC>(&mut self, column: SC) -> &mut Self
-        where
-            RdbcColumn: From<SC>,
+    where
+        RdbcColumn: From<SC>,
     {
         self.init_order();
         self.order_
@@ -212,8 +248,8 @@ impl QueryWrapper {
         self
     }
     pub fn order_desc<SC>(&mut self, column: SC) -> &mut Self
-        where
-            RdbcColumn: From<SC>,
+    where
+        RdbcColumn: From<SC>,
     {
         self.init_order();
         self.order_
@@ -223,20 +259,23 @@ impl QueryWrapper {
         self
     }
     pub fn order_slice<SC>(&mut self, column: &[SC], is_asc: bool) -> &mut Self
-        where
-            SC: ToString,
+    where
+        SC: RdbcIdent,
     {
+        for item in column {
+            self.order_by(RdbcColumn::from(item.get_ident()), is_asc);
+        }
         self
     }
     pub fn order_slice_asc<SC>(&mut self, column: &[SC]) -> &mut Self
-        where
-            SC: ToString,
+    where
+        SC: ToString,
     {
         self
     }
     pub fn order_slice_desc<SC>(&mut self, column: &[SC]) -> &mut Self
-        where
-            SC: ToString,
+    where
+        SC: ToString,
     {
         self
     }
@@ -268,8 +307,8 @@ impl QueryWrapper {
         self
     }
     pub fn group_by<RC>(&mut self, column: RC) -> &mut Self
-        where
-            RdbcColumn: From<RC>,
+    where
+        RdbcColumn: From<RC>,
     {
         self
     }
