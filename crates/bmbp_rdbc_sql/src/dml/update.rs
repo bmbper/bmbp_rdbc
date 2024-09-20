@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::sync::RwLock;
 
 use crate::{
-    RdbcColumn, RdbcConcatType, RdbcDmlValue, RdbcOrder, RdbcTableFilter, RdbcTableFilterImpl,
+    RdbcColumn, RdbcConcatType, RdbcDmlValue, RdbcOrder, RdbcTableFilter, QueryFilter,
     RdbcTableInner, RdbcTableWrapper,
 };
 
@@ -12,9 +12,9 @@ pub struct UpdateWrapper {
     set_values_: Vec<(RdbcColumn, Option<RdbcDmlValue>)>,
     table_: Vec<RdbcTableInner>,
     join_: Option<Vec<RdbcTableInner>>,
-    filter_: Option<RdbcTableFilterImpl>,
+    filter_: Option<QueryFilter>,
     group_by_: Option<Vec<RdbcColumn>>,
-    having_: Option<RdbcTableFilterImpl>,
+    having_: Option<QueryFilter>,
     order_: Option<Vec<RdbcOrder>>,
     limit_: Option<u64>,
     offset_: Option<u64>,
@@ -50,13 +50,13 @@ impl UpdateWrapper {
     pub fn get_join(&self) -> Option<&Vec<RdbcTableInner>> {
         self.join_.as_ref()
     }
-    pub fn get_filter(&self) -> Option<&RdbcTableFilterImpl> {
+    pub fn get_filter(&self) -> Option<&QueryFilter> {
         self.filter_.as_ref()
     }
     pub fn get_group_by(&self) -> Option<&Vec<RdbcColumn>> {
         self.group_by_.as_ref()
     }
-    pub fn get_having(&self) -> Option<&RdbcTableFilterImpl> {
+    pub fn get_having(&self) -> Option<&QueryFilter> {
         self.having_.as_ref()
     }
     pub fn get_order(&self) -> Option<&Vec<RdbcOrder>> {
@@ -67,6 +67,9 @@ impl UpdateWrapper {
     }
     pub fn get_offset(&self) -> Option<&u64> {
         self.offset_.as_ref()
+    }
+    pub fn get_params_mut(&mut self) -> Option<&mut HashMap<String, RdbcValue>> {
+        self.params_.as_mut()
     }
 }
 
@@ -97,20 +100,20 @@ impl RdbcTableWrapper for UpdateWrapper {
 impl RdbcTableFilter for UpdateWrapper {
     fn init_filter(&mut self) -> &mut Self {
         if self.filter_.is_none() {
-            self.filter_ = Some(RdbcTableFilterImpl::new());
+            self.filter_ = Some(QueryFilter::new());
         }
         self
     }
-    fn get_filter_mut(&mut self) -> &mut RdbcTableFilterImpl {
+    fn get_filter_mut(&mut self) -> &mut QueryFilter {
         self.init_filter();
         self.filter_.as_mut().unwrap()
     }
     fn with_filter(&mut self, concat_type: RdbcConcatType) -> &mut Self {
         let filter_ = {
             if self.filter_.is_some() {
-                RdbcTableFilterImpl::concat_with_filter(concat_type, self.filter_.take().unwrap())
+                QueryFilter::concat_with_filter(concat_type, self.filter_.take().unwrap())
             } else {
-                RdbcTableFilterImpl::concat(concat_type)
+                QueryFilter::concat(concat_type)
             }
         };
         self.filter_ = Some(filter_);

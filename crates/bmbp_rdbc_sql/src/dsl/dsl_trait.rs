@@ -1,13 +1,15 @@
 use bmbp_rdbc_type::{RdbcIdent, RdbcValue};
 
-use crate::{QueryWrapper, RdbcColumn, RdbcConcatType, RdbcTableFilterImpl, RdbcTableInner};
+use crate::{QueryFilter, QueryWrapper, RdbcColumn, RdbcConcatType, RdbcTableInner};
+
+use super::RdbcTableJoinType;
 
 /// RdbcTableFilter query filter trait
 pub trait RdbcTableFilter {
     fn init_filter(&mut self) -> &mut Self;
-    fn get_filter_mut(&mut self) -> &mut RdbcTableFilterImpl;
+    fn get_filter_mut(&mut self) -> &mut QueryFilter;
     fn with_filter(&mut self, concat_type: RdbcConcatType) -> &mut Self;
-    fn add_filter(&mut self, filter: RdbcTableFilterImpl) -> &mut Self {
+    fn add_filter(&mut self, filter: QueryFilter) -> &mut Self {
         self.get_filter_mut().add_filter(filter);
         self
     }
@@ -379,12 +381,6 @@ pub trait RdbcTableWrapper {
         self
     }
 
-    fn on(&mut self) -> Option<&mut RdbcTableInner> {
-        None
-    }
-    fn on_index(&mut self, index: usize) -> Option<&mut RdbcTableInner> {
-        None
-    }
     fn join_table<T>(&mut self, table: T) -> &mut Self
     where
         T: RdbcIdent,
@@ -447,161 +443,288 @@ pub trait RdbcTableWrapper {
     }
     fn left_join_table<T>(&mut self, table: T) -> &mut Self
     where
-        T: ToString,
+        T: RdbcIdent,
     {
+        self.get_join_mut().push(RdbcTableInner::join_table(
+            table.get_ident(),
+            RdbcTableJoinType::Left,
+        ));
         self
     }
-    fn left_join_table_alias<T>(&mut self, table: T, alias: T) -> &mut Self
+    fn left_join_table_alias<T, A>(&mut self, table: T, alias: A) -> &mut Self
     where
-        T: ToString,
+        T: RdbcIdent,
+        A: RdbcIdent,
     {
+        self.get_join_mut().push(RdbcTableInner::join_table_alias(
+            table.get_ident(),
+            alias.get_ident(),
+            RdbcTableJoinType::Left,
+        ));
         self
     }
-    fn left_join_schema_table<T>(&mut self, schema: T, table: T) -> &mut Self
+    fn left_join_schema_table<S, T>(&mut self, schema: S, table: T) -> &mut Self
     where
-        T: ToString,
+        S: RdbcIdent,
+        T: RdbcIdent,
     {
+        self.get_join_mut().push(RdbcTableInner::join_schema_table(
+            schema.get_ident(),
+            table.get_ident(),
+            RdbcTableJoinType::Left,
+        ));
         self
     }
 
-    fn left_join_schema_table_alias<T>(&mut self, schema: T, table: T, alias: T) -> &mut Self
+    fn left_join_schema_table_alias<S, T, A>(&mut self, schema: S, table: T, alias: A) -> &mut Self
     where
-        T: ToString,
+        S: RdbcIdent,
+        T: RdbcIdent,
+        A: RdbcIdent,
     {
+        self.get_join_mut()
+            .push(RdbcTableInner::join_schema_table_alias(
+                schema.get_ident(),
+                table.get_ident(),
+                alias.get_ident(),
+                RdbcTableJoinType::Left,
+            ));
         self
     }
     fn left_join_temp_table(&mut self, table: QueryWrapper) -> &mut Self {
+        self.get_join_mut().push(RdbcTableInner::join_temp_table(
+            table,
+            RdbcTableJoinType::Left,
+        ));
         self
     }
     fn left_join_temp_table_alias<T>(&mut self, table: QueryWrapper, alias: T) -> &mut Self
     where
-        T: ToString,
+        T: RdbcIdent,
     {
-        self
-    }
-    fn left_join_rdbc_table<T>(&mut self, mut table: T) -> &mut Self
-    where
-        T: Into<RdbcTableInner>,
-    {
+        self.get_join_mut()
+            .push(RdbcTableInner::join_temp_table_alias(
+                table,
+                alias.get_ident(),
+                RdbcTableJoinType::Left,
+            ));
         self
     }
 
     fn right_join_table<T>(&mut self, table: T) -> &mut Self
     where
-        T: ToString,
+        T: RdbcIdent,
     {
+        self.get_join_mut().push(RdbcTableInner::join_table(
+            table.get_ident(),
+            RdbcTableJoinType::Right,
+        ));
         self
     }
-    fn right_join_table_alias<T>(&mut self, table: T, alias: T) -> &mut Self
+    fn right_join_table_alias<T, A>(&mut self, table: T, alias: A) -> &mut Self
     where
-        T: ToString,
+        T: RdbcIdent,
+        A: RdbcIdent,
     {
+        self.get_join_mut().push(RdbcTableInner::join_table_alias(
+            table.get_ident(),
+            alias.get_ident(),
+            RdbcTableJoinType::Right,
+        ));
         self
     }
-    fn right_join_schema_table<T>(&mut self, schema: T, table: T) -> &mut Self
+    fn right_join_schema_table<S, T>(&mut self, schema: S, table: T) -> &mut Self
     where
-        T: ToString,
+        S: RdbcIdent,
+        T: RdbcIdent,
     {
+        self.get_join_mut().push(RdbcTableInner::join_schema_table(
+            schema.get_ident(),
+            table.get_ident(),
+            RdbcTableJoinType::Right,
+        ));
         self
     }
-    fn right_join_schema_table_alias<T>(&mut self, schema: T, table: T, alias: T) -> &mut Self
+
+    fn right_join_schema_table_alias<S, T, A>(&mut self, schema: S, table: T, alias: A) -> &mut Self
     where
-        T: ToString,
+        S: RdbcIdent,
+        T: RdbcIdent,
+        A: RdbcIdent,
     {
+        self.get_join_mut()
+            .push(RdbcTableInner::join_schema_table_alias(
+                schema.get_ident(),
+                table.get_ident(),
+                alias.get_ident(),
+                RdbcTableJoinType::Right,
+            ));
         self
     }
     fn right_join_temp_table(&mut self, table: QueryWrapper) -> &mut Self {
+        self.get_join_mut().push(RdbcTableInner::join_temp_table(
+            table,
+            RdbcTableJoinType::Right,
+        ));
         self
     }
     fn right_join_temp_table_alias<T>(&mut self, table: QueryWrapper, alias: T) -> &mut Self
     where
-        T: ToString,
+        T: RdbcIdent,
     {
-        self
-    }
-    fn right_join_rdbc_table<T>(&mut self, mut table: T) -> &mut Self
-    where
-        T: Into<RdbcTableInner>,
-    {
+        self.get_join_mut()
+            .push(RdbcTableInner::join_temp_table_alias(
+                table,
+                alias.get_ident(),
+                RdbcTableJoinType::Right,
+            ));
         self
     }
 
     fn full_join_table<T>(&mut self, table: T) -> &mut Self
     where
-        T: ToString,
+        T: RdbcIdent,
     {
+        self.get_join_mut().push(RdbcTableInner::join_table(
+            table.get_ident(),
+            RdbcTableJoinType::Full,
+        ));
         self
     }
-    fn full_join_table_alias<T>(&mut self, table: T, alias: T) -> &mut Self
+    fn full_join_table_alias<T, A>(&mut self, table: T, alias: A) -> &mut Self
     where
-        T: ToString,
+        T: RdbcIdent,
+        A: RdbcIdent,
     {
+        self.get_join_mut().push(RdbcTableInner::join_table_alias(
+            table.get_ident(),
+            alias.get_ident(),
+            RdbcTableJoinType::Full,
+        ));
         self
     }
-    fn full_join_schema_table<T>(&mut self, schema: T, table: T) -> &mut Self
+    fn full_join_schema_table<S, T>(&mut self, schema: S, table: T) -> &mut Self
     where
-        T: ToString,
+        S: RdbcIdent,
+        T: RdbcIdent,
     {
+        self.get_join_mut().push(RdbcTableInner::join_schema_table(
+            schema.get_ident(),
+            table.get_ident(),
+            RdbcTableJoinType::Full,
+        ));
         self
     }
-    fn full_join_schema_table_alias<T>(&mut self, schema: T, table: T, alias: T) -> &mut Self
+
+    fn full_join_schema_table_alias<S, T, A>(&mut self, schema: S, table: T, alias: A) -> &mut Self
     where
-        T: ToString,
+        S: RdbcIdent,
+        T: RdbcIdent,
+        A: RdbcIdent,
     {
+        self.get_join_mut()
+            .push(RdbcTableInner::join_schema_table_alias(
+                schema.get_ident(),
+                table.get_ident(),
+                alias.get_ident(),
+                RdbcTableJoinType::Full,
+            ));
         self
     }
     fn full_join_temp_table(&mut self, table: QueryWrapper) -> &mut Self {
+        self.get_join_mut().push(RdbcTableInner::join_temp_table(
+            table,
+            RdbcTableJoinType::Full,
+        ));
         self
     }
     fn full_join_temp_table_alias<T>(&mut self, table: QueryWrapper, alias: T) -> &mut Self
     where
-        T: ToString,
+        T: RdbcIdent,
     {
+        self.get_join_mut()
+            .push(RdbcTableInner::join_temp_table_alias(
+                table,
+                alias.get_ident(),
+                RdbcTableJoinType::Full,
+            ));
         self
     }
-    fn full_join_rdbc_table<T>(&mut self, mut table: T) -> &mut Self
-    where
-        T: Into<RdbcTableInner>,
-    {
-        self
-    }
+
     fn inner_join_table<T>(&mut self, table: T) -> &mut Self
     where
-        T: ToString,
+        T: RdbcIdent,
     {
+        self.get_join_mut().push(RdbcTableInner::join_table(
+            table.get_ident(),
+            RdbcTableJoinType::Inner,
+        ));
         self
     }
-    fn inner_join_table_alias<T>(&mut self, table: T, alias: T) -> &mut Self
+    fn inner_join_table_alias<T, A>(&mut self, table: T, alias: A) -> &mut Self
     where
-        T: ToString,
+        T: RdbcIdent,
+        A: RdbcIdent,
     {
+        self.get_join_mut().push(RdbcTableInner::join_table_alias(
+            table.get_ident(),
+            alias.get_ident(),
+            RdbcTableJoinType::Inner,
+        ));
         self
     }
-    fn inner_join_schema_table<T>(&mut self, schema: T, table: T) -> &mut Self
+    fn inner_join_schema_table<S, T>(&mut self, schema: S, table: T) -> &mut Self
     where
-        T: ToString,
+        S: RdbcIdent,
+        T: RdbcIdent,
     {
+        self.get_join_mut().push(RdbcTableInner::join_schema_table(
+            schema.get_ident(),
+            table.get_ident(),
+            RdbcTableJoinType::Inner,
+        ));
         self
     }
-    fn inner_join_schema_table_alias<T>(&mut self, schema: T, table: T, alias: T) -> &mut Self
+
+    fn inner_join_schema_table_alias<S, T, A>(&mut self, schema: S, table: T, alias: A) -> &mut Self
     where
-        T: ToString,
+        S: RdbcIdent,
+        T: RdbcIdent,
+        A: RdbcIdent,
     {
+        self.get_join_mut()
+            .push(RdbcTableInner::join_schema_table_alias(
+                schema.get_ident(),
+                table.get_ident(),
+                alias.get_ident(),
+                RdbcTableJoinType::Inner,
+            ));
         self
     }
     fn inner_join_temp_table(&mut self, table: QueryWrapper) -> &mut Self {
+        self.get_join_mut().push(RdbcTableInner::join_temp_table(
+            table,
+            RdbcTableJoinType::Inner,
+        ));
         self
     }
-    fn inner_join_temp_table_as_alias<T>(&mut self, table: QueryWrapper, alias: T) -> &mut Self
+    fn inner_join_temp_table_alias<T>(&mut self, table: QueryWrapper, alias: T) -> &mut Self
     where
-        T: ToString,
+        T: RdbcIdent,
     {
+        self.get_join_mut()
+            .push(RdbcTableInner::join_temp_table_alias(
+                table,
+                alias.get_ident(),
+                RdbcTableJoinType::Inner,
+            ));
         self
     }
-    fn inner_join_rdbc_table<T>(&mut self, mut table: T) -> &mut Self
-    where
-        T: Into<RdbcTableInner>,
-    {
-        self
+
+    fn on(&mut self) -> &mut QueryFilter {
+        let join_vec = self.get_join_mut();
+        let len = join_vec.len();
+        let join_table = join_vec.get_mut(len - 1).unwrap();
+        join_table.get_filter_mut()
     }
 }

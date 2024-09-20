@@ -1,8 +1,8 @@
 use crate::build::types::RdbcSQLBuilder;
 use crate::{
-    DeleteWrapper, InsertWrapper, QueryWrapper, RdbcColumn, RdbcFunc, RdbcFuncColumn, RdbcOrder,
-    RdbcOrderType, RdbcQueryColumn, RdbcQueryTable, RdbcSchemaTable, RdbcTableColumn,
-    RdbcTableFilterImpl, RdbcTableInner, RdbcTableJoinType, RdbcValueColumn, UpdateWrapper,
+    DeleteWrapper, InsertWrapper, QueryFilter, QueryWrapper, RdbcColumn, RdbcFunc, RdbcFuncColumn,
+    RdbcOrder, RdbcOrderType, RdbcQueryColumn, RdbcQueryTable, RdbcSchemaTable, RdbcTableColumn,
+    RdbcTableInner, RdbcTableJoinType, RdbcValueColumn, UpdateWrapper,
 };
 use bmbp_rdbc_type::RdbcValue;
 use std::collections::HashMap;
@@ -236,7 +236,7 @@ impl PgScriptBuilder {
     fn build_table_join(from_tables: &Vec<RdbcTableInner>) -> (String, HashMap<String, RdbcValue>) {
         PgScriptTableBuilder::build_table(from_tables)
     }
-    fn build_filter(filter: Option<&RdbcTableFilterImpl>) -> (String, HashMap<String, RdbcValue>) {
+    fn build_filter(filter: Option<&QueryFilter>) -> (String, HashMap<String, RdbcValue>) {
         let (mut filter_sql, filter_params) = PgScriptFilterBuilder::build_filter(filter);
         if !filter_sql.is_empty() {
             filter_sql = format!(" WHERE {}", filter_sql);
@@ -250,7 +250,7 @@ impl PgScriptBuilder {
         }
         (group_sql, group_params)
     }
-    fn build_having(having: Option<&RdbcTableFilterImpl>) -> (String, HashMap<String, RdbcValue>) {
+    fn build_having(having: Option<&QueryFilter>) -> (String, HashMap<String, RdbcValue>) {
         let (mut having_sql, having_params) = PgScriptHavingBuilder::build_having(having);
         if !having_sql.is_empty() {
             having_sql = format!(" HAVING {}", having_sql);
@@ -655,9 +655,7 @@ impl PgScriptTableBuilder {
 
 struct PgScriptFilterBuilder;
 impl PgScriptFilterBuilder {
-    fn build_filter(
-        filter_op: Option<&RdbcTableFilterImpl>,
-    ) -> (String, HashMap<String, RdbcValue>) {
+    fn build_filter(filter_op: Option<&QueryFilter>) -> (String, HashMap<String, RdbcValue>) {
         if filter_op.is_none() {
             return ("".to_string(), HashMap::new());
         }
@@ -684,13 +682,13 @@ impl PgScriptFilterBuilder {
     }
 
     fn build_filter_item(
-        filter_item: &crate::RdbcFilterItem,
+        filter_item: &crate::QueryFilterItem,
     ) -> (String, HashMap<String, RdbcValue>) {
         match filter_item {
-            crate::RdbcFilterItem::Value(v) => Self::build_filter_value_item(v),
-            crate::RdbcFilterItem::Column(v) => Self::build_filter_column_item(v),
-            crate::RdbcFilterItem::Filter(v) => Self::build_filter_table_item(v),
-            crate::RdbcFilterItem::Query(v) => Self::build_filter_query_item(v),
+            crate::QueryFilterItem::Value(v) => Self::build_filter_value_item(v),
+            crate::QueryFilterItem::Column(v) => Self::build_filter_column_item(v),
+            crate::QueryFilterItem::Filter(v) => Self::build_filter_table_item(v),
+            crate::QueryFilterItem::Query(v) => Self::build_filter_query_item(v),
         }
     }
 
@@ -987,9 +985,7 @@ impl PgScriptFilterBuilder {
         }
     }
 
-    fn build_filter_table_item(
-        filter_value: &RdbcTableFilterImpl,
-    ) -> (String, HashMap<String, RdbcValue>) {
+    fn build_filter_table_item(filter_value: &QueryFilter) -> (String, HashMap<String, RdbcValue>) {
         let (filter_sql, filter_params) = Self::build_filter(Some(filter_value));
         (format!("({})", filter_sql), filter_params)
     }
@@ -1161,7 +1157,7 @@ impl PgScriptGroupBuilder {
 }
 struct PgScriptHavingBuilder;
 impl PgScriptHavingBuilder {
-    fn build_having(having: Option<&RdbcTableFilterImpl>) -> (String, HashMap<String, RdbcValue>) {
+    fn build_having(having: Option<&QueryFilter>) -> (String, HashMap<String, RdbcValue>) {
         let (mut having_sql, having_params) = PgScriptFilterBuilder::build_filter(having);
         if !having_sql.is_empty() {
             having_sql = format!("HAVING {}", having_sql);

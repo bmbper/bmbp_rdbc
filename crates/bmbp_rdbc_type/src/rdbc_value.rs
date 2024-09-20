@@ -27,8 +27,8 @@ impl RdbcValue {
             RdbcValue::DateTime(i) => i.to_string(),
             RdbcValue::Bool(i) => i.to_string(),
             RdbcValue::Null => "".to_string(),
-            RdbcValue::Vec(v) => "".to_string(),
-            RdbcValue::Map(v) => "".to_string(),
+            RdbcValue::Vec(_) => "".to_string(),
+            RdbcValue::Map(_) => "".to_string(),
         }
     }
     pub fn get_isize(&self) -> Option<isize> {
@@ -57,13 +57,13 @@ impl RdbcValue {
     }
     pub fn is_vec(&self) -> bool {
         match self {
-            RdbcValue::Vec(v) => true,
+            RdbcValue::Vec(_) => true,
             _ => false,
         }
     }
     pub fn is_map(&self) -> bool {
         match self {
-            RdbcValue::Map(v) => true,
+            RdbcValue::Map(_) => true,
             _ => false,
         }
     }

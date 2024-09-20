@@ -1,5 +1,5 @@
-use bmbp_rdbc_sql::RdbcTableWrapper;
 use bmbp_rdbc_sql::{PgRdbcSQLBuilder, QueryWrapper, RdbcTableFilter, SQLBuilder};
+use bmbp_rdbc_sql::{QueryFilter, RdbcTableWrapper};
 use bmbp_rdbc_type::{RdbcIdent, RdbcTable};
 use serde::Deserialize;
 use serde::Serialize;
@@ -395,6 +395,24 @@ fn test_query_select_join_table() {
     query_wrapper.schema_table("bmbp", BmbpDict::get_table());
     query_wrapper.schema_table_alias("bmbp", BmbpDict::get_table(), "t3");
     query_wrapper.join_table(BmbpDict::get_table());
+    let (sql, _) = SQLBuilder::build_query_script::<PgRdbcSQLBuilder>(&query_wrapper);
+    println!("===>: {}", sql);
+}
+#[test]
+fn test_query_select_left_table() {
+    let mut query_wrapper = QueryWrapper::new_from::<BmbpDict>();
+    query_wrapper
+        .table(BmbpDict::get_table())
+        .table("A1")
+        .table_alias(BmbpDict::get_table(), "t1");
+    query_wrapper.schema_table("bmbp", BmbpDict::get_table());
+    query_wrapper.schema_table_alias("bmbp", BmbpDict::get_table(), "t3");
+    let mut filter = QueryFilter::new();
+    filter.eq_column("t1.name", "t2.name");
+    query_wrapper
+        .left_join_table(BmbpDict::get_table())
+        .on()
+        .eq_column("t1.name", "t2.name");
     let (sql, _) = SQLBuilder::build_query_script::<PgRdbcSQLBuilder>(&query_wrapper);
     println!("===>: {}", sql);
 }

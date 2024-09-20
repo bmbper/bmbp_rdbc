@@ -455,11 +455,28 @@ impl RdbcTableInner {
             RdbcTableInner::Query(query) => query.get_join(),
         }
     }
-    pub fn get_filter(&self) -> Option<&RdbcTableFilterImpl> {
+    pub fn get_filter(&self) -> Option<&QueryFilter> {
         match self {
             RdbcTableInner::Table(table) => table.get_filter(),
             RdbcTableInner::Query(query) => query.get_filter(),
         }
+    }
+    pub fn get_filter_mut(&mut self) -> &mut QueryFilter {
+        match self {
+            RdbcTableInner::Table(table) => table.get_filter_mut(),
+            RdbcTableInner::Query(query) => query.get_filter_mut(),
+        }
+    }
+    pub fn set_filter(&mut self, filter: QueryFilter) -> &mut Self {
+        let _ = match self {
+            RdbcTableInner::Table(table) => {
+                let _ = table.set_filter(filter);
+            }
+            RdbcTableInner::Query(query) => {
+                let _ = query.set_filter(filter);
+            }
+        };
+        self
     }
 }
 
@@ -491,12 +508,7 @@ impl RdbcTableInner {
     {
         RdbcTableInner::Table(RdbcSchemaTable::schema_table_alias(schema, table, alias))
     }
-    pub(crate) fn left_join_table<T>(table: T) -> Self
-    where
-        T: ToString,
-    {
-        RdbcTableInner::Table(RdbcSchemaTable::left_join_table(table))
-    }
+
     pub fn temp_table(table: QueryWrapper) -> RdbcTableInner {
         RdbcTableInner::Query(RdbcQueryTable::query(table))
     }
@@ -506,49 +518,68 @@ impl RdbcTableInner {
     {
         RdbcTableInner::Query(RdbcQueryTable::query_alias(table, alias))
     }
-    fn query(table: QueryWrapper) -> RdbcTableInner {
-        RdbcTableInner::Query(RdbcQueryTable::query(table))
+    pub fn join_table<T>(table: T, left: RdbcTableJoinType) -> RdbcTableInner
+    where
+        T: ToString,
+    {
+        RdbcTableInner::Table(RdbcSchemaTable::join_table(table, left))
+    }
+    pub fn join_table_alias<T, A>(table: T, alias: A, left: RdbcTableJoinType) -> RdbcTableInner
+    where
+        T: ToString,
+        A: ToString,
+    {
+        RdbcTableInner::Table(RdbcSchemaTable::join_table_alias(table, alias, left))
+    }
+    pub fn join_schema_table<S, T>(schema: S, table: T, left: RdbcTableJoinType) -> RdbcTableInner
+    where
+        S: ToString,
+        T: ToString,
+    {
+        RdbcTableInner::Table(RdbcSchemaTable::join_schema_table(schema, table, left))
+    }
+    pub fn join_schema_table_alias<S, T, A>(
+        schema: S,
+        table: T,
+        alias: A,
+        left: RdbcTableJoinType,
+    ) -> RdbcTableInner
+    where
+        S: ToString,
+        T: ToString,
+        A: ToString,
+    {
+        RdbcTableInner::Table(RdbcSchemaTable::join_schema_table_alias(
+            schema, table, alias, left,
+        ))
+    }
+    pub(crate) fn join_temp_table(
+        table: QueryWrapper,
+        join_type: RdbcTableJoinType,
+    ) -> RdbcTableInner {
+        RdbcTableInner::Query(RdbcQueryTable::join_table(table, join_type))
+    }
+    pub(crate) fn join_temp_table_alias<SA>(
+        table: QueryWrapper,
+        alias: SA,
+        join_type: RdbcTableJoinType,
+    ) -> RdbcTableInner
+    where
+        SA: ToString,
+    {
+        RdbcTableInner::Query(RdbcQueryTable::join_table_alias(table, alias, join_type))
     }
 }
 
 impl RdbcTableInner {
-    pub fn join(&mut self, join_: RdbcTableJoinType) -> &mut Self {
-        match self {
-            RdbcTableInner::Table(ref mut table) => {
-                table.left_join();
-            }
-            RdbcTableInner::Query(ref mut table) => {}
-        }
-        self
-    }
-    pub fn left_join(&mut self) -> &mut Self {
-        match self {
-            RdbcTableInner::Table(ref mut table) => {
-                table.left_join();
-            }
-            RdbcTableInner::Query(ref mut table) => {}
-        }
-        self
-    }
-    fn eq_<T, V>(&mut self, column: T, value: V) -> &mut Self
-    where
-        RdbcColumn: From<T>,
-        RdbcValue: From<V>,
-    {
-        match self {
-            RdbcTableInner::Table(ref mut table) => {
-                table.eq(column, value);
-            }
-            RdbcTableInner::Query(ref mut table) => {}
-        }
-        self
-    }
     pub fn or(&mut self) -> &mut Self {
         match self {
             RdbcTableInner::Table(ref mut table) => {
                 table.or();
             }
-            RdbcTableInner::Query(ref mut table) => {}
+            RdbcTableInner::Query(ref mut table) => {
+                table.or();
+            }
         }
         self
     }
@@ -600,7 +631,7 @@ pub struct RdbcSchemaTable {
     name_: String,
     alias_: Option<String>,
     join_: Option<RdbcTableJoinType>,
-    filter_: Option<RdbcTableFilterImpl>,
+    filter_: Option<QueryFilter>,
     params_: Option<HashMap<String, RdbcValue>>,
 }
 
@@ -617,13 +648,17 @@ impl RdbcSchemaTable {
     pub fn get_join(&self) -> Option<&RdbcTableJoinType> {
         self.join_.as_ref()
     }
-    pub fn get_filter(&self) -> Option<&RdbcTableFilterImpl> {
+    pub fn get_filter(&self) -> Option<&QueryFilter> {
         self.filter_.as_ref()
+    }
+
+    pub fn get_mut_params(&mut self) -> Option<&mut HashMap<String, RdbcValue>> {
+        self.params_.as_mut()
     }
 }
 
 impl RdbcSchemaTable {
-    fn table<T>(table: T) -> RdbcSchemaTable
+    pub fn table<T>(table: T) -> RdbcSchemaTable
     where
         T: ToString,
     {
@@ -632,7 +667,7 @@ impl RdbcSchemaTable {
             name_: table.to_string(),
             alias_: None,
             join_: None,
-            filter_: Some(RdbcTableFilterImpl::new()),
+            filter_: Some(QueryFilter::new()),
             params_: None,
         }
     }
@@ -646,7 +681,7 @@ impl RdbcSchemaTable {
             name_: table.to_string(),
             alias_: Some(alias.to_string()),
             join_: None,
-            filter_: Some(RdbcTableFilterImpl::new()),
+            filter_: Some(QueryFilter::new()),
             params_: None,
         }
     }
@@ -659,11 +694,11 @@ impl RdbcSchemaTable {
             name_: table.to_string(),
             alias_: None,
             join_: None,
-            filter_: Some(RdbcTableFilterImpl::new()),
+            filter_: Some(QueryFilter::new()),
             params_: None,
         }
     }
-    fn schema_table_alias<SS, ST, SA>(schema: SS, table: ST, alias: SA) -> RdbcSchemaTable
+    pub fn schema_table_alias<SS, ST, SA>(schema: SS, table: ST, alias: SA) -> RdbcSchemaTable
     where
         SS: ToString,
         ST: ToString,
@@ -674,11 +709,11 @@ impl RdbcSchemaTable {
             name_: table.to_string(),
             alias_: Some(alias.to_string()),
             join_: None,
-            filter_: Some(RdbcTableFilterImpl::new()),
+            filter_: Some(QueryFilter::new()),
             params_: None,
         }
     }
-    fn left_join_table<T>(table: T) -> RdbcSchemaTable
+    pub fn join_table<T>(table: T, join_type: RdbcTableJoinType) -> RdbcSchemaTable
     where
         T: ToString,
     {
@@ -686,12 +721,16 @@ impl RdbcSchemaTable {
             schema_: None,
             name_: table.to_string(),
             alias_: None,
-            join_: Some(RdbcTableJoinType::Left),
-            filter_: Some(RdbcTableFilterImpl::new()),
+            join_: Some(join_type),
+            filter_: Some(QueryFilter::new()),
             params_: None,
         }
     }
-    fn left_join_table_alias<T, A>(table: T, alias: A) -> RdbcSchemaTable
+    pub fn join_table_alias<T, A>(
+        table: T,
+        alias: A,
+        join_type: RdbcTableJoinType,
+    ) -> RdbcSchemaTable
     where
         T: ToString,
         A: ToString,
@@ -700,17 +739,62 @@ impl RdbcSchemaTable {
             schema_: None,
             name_: table.to_string(),
             alias_: Some(alias.to_string()),
-            join_: Some(RdbcTableJoinType::Left),
-            filter_: Some(RdbcTableFilterImpl::new()),
+            join_: Some(join_type),
+            filter_: Some(QueryFilter::new()),
+            params_: None,
+        }
+    }
+    fn join_schema_table<S, T>(schmea: S, table: T, join_type: RdbcTableJoinType) -> RdbcSchemaTable
+    where
+        S: ToString,
+        T: ToString,
+    {
+        RdbcSchemaTable {
+            schema_: Some(schmea.to_string()),
+            name_: table.to_string(),
+            alias_: None,
+            join_: Some(join_type),
+            filter_: Some(QueryFilter::new()),
+            params_: None,
+        }
+    }
+
+    pub fn join_schema_table_alias<S, T, A>(
+        schmea: S,
+        table: T,
+        alias: A,
+        join_type: RdbcTableJoinType,
+    ) -> RdbcSchemaTable
+    where
+        S: ToString,
+        T: ToString,
+        A: ToString,
+    {
+        RdbcSchemaTable {
+            schema_: Some(schmea.to_string()),
+            name_: table.to_string(),
+            alias_: Some(alias.to_string()),
+            join_: Some(join_type),
+            filter_: Some(QueryFilter::new()),
             params_: None,
         }
     }
 }
 
 impl RdbcSchemaTable {
+    fn set_filter(&mut self, filter: QueryFilter) -> &mut Self {
+        self.filter_ = Some(filter);
+        self
+    }
+    fn get_filter_mut(&mut self) -> &mut QueryFilter {
+        if self.filter_.is_none() {
+            self.filter_ = Some(QueryFilter::new());
+        }
+        self.filter_.as_mut().unwrap()
+    }
     fn create_filter(&mut self, concat: RdbcConcatType) -> &mut Self {
         let filter = self.filter_.take().unwrap();
-        let new_filter = RdbcTableFilterImpl::concat_with_filter(concat, filter);
+        let new_filter = QueryFilter::concat_with_filter(concat, filter);
         self.filter_ = Some(new_filter);
         self
     }
@@ -747,7 +831,7 @@ pub struct RdbcQueryTable {
     name_: QueryWrapper,
     alias_: Option<String>,
     join_: Option<RdbcTableJoinType>,
-    filter_: Option<RdbcTableFilterImpl>,
+    filter_: Option<QueryFilter>,
 }
 
 impl RdbcQueryTable {
@@ -760,8 +844,18 @@ impl RdbcQueryTable {
     pub fn get_join(&self) -> Option<&RdbcTableJoinType> {
         self.join_.as_ref()
     }
-    pub fn get_filter(&self) -> Option<&RdbcTableFilterImpl> {
+    pub fn get_filter(&self) -> Option<&QueryFilter> {
         self.filter_.as_ref()
+    }
+    pub fn get_filter_mut(&mut self) -> &mut QueryFilter {
+        if self.filter_.is_none() {
+            self.filter_ = Some(QueryFilter::new());
+        }
+        self.filter_.as_mut().unwrap()
+    }
+    fn set_filter(&mut self, filter: QueryFilter) -> &mut Self {
+        self.filter_ = Some(filter);
+        self
     }
 }
 
@@ -785,8 +879,36 @@ impl RdbcQueryTable {
             filter_: None,
         }
     }
+
     pub fn eq_column(&mut self, col: RdbcColumn, val: RdbcColumn) -> &mut Self {
         self.filter_.as_mut().unwrap().eq_column(col, val);
+        self
+    }
+    fn join_table(table: QueryWrapper, join_type: RdbcTableJoinType) -> RdbcQueryTable {
+        RdbcQueryTable {
+            name_: table,
+            alias_: None,
+            join_: Some(join_type),
+            filter_: None,
+        }
+    }
+    fn join_table_alias<A>(
+        table: QueryWrapper,
+        alias: A,
+        join_type: RdbcTableJoinType,
+    ) -> RdbcQueryTable
+    where
+        A: ToString,
+    {
+        RdbcQueryTable {
+            name_: table,
+            alias_: Some(alias.to_string()),
+            join_: Some(join_type),
+            filter_: None,
+        }
+    }
+    // TODO
+    fn or(&mut self) -> &mut Self {
         self
     }
 }
@@ -797,80 +919,87 @@ pub enum RdbcConcatType {
 }
 
 /// RdbcTableFilterImpl 表查询条件实现
-pub struct RdbcTableFilterImpl {
+pub struct QueryFilter {
     concat_: RdbcConcatType,
-    item_: Vec<RdbcFilterItem>,
+    item_: Vec<QueryFilterItem>,
     params_: Option<HashMap<String, RdbcValue>>,
 }
-impl RdbcTableFilterImpl {
+impl QueryFilter {
     pub fn get_concat(&self) -> &RdbcConcatType {
         &self.concat_
     }
-    pub fn get_item(&self) -> &Vec<RdbcFilterItem> {
+    pub fn get_item(&self) -> &Vec<QueryFilterItem> {
         &self.item_
     }
     pub fn get_params(&self) -> Option<&HashMap<String, RdbcValue>> {
         self.params_.as_ref()
     }
 
-    pub fn add_filter(&mut self, filter: RdbcTableFilterImpl) -> &mut Self {
-        self.item_.push(RdbcFilterItem::Filter(filter));
+    pub fn add_filter(&mut self, filter: QueryFilter) -> &mut Self {
+        self.item_.push(QueryFilterItem::Filter(filter));
         self
     }
     pub(crate) fn eq_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self.item_.push(RdbcFilterItem::eq_(column, value));
+        self.item_.push(QueryFilterItem::eq_(column, value));
         self
     }
-    pub fn eq_column(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
-        self.item_.push(RdbcFilterItem::eq_column(column, value));
+    pub fn eq_column<RC, VC>(&mut self, column: RC, value: VC) -> &mut Self
+    where
+        RdbcColumn: From<RC>,
+        RdbcColumn: From<VC>,
+    {
+        self.item_.push(QueryFilterItem::eq_column(
+            RdbcColumn::from(column),
+            RdbcColumn::from(value),
+        ));
         self
     }
     pub(crate) fn ne_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self.item_.push(RdbcFilterItem::ne_(column, value));
+        self.item_.push(QueryFilterItem::ne_(column, value));
         self
     }
     pub(crate) fn ne_column(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
-        self.item_.push(RdbcFilterItem::ne_column(column, value));
+        self.item_.push(QueryFilterItem::ne_column(column, value));
         self
     }
     pub(crate) fn ge_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self.item_.push(RdbcFilterItem::ge_(column, value));
+        self.item_.push(QueryFilterItem::ge_(column, value));
         self
     }
     pub(crate) fn ge_column(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
-        self.item_.push(RdbcFilterItem::ge_column(column, value));
+        self.item_.push(QueryFilterItem::ge_column(column, value));
         self
     }
     pub(crate) fn gt_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self.item_.push(RdbcFilterItem::gt_(column, value));
+        self.item_.push(QueryFilterItem::gt_(column, value));
         self
     }
     pub(crate) fn gt_column(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
-        self.item_.push(RdbcFilterItem::gt_column(column, value));
+        self.item_.push(QueryFilterItem::gt_column(column, value));
         self
     }
     pub(crate) fn le_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self.item_.push(RdbcFilterItem::le_(column, value));
+        self.item_.push(QueryFilterItem::le_(column, value));
         self
     }
     pub(crate) fn le_column(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
-        self.item_.push(RdbcFilterItem::le_column(column, value));
+        self.item_.push(QueryFilterItem::le_column(column, value));
         self
     }
     pub(crate) fn lt_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self.item_.push(RdbcFilterItem::lt_(column, value));
+        self.item_.push(QueryFilterItem::lt_(column, value));
         self
     }
     pub(crate) fn lt_column(&mut self, column: RdbcColumn, value: RdbcColumn) -> &mut Self {
-        self.item_.push(RdbcFilterItem::lt_column(column, value));
+        self.item_.push(QueryFilterItem::lt_column(column, value));
         self
     }
     pub(crate) fn null_(&mut self, column: RdbcColumn) -> &mut Self {
-        self.item_.push(RdbcFilterItem::null_(column));
+        self.item_.push(QueryFilterItem::null_(column));
         self
     }
     pub(crate) fn not_null_(&mut self, column: RdbcColumn) -> &mut Self {
-        self.item_.push(RdbcFilterItem::not_null_(column));
+        self.item_.push(QueryFilterItem::not_null_(column));
         self
     }
     pub fn between_(
@@ -880,7 +1009,7 @@ impl RdbcTableFilterImpl {
         value_end: RdbcValue,
     ) -> &mut Self {
         self.item_
-            .push(RdbcFilterItem::between_(column, value_start, value_end));
+            .push(QueryFilterItem::between_(column, value_start, value_end));
         self
     }
     pub fn not_between_(
@@ -889,169 +1018,170 @@ impl RdbcTableFilterImpl {
         value_start: RdbcValue,
         value_end: RdbcValue,
     ) -> &mut Self {
-        self.item_
-            .push(RdbcFilterItem::not_between_(column, value_start, value_end));
+        self.item_.push(QueryFilterItem::not_between_(
+            column,
+            value_start,
+            value_end,
+        ));
         self
     }
     pub fn like_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self.item_.push(RdbcFilterItem::like_(column, value));
+        self.item_.push(QueryFilterItem::like_(column, value));
         self
     }
     pub fn like_left_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self.item_.push(RdbcFilterItem::like_left_(column, value));
+        self.item_.push(QueryFilterItem::like_left_(column, value));
         self
     }
     pub fn like_right_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self.item_.push(RdbcFilterItem::like_right_(column, value));
+        self.item_.push(QueryFilterItem::like_right_(column, value));
         self
     }
     pub fn not_like_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
-        self.item_.push(RdbcFilterItem::not_like_(column, value));
+        self.item_.push(QueryFilterItem::not_like_(column, value));
         self
     }
     pub fn not_like_left_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
         self.item_
-            .push(RdbcFilterItem::not_like_left_(column, value));
+            .push(QueryFilterItem::not_like_left_(column, value));
         self
     }
     pub fn not_like_right_(&mut self, column: RdbcColumn, value: RdbcValue) -> &mut Self {
         self.item_
-            .push(RdbcFilterItem::not_like_right_(column, value));
+            .push(QueryFilterItem::not_like_right_(column, value));
         self
     }
 
     pub fn in_v(&mut self, column: RdbcColumn, value: Vec<RdbcValue>) -> &mut Self {
-        self.item_.push(RdbcFilterItem::in_v(column, value));
+        self.item_.push(QueryFilterItem::in_v(column, value));
         self
     }
     pub fn in_query(&mut self, column: RdbcColumn, value: QueryWrapper) -> &mut Self {
-        self.item_.push(RdbcFilterItem::in_query(column, value));
+        self.item_.push(QueryFilterItem::in_query(column, value));
         self
     }
     pub fn not_in_v(&mut self, column: RdbcColumn, value: Vec<RdbcValue>) -> &mut Self {
-        self.item_.push(RdbcFilterItem::not_in_v(column, value));
+        self.item_.push(QueryFilterItem::not_in_v(column, value));
         self
     }
     pub fn not_in_query(&mut self, column: RdbcColumn, value: QueryWrapper) -> &mut Self {
-        self.item_.push(RdbcFilterItem::not_in_query(column, value));
+        self.item_
+            .push(QueryFilterItem::not_in_query(column, value));
         self
     }
     pub fn exists_(&mut self, column: RdbcColumn, value: QueryWrapper) -> &mut Self {
-        self.item_.push(RdbcFilterItem::exists_(column, value));
+        self.item_.push(QueryFilterItem::exists_(column, value));
         self
     }
     pub fn not_exists_(&mut self, column: RdbcColumn, value: QueryWrapper) -> &mut Self {
-        self.item_.push(RdbcFilterItem::not_exists_(column, value));
+        self.item_.push(QueryFilterItem::not_exists_(column, value));
         self
     }
-    pub fn new() -> RdbcTableFilterImpl {
-        RdbcTableFilterImpl {
+    pub fn new() -> QueryFilter {
+        QueryFilter {
             concat_: RdbcConcatType::And,
             item_: vec![],
             params_: None,
         }
     }
-    pub fn concat(concat: RdbcConcatType) -> RdbcTableFilterImpl {
-        RdbcTableFilterImpl {
+    pub fn concat(concat: RdbcConcatType) -> QueryFilter {
+        QueryFilter {
             concat_: concat,
             item_: vec![],
             params_: None,
         }
     }
-    pub fn concat_with_filter(
-        concat: RdbcConcatType,
-        filter: RdbcTableFilterImpl,
-    ) -> RdbcTableFilterImpl {
-        RdbcTableFilterImpl {
+    pub fn concat_with_filter(concat: RdbcConcatType, filter: QueryFilter) -> QueryFilter {
+        QueryFilter {
             concat_: concat,
-            item_: vec![RdbcFilterItem::filter(filter)],
+            item_: vec![QueryFilterItem::filter(filter)],
             params_: None,
         }
     }
 }
 
-pub enum RdbcFilterItem {
+pub enum QueryFilterItem {
     Value(RdbcValueFilterItem),
     Column(RdbcColumnFilterItem),
-    Filter(RdbcTableFilterImpl),
+    Filter(QueryFilter),
     Query(RdbcQueryFilterItem),
 }
 
-impl RdbcFilterItem {
-    fn filter(filter: RdbcTableFilterImpl) -> RdbcFilterItem {
-        RdbcFilterItem::Filter(filter)
+impl QueryFilterItem {
+    fn filter(filter: QueryFilter) -> QueryFilterItem {
+        QueryFilterItem::Filter(filter)
     }
 }
 
-impl RdbcFilterItem {
-    pub(crate) fn eq_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
-        RdbcFilterItem::Value(RdbcValueFilterItem::eq_(column, value))
+impl QueryFilterItem {
+    pub(crate) fn eq_(column: RdbcColumn, value: RdbcValue) -> QueryFilterItem {
+        QueryFilterItem::Value(RdbcValueFilterItem::eq_(column, value))
     }
-    pub fn eq_column(column: RdbcColumn, value: RdbcColumn) -> RdbcFilterItem {
-        RdbcFilterItem::Column(RdbcColumnFilterItem::eq_column(column, value))
+    pub fn eq_column(column: RdbcColumn, value: RdbcColumn) -> QueryFilterItem {
+        QueryFilterItem::Column(RdbcColumnFilterItem::eq_column(column, value))
     }
-    pub(crate) fn ne_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
-        RdbcFilterItem::Value(RdbcValueFilterItem::ne_(column, value))
+    pub(crate) fn ne_(column: RdbcColumn, value: RdbcValue) -> QueryFilterItem {
+        QueryFilterItem::Value(RdbcValueFilterItem::ne_(column, value))
     }
-    pub fn ne_column(column: RdbcColumn, value: RdbcColumn) -> RdbcFilterItem {
-        RdbcFilterItem::Column(RdbcColumnFilterItem::ne_column(column, value))
+    pub fn ne_column(column: RdbcColumn, value: RdbcColumn) -> QueryFilterItem {
+        QueryFilterItem::Column(RdbcColumnFilterItem::ne_column(column, value))
     }
-    pub(crate) fn ge_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
-        RdbcFilterItem::Value(RdbcValueFilterItem::ge_(column, value))
+    pub(crate) fn ge_(column: RdbcColumn, value: RdbcValue) -> QueryFilterItem {
+        QueryFilterItem::Value(RdbcValueFilterItem::ge_(column, value))
     }
-    pub fn ge_column(column: RdbcColumn, value: RdbcColumn) -> RdbcFilterItem {
-        RdbcFilterItem::Column(RdbcColumnFilterItem::ge_column(column, value))
+    pub fn ge_column(column: RdbcColumn, value: RdbcColumn) -> QueryFilterItem {
+        QueryFilterItem::Column(RdbcColumnFilterItem::ge_column(column, value))
     }
-    pub(crate) fn gt_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
-        RdbcFilterItem::Value(RdbcValueFilterItem::gt_(column, value))
+    pub(crate) fn gt_(column: RdbcColumn, value: RdbcValue) -> QueryFilterItem {
+        QueryFilterItem::Value(RdbcValueFilterItem::gt_(column, value))
     }
-    pub fn gt_column(column: RdbcColumn, value: RdbcColumn) -> RdbcFilterItem {
-        RdbcFilterItem::Column(RdbcColumnFilterItem::gt_column(column, value))
+    pub fn gt_column(column: RdbcColumn, value: RdbcColumn) -> QueryFilterItem {
+        QueryFilterItem::Column(RdbcColumnFilterItem::gt_column(column, value))
     }
-    pub(crate) fn le_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
-        RdbcFilterItem::Value(RdbcValueFilterItem::le_(column, value))
+    pub(crate) fn le_(column: RdbcColumn, value: RdbcValue) -> QueryFilterItem {
+        QueryFilterItem::Value(RdbcValueFilterItem::le_(column, value))
     }
-    pub fn le_column(column: RdbcColumn, value: RdbcColumn) -> RdbcFilterItem {
-        RdbcFilterItem::Column(RdbcColumnFilterItem::le_column(column, value))
+    pub fn le_column(column: RdbcColumn, value: RdbcColumn) -> QueryFilterItem {
+        QueryFilterItem::Column(RdbcColumnFilterItem::le_column(column, value))
     }
-    pub(crate) fn lt_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
-        RdbcFilterItem::Value(RdbcValueFilterItem::lt_(column, value))
+    pub(crate) fn lt_(column: RdbcColumn, value: RdbcValue) -> QueryFilterItem {
+        QueryFilterItem::Value(RdbcValueFilterItem::lt_(column, value))
     }
-    pub fn lt_column(column: RdbcColumn, value: RdbcColumn) -> RdbcFilterItem {
-        RdbcFilterItem::Column(RdbcColumnFilterItem::lt_column(column, value))
-    }
-
-    pub fn null_(column: RdbcColumn) -> RdbcFilterItem {
-        RdbcFilterItem::Column(RdbcColumnFilterItem::null_(column))
-    }
-    pub fn not_null_(column: RdbcColumn) -> RdbcFilterItem {
-        RdbcFilterItem::Column(RdbcColumnFilterItem::not_null_(column))
-    }
-    pub fn like_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
-        RdbcFilterItem::Value(RdbcValueFilterItem::like_(column, value))
-    }
-    pub fn like_left_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
-        RdbcFilterItem::Value(RdbcValueFilterItem::like_left_(column, value))
-    }
-    pub fn like_right_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
-        RdbcFilterItem::Value(RdbcValueFilterItem::like_right_(column, value))
+    pub fn lt_column(column: RdbcColumn, value: RdbcColumn) -> QueryFilterItem {
+        QueryFilterItem::Column(RdbcColumnFilterItem::lt_column(column, value))
     }
 
-    pub fn not_like_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
-        RdbcFilterItem::Value(RdbcValueFilterItem::not_like_(column, value))
+    pub fn null_(column: RdbcColumn) -> QueryFilterItem {
+        QueryFilterItem::Column(RdbcColumnFilterItem::null_(column))
     }
-    pub fn not_like_left_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
-        RdbcFilterItem::Value(RdbcValueFilterItem::not_like_left_(column, value))
+    pub fn not_null_(column: RdbcColumn) -> QueryFilterItem {
+        QueryFilterItem::Column(RdbcColumnFilterItem::not_null_(column))
     }
-    pub fn not_like_right_(column: RdbcColumn, value: RdbcValue) -> RdbcFilterItem {
-        RdbcFilterItem::Value(RdbcValueFilterItem::not_like_right_(column, value))
+    pub fn like_(column: RdbcColumn, value: RdbcValue) -> QueryFilterItem {
+        QueryFilterItem::Value(RdbcValueFilterItem::like_(column, value))
+    }
+    pub fn like_left_(column: RdbcColumn, value: RdbcValue) -> QueryFilterItem {
+        QueryFilterItem::Value(RdbcValueFilterItem::like_left_(column, value))
+    }
+    pub fn like_right_(column: RdbcColumn, value: RdbcValue) -> QueryFilterItem {
+        QueryFilterItem::Value(RdbcValueFilterItem::like_right_(column, value))
+    }
+
+    pub fn not_like_(column: RdbcColumn, value: RdbcValue) -> QueryFilterItem {
+        QueryFilterItem::Value(RdbcValueFilterItem::not_like_(column, value))
+    }
+    pub fn not_like_left_(column: RdbcColumn, value: RdbcValue) -> QueryFilterItem {
+        QueryFilterItem::Value(RdbcValueFilterItem::not_like_left_(column, value))
+    }
+    pub fn not_like_right_(column: RdbcColumn, value: RdbcValue) -> QueryFilterItem {
+        QueryFilterItem::Value(RdbcValueFilterItem::not_like_right_(column, value))
     }
     pub(crate) fn between_(
         column: RdbcColumn,
         value_start: RdbcValue,
         value_end: RdbcValue,
-    ) -> RdbcFilterItem {
-        RdbcFilterItem::Value(RdbcValueFilterItem::between_(
+    ) -> QueryFilterItem {
+        QueryFilterItem::Value(RdbcValueFilterItem::between_(
             column,
             value_start,
             value_end,
@@ -1061,30 +1191,30 @@ impl RdbcFilterItem {
         column: RdbcColumn,
         value_start: RdbcValue,
         value_end: RdbcValue,
-    ) -> RdbcFilterItem {
-        RdbcFilterItem::Value(RdbcValueFilterItem::not_between_(
+    ) -> QueryFilterItem {
+        QueryFilterItem::Value(RdbcValueFilterItem::not_between_(
             column,
             value_start,
             value_end,
         ))
     }
-    pub fn in_v(column: RdbcColumn, value_vec: Vec<RdbcValue>) -> RdbcFilterItem {
-        RdbcFilterItem::Value(RdbcValueFilterItem::in_v(column, value_vec))
+    pub fn in_v(column: RdbcColumn, value_vec: Vec<RdbcValue>) -> QueryFilterItem {
+        QueryFilterItem::Value(RdbcValueFilterItem::in_v(column, value_vec))
     }
-    pub fn in_query(column: RdbcColumn, query_wrapper: QueryWrapper) -> RdbcFilterItem {
-        RdbcFilterItem::Query(RdbcQueryFilterItem::in_query(column, query_wrapper))
+    pub fn in_query(column: RdbcColumn, query_wrapper: QueryWrapper) -> QueryFilterItem {
+        QueryFilterItem::Query(RdbcQueryFilterItem::in_query(column, query_wrapper))
     }
-    pub fn not_in_v(column: RdbcColumn, value_vec: Vec<RdbcValue>) -> RdbcFilterItem {
-        RdbcFilterItem::Value(RdbcValueFilterItem::not_in_v(column, value_vec))
+    pub fn not_in_v(column: RdbcColumn, value_vec: Vec<RdbcValue>) -> QueryFilterItem {
+        QueryFilterItem::Value(RdbcValueFilterItem::not_in_v(column, value_vec))
     }
-    pub fn not_in_query(column: RdbcColumn, value: QueryWrapper) -> RdbcFilterItem {
-        RdbcFilterItem::Query(RdbcQueryFilterItem::not_in_query(column, value))
+    pub fn not_in_query(column: RdbcColumn, value: QueryWrapper) -> QueryFilterItem {
+        QueryFilterItem::Query(RdbcQueryFilterItem::not_in_query(column, value))
     }
-    pub fn exists_(column: RdbcColumn, value: QueryWrapper) -> RdbcFilterItem {
-        RdbcFilterItem::Query(RdbcQueryFilterItem::exists_query(column, value))
+    pub fn exists_(column: RdbcColumn, value: QueryWrapper) -> QueryFilterItem {
+        QueryFilterItem::Query(RdbcQueryFilterItem::exists_query(column, value))
     }
-    pub fn not_exists_(column: RdbcColumn, value: QueryWrapper) -> RdbcFilterItem {
-        RdbcFilterItem::Query(RdbcQueryFilterItem::not_exists_query(column, value))
+    pub fn not_exists_(column: RdbcColumn, value: QueryWrapper) -> QueryFilterItem {
+        QueryFilterItem::Query(RdbcQueryFilterItem::not_exists_query(column, value))
     }
 }
 
@@ -1491,25 +1621,25 @@ pub enum RdbcDmlValue {
 impl RdbcDmlValue {
     pub fn is_value(&self) -> bool {
         match self {
-            RdbcDmlValue::VALUE(value) => true,
-            RdbcDmlValue::COLUMN(column) => false,
+            RdbcDmlValue::VALUE(_) => true,
+            RdbcDmlValue::COLUMN(_) => false,
         }
     }
     pub fn is_column(&self) -> bool {
         match self {
-            RdbcDmlValue::VALUE(value) => false,
-            RdbcDmlValue::COLUMN(column) => true,
+            RdbcDmlValue::VALUE(_) => false,
+            RdbcDmlValue::COLUMN(_) => true,
         }
     }
     pub fn get_value(&self) -> Option<&RdbcValue> {
         match self {
             RdbcDmlValue::VALUE(value) => Some(value),
-            RdbcDmlValue::COLUMN(column) => None,
+            RdbcDmlValue::COLUMN(_) => None,
         }
     }
     pub fn get_column(&self) -> Option<&RdbcColumn> {
         match self {
-            RdbcDmlValue::VALUE(value) => None,
+            RdbcDmlValue::VALUE(_) => None,
             RdbcDmlValue::COLUMN(column) => Some(column),
         }
     }
@@ -1541,28 +1671,28 @@ pub fn left_table<T>(table: T) -> RdbcTableInner
 where
     T: ToString,
 {
-    RdbcTableInner::left_join_table(table)
+    RdbcTableInner::join_table(table, RdbcTableJoinType::Left)
 }
 
 pub fn inner_table<T>(table: T) -> RdbcTableInner
 where
     T: ToString,
 {
-    RdbcTableInner::table(table)
+    RdbcTableInner::join_table(table, RdbcTableJoinType::Inner)
 }
 
 pub fn right_table<T>(table: T) -> RdbcTableInner
 where
     T: ToString,
 {
-    RdbcTableInner::table(table)
+    RdbcTableInner::join_table(table, RdbcTableJoinType::Right)
 }
 
 pub fn full_table<T>(table: T) -> RdbcTableInner
 where
     T: ToString,
 {
-    RdbcTableInner::table(table)
+    RdbcTableInner::join_table(table, RdbcTableJoinType::Full)
 }
 
 pub fn table_column<T, V>(table: T, column: V) -> RdbcTableColumn

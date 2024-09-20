@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::sync::RwLock;
 
 use crate::{
-    RdbcColumn, RdbcColumnOrder, RdbcConcatType, RdbcOrder, RdbcTableFilter, RdbcTableFilterImpl,
+    RdbcColumn, RdbcColumnOrder, RdbcConcatType, RdbcOrder, RdbcTableFilter, QueryFilter,
     RdbcTableInner, RdbcTableWrapper, RdbcValueColumn,
 };
 
@@ -12,9 +12,9 @@ pub struct QueryWrapper {
     select_: Vec<RdbcColumn>,
     table_: Vec<RdbcTableInner>,
     join_: Option<Vec<RdbcTableInner>>,
-    filter_: Option<RdbcTableFilterImpl>,
+    filter_: Option<QueryFilter>,
     group_by_: Option<Vec<RdbcColumn>>,
-    having_: Option<RdbcTableFilterImpl>,
+    having_: Option<QueryFilter>,
     order_: Option<Vec<RdbcOrder>>,
     limit_: Option<u64>,
     offset_: Option<u64>,
@@ -32,7 +32,7 @@ impl QueryWrapper {
             select_: vec![],
             table_: vec![],
             join_: Some(vec![]),
-            filter_: Some(RdbcTableFilterImpl::new()),
+            filter_: Some(QueryFilter::new()),
             group_by_: None,
             having_: None,
             order_: None,
@@ -62,6 +62,12 @@ impl QueryWrapper {
         }
         self
     }
+    fn init_group_by(&mut self) -> &mut Self {
+        if self.group_by_.is_none() {
+            self.group_by_ = Some(vec![]);
+        }
+        self
+    }
 }
 
 // Query的查询方法
@@ -80,13 +86,13 @@ impl QueryWrapper {
     pub fn get_join(&self) -> Option<&Vec<RdbcTableInner>> {
         self.join_.as_ref()
     }
-    pub fn get_filter(&self) -> Option<&RdbcTableFilterImpl> {
+    pub fn get_filter(&self) -> Option<&QueryFilter> {
         self.filter_.as_ref()
     }
     pub fn get_group_by(&self) -> Option<&Vec<RdbcColumn>> {
         self.group_by_.as_ref()
     }
-    pub fn get_having(&self) -> Option<&RdbcTableFilterImpl> {
+    pub fn get_having(&self) -> Option<&QueryFilter> {
         self.having_.as_ref()
     }
     pub fn get_order(&self) -> Option<&Vec<RdbcOrder>> {
@@ -147,10 +153,13 @@ impl QueryWrapper {
     }
     pub fn select_table_column<ST, SC>(&mut self, table: ST, column: SC) -> &mut Self
     where
-        SC: ToString,
-        ST: ToString,
+        SC: RdbcIdent,
+        ST: RdbcIdent,
     {
-        self.select_.push(RdbcColumn::table_column(table, column));
+        self.select_.push(RdbcColumn::table_column(
+            table.get_ident(),
+            column.get_ident(),
+        ));
         self
     }
     pub fn select_table_column_as_alias<ST, SC, SA>(
@@ -160,12 +169,15 @@ impl QueryWrapper {
         alias: SA,
     ) -> &mut Self
     where
-        ST: ToString,
-        SC: ToString,
-        SA: ToString,
+        ST: RdbcIdent,
+        SC: RdbcIdent,
+        SA: RdbcIdent,
     {
-        self.select_
-            .push(RdbcColumn::table_column_as_alias(table, column, alias));
+        self.select_.push(RdbcColumn::table_column_as_alias(
+            table.get_ident(),
+            column.get_ident(),
+            alias.get_ident(),
+        ));
         self
     }
     pub fn select_schema_table_column<SS, ST, SC>(
@@ -175,12 +187,15 @@ impl QueryWrapper {
         column: SC,
     ) -> &mut Self
     where
-        SS: ToString,
-        ST: ToString,
-        SC: ToString,
+        SS: RdbcIdent,
+        ST: RdbcIdent,
+        SC: RdbcIdent,
     {
-        self.select_
-            .push(RdbcColumn::schema_table_column(schema, table, column));
+        self.select_.push(RdbcColumn::schema_table_column(
+            schema.get_ident(),
+            table.get_ident(),
+            column.get_ident(),
+        ));
         self
     }
     pub fn select_schema_table_column_as_alias<SS, ST, SC, SA>(
@@ -271,45 +286,63 @@ impl QueryWrapper {
     where
         SC: ToString,
     {
+        for item in column {
+            self.order_by(RdbcColumn::from(item.get_ident()), true);
+        }
+
         self
     }
     pub fn order_slice_desc<SC>(&mut self, column: &[SC]) -> &mut Self
     where
         SC: ToString,
     {
+        for item in column {
+            self.order_by(RdbcColumn::from(item.get_ident()), false);
+        }
         self
     }
     pub fn order_column(&mut self, column: RdbcColumn, is_asc: bool) -> &mut Self {
+        self.order_by(column, is_asc);
         self
     }
     pub fn order_column_vec(&mut self, column: Vec<RdbcColumn>, is_asc: bool) -> &mut Self {
+        for item in column {
+            self.order_by(item, is_asc);
+        }
         self
     }
-    pub fn order_column_slice(&mut self, column: &[RdbcColumn], is_asc: bool) -> &mut Self {
-        self
-    }
+
     pub fn order_column_asc(&mut self, column: RdbcColumn) -> &mut Self {
+        self.order_by(column, true);
         self
     }
     pub fn order_column_vec_asc(&mut self, column: Vec<RdbcColumn>) -> &mut Self {
+        for item in column {
+            self.order_by(item, true);
+        }
         self
     }
-    pub fn order_column_slice_asc(&mut self, column: &[RdbcColumn]) -> &mut Self {
-        self
-    }
+
     pub fn order_column_desc(&mut self, column: RdbcColumn) -> &mut Self {
+        self.order_by(column, false);
         self
     }
     pub fn order_column_vec_desc(&mut self, column: Vec<RdbcColumn>) -> &mut Self {
+        for item in column {
+            self.order_by(item, false);
+        }
         self
     }
-    pub fn order_column_slice_desc(&mut self, column: &[RdbcColumn]) -> &mut Self {
-        self
-    }
+
     pub fn group_by<RC>(&mut self, column: RC) -> &mut Self
     where
         RdbcColumn: From<RC>,
     {
+        self.init_group_by();
+        self.group_by_
+            .as_mut()
+            .unwrap()
+            .push(RdbcColumn::from(column));
         self
     }
 }
@@ -329,20 +362,20 @@ impl RdbcTableWrapper for QueryWrapper {
 impl RdbcTableFilter for QueryWrapper {
     fn init_filter(&mut self) -> &mut Self {
         if self.filter_.is_none() {
-            self.filter_ = Some(RdbcTableFilterImpl::new());
+            self.filter_ = Some(QueryFilter::new());
         }
         self
     }
-    fn get_filter_mut(&mut self) -> &mut RdbcTableFilterImpl {
+    fn get_filter_mut(&mut self) -> &mut QueryFilter {
         self.init_filter();
         self.filter_.as_mut().unwrap()
     }
     fn with_filter(&mut self, concat_type: RdbcConcatType) -> &mut Self {
         let filter_ = {
             if self.filter_.is_some() {
-                RdbcTableFilterImpl::concat_with_filter(concat_type, self.filter_.take().unwrap())
+                QueryFilter::concat_with_filter(concat_type, self.filter_.take().unwrap())
             } else {
-                RdbcTableFilterImpl::concat(concat_type)
+                QueryFilter::concat(concat_type)
             }
         };
         self.filter_ = Some(filter_);
