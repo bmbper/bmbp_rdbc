@@ -26,6 +26,9 @@ impl RdbcError {
     pub fn get_msg(&self) -> String {
         self.msg.to_string()
     }
+    pub fn get_type(&self) -> &RdbcErrorType {
+        &self.typ
+    }
 }
 
 pub type RdbcResult<T> = Result<T, RdbcError>;

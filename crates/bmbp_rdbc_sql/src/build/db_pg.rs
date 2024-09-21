@@ -20,7 +20,7 @@ impl PgRdbcSQLBuilder {
         for (index, key) in script_params.keys().enumerate() {
             let v = script_params.get(key).unwrap_or(&RdbcValue::Null).clone();
             let params_str = format!("#{{{}}}", key);
-            let params_index = format!("${{{}}}", index + 1);
+            let params_index = format!("${}", index + 1);
             sql = sql.replace(&params_str, &params_index);
             sql_parmas.push(v);
         }
@@ -868,8 +868,7 @@ impl PgScriptFilterBuilder {
                 if let Some(v) = value {
                     if (v.is_null() && !ignore) || !v.is_null() {
                         let col_id = Uuid::new_v4().simple().to_string();
-                        col_sql = format!("{} ANY (#{{{}}})", col_sql, col_id.clone());
-
+                        col_sql = format!("{} = ANY (#{{{}}}::text[])", col_sql, col_id.clone());
                         col_params.insert(col_id, RdbcValue::Vec(v.convert_to_vec()));
                     }
                 } else {

@@ -8,10 +8,7 @@ fn test_ident() {
 
 #[test]
 fn test_rdbc_table() {
-    pub struct Demo {
-        name: String,
-        title: String,
-    }
+    pub struct Demo {}
 
     pub enum DemoVars {
         Name,
@@ -32,22 +29,17 @@ fn test_rdbc_table() {
         }
 
         fn get_columns() -> Vec<impl RdbcIdent> {
-            vec![
-                DemoVars::Name,
-                DemoVars::Title,
-            ]
+            vec![DemoVars::Name, DemoVars::Title]
         }
     }
 
     assert_eq!("DEMO".to_string(), Demo::get_table().get_ident());
     assert_eq!("name".to_string(), DemoVars::Name.get_ident());
     assert_eq!(
-        vec![
-            "name".to_string(),
-            "title".to_string(),
-        ],
-        Demo::get_columns().iter().map(|x| x.get_ident()).collect::<Vec<String>>()
+        vec!["name".to_string(), "title".to_string(),],
+        Demo::get_columns()
+            .iter()
+            .map(|x| x.get_ident())
+            .collect::<Vec<String>>()
     );
-
 }
-

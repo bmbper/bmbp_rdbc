@@ -2,9 +2,6 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 
-use bmbp_rdbc_type::{RdbcOrmRow, RdbcValue};
-use bmbp_rdbc_sql::{DeleteWrapper, InsertWrapper, QueryWrapper, UpdateWrapper};
-
 use crate::err::RdbcResult;
 use crate::pool::RdbcConnInner;
 use crate::RdbcDataSource;
@@ -22,36 +19,4 @@ impl MysqlDbClient {
 }
 
 #[async_trait]
-impl RdbcConnInner for MysqlDbClient {
-    async fn valid(&self) -> bool {
-        return true;
-    }
-    async fn select_list_by_query(
-        &self,
-        query: &QueryWrapper,
-    ) -> RdbcResult<Option<Vec<RdbcOrmRow>>> {
-        Ok(None)
-    }
-    async fn select_one_by_query(&self, query: &QueryWrapper) -> RdbcResult<Option<RdbcOrmRow>> {
-        Ok(None)
-    }
-    async fn select_list_by_sql(
-        &self,
-        query: &str,
-        params: &[RdbcValue],
-    ) -> RdbcResult<Option<Vec<RdbcOrmRow>>> {
-        Ok(None)
-    }
-
-    async fn execute_insert(&self, delete: &InsertWrapper) -> RdbcResult<u64> {
-        Ok(0)
-    }
-
-    async fn execute_update(&self, delete: &UpdateWrapper) -> RdbcResult<u64> {
-        Ok(0)
-    }
-
-    async fn execute_delete(&self, delete: &DeleteWrapper) -> RdbcResult<u64> {
-        Ok(0)
-    }
-}
+impl RdbcConnInner for MysqlDbClient {}

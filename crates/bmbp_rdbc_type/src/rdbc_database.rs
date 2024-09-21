@@ -6,4 +6,5 @@ pub enum RdbcDataBase {
     #[default]
     Postgres,
     MySQL,
+    SQLLite,
 }

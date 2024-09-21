@@ -20,7 +20,7 @@ bmbp_rdbc_orm = { version = "0.2.6", path = "crates/bmbp_rdbc_orm" }
 bmbp_rdbc_script = { version = "0.2.6", path = "crates/bmbp_rdbc_script" }
 bmbp_rdbc_sql = { version = "0.2.6", path = "crates/bmbp_rdbc_sql" }
 bmbp_rdbc_type = { version = "0.2.5", path = "crates/bmbp_rdbc_type" }
-
+bmbp_rdbc_driver = { version = "0.2.5", path = "crates/bmbp_rdbc_driver" }
 async-lock = "3.4.0"
 async-once-cell = "0.5.3"
 async-recursion = "1.1.1"
@@ -63,7 +63,7 @@ syn = { version = "2.0.72", features = [
     "clone-impls",
 ] }
 tokio = { version = "1.38.0", features = ["full"] }
-tokio-postgres = { version = "0.7.10", features = ["with-chrono-0_4"] }
+tokio-postgres = { version = "0.7.12", features = ["with-chrono-0_4"] }
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 toml = "0.8.14"

@@ -3,13 +3,10 @@ use std::sync::Arc;
 
 use serde::Serialize;
 
+use bmbp_rdbc_sql::{DeleteWrapper, InsertWrapper, QueryWrapper, UpdateWrapper};
 use bmbp_rdbc_type::{RdbcDataSource, RdbcOrmRow, RdbcPage};
-use bmbp_rdbc_sql::{
-    DeleteWrapper, InsertWrapper, QueryWrapper, UpdateWrapper,
-};
 
-
-use crate::err::{ RdbcResult};
+use crate::err::RdbcResult;
 use crate::pool::{RdbcConn, RdbcConnPool};
 
 pub struct RdbcOrm {
@@ -33,7 +30,7 @@ impl RdbcOrm {
     pub async fn get_conn(&self) -> RdbcResult<RdbcConn> {
         self.pool.get_conn().await
     }
-    pub async fn valid(&self) -> bool {
+    pub async fn valid(&self) -> RdbcResult<bool> {
         self.pool.valid().await
     }
     pub async fn select_page_by_query<T>(

@@ -11,6 +11,7 @@ repository.workspace = true
 documentation.workspace = true
 [dependencies]
 bmbp_rdbc_adaptor = { workspace = true }
+bmbp_rdbc_driver = {workspace = true}
 bmbp_rdbc_marco = { workspace = true }
 bmbp_rdbc_orm = { workspace = true }
 bmbp_rdbc_script = { workspace = true }

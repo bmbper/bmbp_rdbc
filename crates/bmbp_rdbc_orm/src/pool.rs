@@ -1,15 +1,9 @@
-use std::fmt::Debug;
+use async_trait::async_trait;
+use bmbp_rdbc_sql::{DeleteWrapper, InsertWrapper, QueryWrapper, UpdateWrapper};
+use bmbp_rdbc_type::{RdbcDataSource, RdbcOrmRow, RdbcValue};
 use std::sync::Arc;
 use std::sync::RwLock;
 use std::time::{Duration, Instant};
-
-use async_trait::async_trait;
-use serde::Serialize;
-use tokio_postgres::types::IsNull::No;
-use tracing::info;
-
-use bmbp_rdbc_sql::{DeleteWrapper, InsertWrapper, QueryWrapper, UpdateWrapper};
-use bmbp_rdbc_type::{RdbcDataSource, RdbcOrmRow, RdbcPage, RdbcValue};
 
 use crate::client;
 use crate::err::{RdbcError, RdbcErrorType, RdbcResult};
@@ -17,7 +11,9 @@ use crate::err::{RdbcError, RdbcErrorType, RdbcResult};
 /// RdbcConnInner 定义数据库连接抽象
 #[async_trait]
 pub trait RdbcConnInner {
-    async fn valid(&self) -> bool;
+    async fn valid(&self) -> RdbcResult<bool> {
+        Err(RdbcError::new(RdbcErrorType::SQLError, "接口未实现"))
+    }
     async fn select_page_by_query(
         &self,
         _page_no: usize,
@@ -28,24 +24,36 @@ pub trait RdbcConnInner {
     }
     async fn select_list_by_query(
         &self,
-        query: &QueryWrapper,
-    ) -> RdbcResult<Option<Vec<RdbcOrmRow>>>;
-    async fn select_one_by_query(&self, query: &QueryWrapper) -> RdbcResult<Option<RdbcOrmRow>>;
+        _query: &QueryWrapper,
+    ) -> RdbcResult<Option<Vec<RdbcOrmRow>>> {
+        Err(RdbcError::new(RdbcErrorType::SQLError, "接口未实现"))
+    }
+    async fn select_one_by_query(&self, _query: &QueryWrapper) -> RdbcResult<Option<RdbcOrmRow>> {
+        Err(RdbcError::new(RdbcErrorType::SQLError, "接口未实现"))
+    }
     async fn select_one_by_sql(
         &self,
-        sql: &str,
-        params: &[RdbcValue],
+        _sql: &str,
+        _params: &[RdbcValue],
     ) -> RdbcResult<Option<RdbcOrmRow>> {
-        Ok(None)
+        Err(RdbcError::new(RdbcErrorType::SQLError, "接口未实现"))
     }
     async fn select_list_by_sql(
         &self,
-        query: &str,
-        params: &[RdbcValue],
-    ) -> RdbcResult<Option<Vec<RdbcOrmRow>>>;
-    async fn execute_insert(&self, delete: &InsertWrapper) -> RdbcResult<u64>;
-    async fn execute_update(&self, delete: &UpdateWrapper) -> RdbcResult<u64>;
-    async fn execute_delete(&self, delete: &DeleteWrapper) -> RdbcResult<u64>;
+        _query: &str,
+        _params: Vec<RdbcValue>,
+    ) -> RdbcResult<Option<Vec<RdbcOrmRow>>> {
+        Err(RdbcError::new(RdbcErrorType::SQLError, "接口未实现"))
+    }
+    async fn execute_insert(&self, _delete: &InsertWrapper) -> RdbcResult<u64> {
+        Err(RdbcError::new(RdbcErrorType::SQLError, "接口未实现"))
+    }
+    async fn execute_update(&self, _delete: &UpdateWrapper) -> RdbcResult<u64> {
+        Err(RdbcError::new(RdbcErrorType::SQLError, "接口未实现"))
+    }
+    async fn execute_delete(&self, _delete: &DeleteWrapper) -> RdbcResult<u64> {
+        Err(RdbcError::new(RdbcErrorType::SQLError, "接口未实现"))
+    }
 }
 
 /// RdbcTransConnInner 定义数据库事务连接抽象
@@ -72,11 +80,11 @@ pub struct RdbcTransConn<'a> {
 }
 
 impl<'a> RdbcConn<'a> {
-    pub async fn valid(&self) -> bool {
+    pub async fn valid(&self) -> RdbcResult<bool> {
         if let Some(con) = &self.inner {
             return con.valid().await;
         } else {
-            false
+            return Ok(false);
         }
     }
 
@@ -192,7 +200,7 @@ impl RdbcConnPool {
         tracing::info!(
             "初始化连接池 => 数据库类型：{:?}， 初始连接数: {} ",
             ds.get_typ(),
-           ds.get_init_conn_size().unwrap_or(5),
+            ds.get_init_conn_size().unwrap_or(5),
         );
         let init_conn_size = ds.get_init_conn_size().unwrap_or(5);
         *self.conn_size.write().unwrap() = init_conn_size.clone();
@@ -228,10 +236,10 @@ impl RdbcConnPool {
             inner: Some(conn),
         })
     }
-    pub async fn valid(&self) -> bool {
+    pub async fn valid(&self) -> RdbcResult<bool> {
         return match self.get_conn().await {
             Ok(conn) => conn.valid().await,
-            Err(_) => false,
+            Err(_) => Ok(false),
         };
     }
 }
@@ -251,7 +259,7 @@ impl RdbcConnPool {
         let ds = self.data_source.clone();
         let max_conn_size = ds.get_max_conn_size().unwrap_or(10);
         let mut grow_size = ds.get_grow_conn_size().unwrap_or(5);
-        let mut conn_size = self.conn_size.read().unwrap().clone();
+        let conn_size = self.conn_size.read().unwrap().clone();
         if conn_size >= max_conn_size {
             tracing::info!(
                 "数据库连接池=> 资源已满，最大连接数：{}，已用连接数：{} ， 空闲连接数：{}",
@@ -292,12 +300,9 @@ impl RdbcConnPool {
 pub mod tests {
     use std::sync::Arc;
 
-    use tracing_subscriber::fmt::init;
-    use tracing_subscriber::util::SubscriberInitExt;
+    use bmbp_rdbc_type::RdbcDataSource;
 
-    use crate::err::RdbcResult;
     use crate::pool::RdbcConnPool;
-    use crate::{RdbcDataSource, RdbcOrm};
 
     fn build_datasource() -> RdbcDataSource {
         let mut ds = RdbcDataSource::new();
@@ -388,7 +393,7 @@ pub mod tests {
     async fn test_get_query() {
         tracing_subscriber::fmt().init();
         let pool = RdbcConnPool::new(Arc::new(build_datasource()));
-        let init_rs = pool.init().await;
+        let _ = pool.init().await;
         tracing::info!(
             "连接池准备就绪： ===> init {} used {} idle {}",
             pool.conn_size(),
