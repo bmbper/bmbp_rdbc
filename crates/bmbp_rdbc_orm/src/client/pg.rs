@@ -247,7 +247,7 @@ impl RdbcConnInner for PgDbClient {
             .select_one_by_sql(count_sql.as_str(), page_prams.as_slice())
             .await?;
         let row_data = self
-            .select_list_by_sql(query_sql.as_str(), page_prams.as_slice())
+            .select_list_by_sql(query_sql.as_str(), page_prams)
             .await?;
         let mut row_total = 0usize;
         if let Some(total) = total_row {
@@ -281,7 +281,7 @@ impl RdbcConnInner for PgDbClient {
         info!("sql=>{}; \n params={:#?}", sql, params);
         let pg_prams = params
             .iter()
-            .filter_map(|v| Self::to_sql_param(v))
+            .filter_map(|v| Self::to_pg_sql(v))
             .collect::<Vec<_>>();
 
         match self
@@ -309,7 +309,7 @@ impl RdbcConnInner for PgDbClient {
         info!("sql=>{}; \n params={:#?}", query, params);
         let pg_prams = params
             .iter()
-            .filter_map(|v| Self::to_sql_param(v))
+            .filter_map(|v| Self::to_pg_sql(v))
             .collect::<Vec<_>>();
         match self
             .client
