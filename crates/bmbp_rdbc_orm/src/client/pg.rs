@@ -52,33 +52,11 @@ impl PgDbClient {
 }
 
 impl PgDbClient {
-    fn to_pg_sql(value: &RdbcValue) -> Option<&(dyn ToSql + Sync)> {
-        match value {
-            RdbcValue::Int(i) => Some(i as &(dyn ToSql + Sync)),
-            RdbcValue::BigInt(i) => Some(i as &(dyn ToSql + Sync)),
-            RdbcValue::Float(i) => Some(i as &(dyn ToSql + Sync)),
-            RdbcValue::BigFloat(i) => Some(i as &(dyn ToSql + Sync)),
-            RdbcValue::String(i) => Some(i as &(dyn ToSql + Sync)),
-            RdbcValue::DateTime(i) => Some(i as &(dyn ToSql + Sync)),
-            RdbcValue::Bool(i) => Some(i as &(dyn ToSql + Sync)),
-            RdbcValue::Null => Some(&"" as &(dyn ToSql + Sync)),
-            RdbcValue::Null => None,
-            RdbcValue::Vec(v) => {
-                let mut v_s = vec![];
-                for item in v {
-                    let pg_v = Self::to_pg_sql(item);
-                    v_s.push(pg_v);
-                }
-                None
-            }
-            RdbcValue::Map(m) => None,
-        }
-    }
     async fn execute(&self, sql: &str, params: &[RdbcValue]) -> RdbcResult<u64> {
         info!("sql=>{}; \n params={:#?}", sql, params);
         let pg_prams = params
             .iter()
-            .filter_map(|v| Self::to_pg_sql(v))
+            .map(|v| v as &(dyn ToSql + Sync))
             .collect::<Vec<_>>();
         match self
             .client
@@ -90,128 +68,6 @@ impl PgDbClient {
             Ok(row_count) => Ok(row_count),
             Err(e) => Err(RdbcError::new(RdbcErrorType::SQLError, &e.to_string())),
         }
-    }
-    fn to_sql_params(values: &[RdbcValue]) -> Vec<Box<dyn ToSql + Sync>> {
-        values
-            .iter()
-            .map(|value| {
-                match value {
-                    RdbcValue::Int(v) => Box::new(*v) as Box<dyn ToSql + Sync>,
-                    RdbcValue::BigInt(v) => Box::new(*v) as Box<dyn ToSql + Sync>,
-                    RdbcValue::Float(v) => Box::new(*v) as Box<dyn ToSql + Sync>,
-                    RdbcValue::BigFloat(v) => Box::new(*v) as Box<dyn ToSql + Sync>,
-                    RdbcValue::String(v) => Box::new(v.clone()) as Box<dyn ToSql + Sync>,
-                    RdbcValue::DateTime(v) => Box::new(*v) as Box<dyn ToSql + Sync>,
-                    RdbcValue::Bool(v) => Box::new(*v) as Box<dyn ToSql + Sync>,
-                    RdbcValue::Vec(v) => {
-                        // Handle vector types (assuming homogeneous types in the Vec)
-                        if let Some(first_element) = v.get(0) {
-                            match first_element {
-                                RdbcValue::Int(_) => {
-                                    let vec: Vec<i16> = v
-                                        .iter()
-                                        .filter_map(|item| {
-                                            if let RdbcValue::Int(i) = item {
-                                                Some(*i)
-                                            } else {
-                                                None
-                                            }
-                                        })
-                                        .collect();
-                                    Box::new(vec) as Box<dyn ToSql + Sync>
-                                }
-                                RdbcValue::BigInt(_) => {
-                                    let vec: Vec<i64> = v
-                                        .iter()
-                                        .filter_map(|item| {
-                                            if let RdbcValue::BigInt(i) = item {
-                                                Some(*i)
-                                            } else {
-                                                None
-                                            }
-                                        })
-                                        .collect();
-                                    Box::new(vec) as Box<dyn ToSql + Sync>
-                                }
-                                RdbcValue::String(_) => {
-                                    let vec: Vec<String> = v
-                                        .iter()
-                                        .filter_map(|item| {
-                                            if let RdbcValue::String(s) = item {
-                                                Some(s.clone())
-                                            } else {
-                                                None
-                                            }
-                                        })
-                                        .collect();
-                                    Box::new(vec) as Box<dyn ToSql + Sync>
-                                }
-                                RdbcValue::Float(_) => {
-                                    let vec: Vec<f32> = v
-                                        .iter()
-                                        .filter_map(|item| {
-                                            if let RdbcValue::Float(i) = item {
-                                                Some(*i)
-                                            } else {
-                                                None
-                                            }
-                                        })
-                                        .collect();
-                                    Box::new(vec) as Box<dyn ToSql + Sync>
-                                }
-                                RdbcValue::BigFloat(_) => {
-                                    let vec: Vec<f32> = v
-                                        .iter()
-                                        .filter_map(|item| {
-                                            if let RdbcValue::Float(i) = item {
-                                                Some(*i)
-                                            } else {
-                                                None
-                                            }
-                                        })
-                                        .collect();
-                                    Box::new(vec) as Box<dyn ToSql + Sync>
-                                }
-                                RdbcValue::DateTime(_) => {
-                                    let vec: Vec<String> = v
-                                        .iter()
-                                        .filter_map(|item| {
-                                            if let RdbcValue::DateTime(i) = item {
-                                                Some(i.to_string())
-                                            } else {
-                                                None
-                                            }
-                                        })
-                                        .collect();
-                                    Box::new(vec) as Box<dyn ToSql + Sync>
-                                }
-                                RdbcValue::Bool(_) => {
-                                    let vec: Vec<String> = v
-                                        .iter()
-                                        .filter_map(|item| {
-                                            if let RdbcValue::Bool(i) = item {
-                                                Some(i.to_string())
-                                            } else {
-                                                None
-                                            }
-                                        })
-                                        .collect();
-                                    Box::new(vec) as Box<dyn ToSql + Sync>
-                                }
-                                _ => {
-                                    let v: Vec<String> = vec![];
-                                    Box::new(vec) as Box<dyn ToSql + Sync>
-                                }
-                            }
-                        } else {
-                            Box::new(Vec::<i16>::new()) as Box<dyn ToSql + Sync>
-                        }
-                    }
-                    RdbcValue::Null => Box::new(None::<i32>) as Box<dyn ToSql + Sync>, // Represent `NULL`
-                    RdbcValue::Map(_) => Box::new(None::<String>) as Box<dyn ToSql + Sync>,
-                }
-            })
-            .collect()
     }
 }
 
@@ -281,7 +137,7 @@ impl RdbcConnInner for PgDbClient {
         info!("sql=>{}; \n params={:#?}", sql, params);
         let pg_prams = params
             .iter()
-            .filter_map(|v| Self::to_pg_sql(v))
+            .map(|v| v as &(dyn ToSql + Sync))
             .collect::<Vec<_>>();
 
         match self
@@ -309,7 +165,7 @@ impl RdbcConnInner for PgDbClient {
         info!("sql=>{}; \n params={:#?}", query, params);
         let pg_prams = params
             .iter()
-            .filter_map(|v| Self::to_pg_sql(v))
+            .map(|v| v as &(dyn ToSql + Sync))
             .collect::<Vec<_>>();
         match self
             .client

@@ -1,4 +1,6 @@
-use bmbp_rdbc_orm::{RdbcDataBase, RdbcDataSource, RdbcIdent, RdbcOrm, RdbcOrmRow, RdbcTable};
+use bmbp_rdbc_orm::{
+    RdbcDataBase, RdbcDataSource, RdbcIdent, RdbcOrm, RdbcOrmRow, RdbcTable, RdbcValue,
+};
 use bmbp_rdbc_sql::{QueryWrapper, RdbcTableFilter};
 use serde::{Deserialize, Serialize};
 
@@ -467,7 +469,7 @@ async fn test_query_combo_dict_by_alias() {
     tracing_subscriber::fmt().init();
     let orm = build_orm().await;
     let mut query = QueryWrapper::new_from::<BmbpDict>();
-    query.in_v(BmbpDictColumn::DataId, vec!["D1", "AA"]);
+    query.in_v(BmbpDictColumn::DictAlias, vec!["D1", "AA"]);
     let dict_vec = orm.select_list_by_query::<BmbpDict>(&query).await.unwrap();
     if let Some(dict) = dict_vec {
         println!("{}", serde_json::to_string_pretty(&dict).unwrap());

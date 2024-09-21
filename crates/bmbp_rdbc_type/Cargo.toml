@@ -20,3 +20,4 @@ tokio-postgres = { workspace = true }
 chrono = { workspace = true }
 log = { workspace = true }
 uuid = { workspace = true }
+bytes = { workspace = true }
