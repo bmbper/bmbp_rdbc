@@ -1,6 +1,2 @@
-pub trait RdbcRowResultSet {
-
-}
-pub trait RdbcRowResultMeta {
-
-}
+pub trait RdbcRowResultSet {}
+pub trait RdbcRowResultMeta {}

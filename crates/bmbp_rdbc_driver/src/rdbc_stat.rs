@@ -1,3 +1,1 @@
-pub trait RdbcPreparedStatement  {
-
-}
+pub trait RdbcPreparedStatement {}

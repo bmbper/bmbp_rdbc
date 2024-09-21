@@ -1,6 +1,6 @@
 use std::sync::RwLock;
 
-use bmbp_rdbc_type::RdbcDataBase;
+use bmbp_rdbc_type::{RdbcDataBase, RdbcIdent, RdbcValue};
 
 use crate::{QueryWrapper, RdbcDmlValue, RdbcTableColumn, RdbcTableInner, RdbcTableWrapper};
 
@@ -49,6 +49,25 @@ impl InsertWrapper {
 }
 
 impl InsertWrapper {
+    pub fn insert<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
+    where
+        RC: RdbcIdent,
+        RdbcValue: From<RV>,
+    {
+        self.insert_column_value(column.get_ident(), RdbcValue::from(value))
+    }
+    pub fn column<RC>(&mut self, column: RC) -> &mut Self
+    where
+        RC: RdbcIdent,
+    {
+        self.insert_column(column.get_ident())
+    }
+    pub fn value<RC>(&mut self, value: RC) -> &mut Self
+    where
+        RdbcValue: From<RC>,
+    {
+        self.insert_value(RdbcValue::from(value))
+    }
     pub fn insert_query(&mut self, query: QueryWrapper) -> &mut Self {
         self.query_ = Some(query);
         self
@@ -68,7 +87,6 @@ impl InsertWrapper {
         self.values_.push(RdbcDmlValue::from(value));
         self
     }
-
     pub fn insert_column_value<RC, RV>(&mut self, column: RC, value: RV) -> &mut Self
     where
         RdbcTableColumn: From<RC>,

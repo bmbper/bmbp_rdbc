@@ -402,10 +402,8 @@ impl PgScriptBuilder {
             update_prams.extend(set_params);
         }
         // from table
-        // update table
         let (from_sql, from_prams) =
             PgScriptTableBuilder::build_table_by_slice(from_table.as_slice());
-        println!("from_sql=====>{},{}", from_sql, from_sql.len());
         if !from_sql.is_empty() {
             update_sql.push(format!(" FROM {}", from_sql));
             update_prams.extend(from_prams);
@@ -418,27 +416,44 @@ impl PgScriptBuilder {
 
         // where
         let (filter_sql, filter_params) = Self::build_filter(update_wrapper.get_filter());
-        update_sql.push(filter_sql);
-        update_prams.extend(filter_params);
+        if !filter_sql.is_empty() {
+            update_sql.push(filter_sql);
+            update_prams.extend(filter_params);
+        }
+
         // group by
         let (group_sql, group_params) = Self::build_group(update_wrapper.get_group_by());
-        update_sql.push(group_sql);
-        update_prams.extend(group_params);
+        if !group_sql.is_empty() {
+            update_sql.push(group_sql);
+            update_prams.extend(group_params);
+        }
+
         // having
         let (having_sql, having_params) = Self::build_having(update_wrapper.get_having());
-        update_sql.push(having_sql);
-        update_prams.extend(having_params);
+        if !having_sql.is_empty() {
+            update_sql.push(having_sql);
+            update_prams.extend(having_params);
+        }
+
         // order by
         let (order_sql, order_params) = Self::build_order(update_wrapper.get_order());
-        update_sql.push(order_sql);
-        update_prams.extend(order_params);
+        if !order_sql.is_empty() {
+            update_sql.push(order_sql);
+            update_prams.extend(order_params);
+        }
+
         // limit sql
         let (limit_sql, limit_params) = Self::build_limit(update_wrapper.get_limit());
-        update_sql.push(limit_sql);
-        update_prams.extend(limit_params);
+        if !limit_sql.is_empty() {
+            update_sql.push(limit_sql);
+            update_prams.extend(limit_params);
+        }
+
         let (offset_sql, offset_params) = Self::build_offset(update_wrapper.get_offset());
-        update_sql.push(offset_sql);
-        update_prams.extend(offset_params);
+        if !offset_sql.is_empty() {
+            update_sql.push(offset_sql);
+            update_prams.extend(offset_params);
+        }
         (update_sql.join("\n"), update_prams)
     }
 
@@ -451,35 +466,48 @@ impl PgScriptBuilder {
         let (from_table_sql, from_table_params) = Self::build_table(delete_wrapper.get_table());
         delete_sql.push(from_table_sql);
         delete_params.extend(from_table_params);
-
         // join
         let (join_table_sql, join_table_params) =
             Self::build_table_join(delete_wrapper.get_join().unwrap_or(&vec![]));
-        delete_sql.push(join_table_sql);
-        delete_params.extend(join_table_params);
+        if !join_table_sql.is_empty() {
+            delete_sql.push(join_table_sql);
+            delete_params.extend(join_table_params);
+        }
         // where
         let (filter_sql, filter_params) = Self::build_filter(delete_wrapper.get_filter());
-        delete_sql.push(filter_sql);
-        delete_params.extend(filter_params);
+        if !filter_sql.is_empty() {
+            delete_sql.push(filter_sql);
+            delete_params.extend(filter_params);
+        }
         // group by
         let (group_sql, group_params) = Self::build_group(delete_wrapper.get_group_by());
-        delete_sql.push(group_sql);
-        delete_params.extend(group_params);
+        if !group_sql.is_empty() {
+            delete_sql.push(group_sql);
+            delete_params.extend(group_params);
+        }
         // having
         let (having_sql, having_params) = Self::build_having(delete_wrapper.get_having());
-        delete_sql.push(having_sql);
-        delete_params.extend(having_params);
+        if !having_sql.is_empty() {
+            delete_sql.push(having_sql);
+            delete_params.extend(having_params);
+        }
         // order by
         let (order_sql, order_params) = Self::build_order(delete_wrapper.get_order());
-        delete_sql.push(order_sql);
-        delete_params.extend(order_params);
+        if !order_sql.is_empty() {
+            delete_sql.push(order_sql);
+            delete_params.extend(order_params);
+        }
         // limit sql
         let (limit_sql, limit_params) = Self::build_limit(delete_wrapper.get_limit());
-        delete_sql.push(limit_sql);
-        delete_params.extend(limit_params);
+        if !limit_sql.is_empty() {
+            delete_sql.push(limit_sql);
+            delete_params.extend(limit_params);
+        }
         let (offset_sql, offset_params) = Self::build_offset(delete_wrapper.get_offset());
-        delete_sql.push(offset_sql);
-        delete_params.extend(offset_params);
+        if !offset_sql.is_empty() {
+            delete_sql.push(offset_sql);
+            delete_params.extend(offset_params);
+        }
         (delete_sql.join("\n"), delete_params)
     }
 }
@@ -538,7 +566,6 @@ impl PgScriptTableBuilder {
                 table_vec.push(table);
             }
         }
-
         let mut table_sql_vec = vec![];
         let mut table_sql_params = HashMap::new();
         let (table_sql, table_params) = Self::build_table_vec_script(table_vec);
@@ -551,7 +578,6 @@ impl PgScriptTableBuilder {
             table_sql_vec.push(table_join_sql);
             table_sql_params.extend(table_join_params);
         }
-
         (table_sql_vec.join("\n"), table_sql_params)
     }
 

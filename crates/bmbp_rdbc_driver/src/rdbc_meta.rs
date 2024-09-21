@@ -1,4 +1,1 @@
-pub trait RdbcCatalogMeta {
-
-}
-
+pub trait RdbcCatalogMeta {}

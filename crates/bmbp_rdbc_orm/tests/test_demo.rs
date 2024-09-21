@@ -1,5 +1,8 @@
 use bmbp_rdbc_orm::{RdbcDataBase, RdbcDataSource, RdbcIdent, RdbcOrm, RdbcOrmRow, RdbcTable};
-use bmbp_rdbc_sql::{QueryWrapper, RdbcColumn, RdbcTableFilter, RdbcTableWrapper, UpdateWrapper};
+use bmbp_rdbc_sql::{
+    DeleteWrapper, InsertWrapper, QueryWrapper, RdbcColumn, RdbcTableFilter, RdbcTableWrapper,
+    UpdateWrapper,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
@@ -495,12 +498,34 @@ async fn test_query_combo_like() {
         println!("{}", serde_json::to_string_pretty(&dict).unwrap());
     }
 }
-#[test]
-fn test_insert_dict() {}
-#[test]
-fn test_update_dict() {}
-#[test]
-fn delete_delete_dict() {}
+#[tokio::test]
+async fn test_insert_dict() {
+    let mut insert = InsertWrapper::new();
+    insert
+        .table(BmbpDict::get_table())
+        .insert(BmbpDictColumn::DataId, "9a5709fee8bd4c5c9cff0974f0e3982d")
+        .insert(BmbpDictColumn::DictCode, "D11")
+        .insert(BmbpDictColumn::DictParentCode, "D00")
+        .insert(BmbpDictColumn::DictName, "D10")
+        .insert(BmbpDictColumn::DictCodePath, "#,D00")
+        .insert(BmbpDictColumn::DictNamePath, "#,D00")
+        .insert(BmbpDictColumn::DictTreeGrade, 1);
+    tracing_subscriber::fmt().init();
+    let orm = build_orm().await;
+    let rs = orm.execute_insert(&insert).await.unwrap();
+    println!("{}", rs);
+}
+
+#[tokio::test]
+async fn delete_delete_dict() {
+    let mut delete = DeleteWrapper::new();
+    delete.table(BmbpDict::get_table());
+    delete.eq_(BmbpDictColumn::DataId, "9a5709fee8bd4c5c9cff0974f0e3982c");
+    tracing_subscriber::fmt().init();
+    let orm = build_orm().await;
+    let rs = orm.execute_delete(&delete).await.unwrap();
+    println!("{}", rs);
+}
 
 #[tokio::test]
 async fn test_update_path() {
