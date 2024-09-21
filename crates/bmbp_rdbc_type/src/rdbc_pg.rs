@@ -102,8 +102,7 @@ impl ToSql for RdbcValue {
             RdbcValue::Map(_) => Ok(tokio_postgres::types::IsNull::Yes),
         }
     }
-
-    fn accepts(ty: &tokio_postgres::types::Type) -> bool
+    fn accepts(_ty: &tokio_postgres::types::Type) -> bool
     where
         Self: Sized,
     {
