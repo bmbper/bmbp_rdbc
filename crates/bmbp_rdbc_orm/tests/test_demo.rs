@@ -475,6 +475,28 @@ async fn test_query_combo_dict_by_alias() {
         println!("{}", serde_json::to_string_pretty(&dict).unwrap());
     }
 }
+#[tokio::test]
+async fn test_query_combo_between() {
+    tracing_subscriber::fmt().init();
+    let orm = build_orm().await;
+    let mut query = QueryWrapper::new_from::<BmbpDict>();
+    query.between_(BmbpDictColumn::DictAlias, "A", "D");
+    let dict_vec = orm.select_list_by_query::<BmbpDict>(&query).await.unwrap();
+    if let Some(dict) = dict_vec {
+        println!("{}", serde_json::to_string_pretty(&dict).unwrap());
+    }
+}
+#[tokio::test]
+async fn test_query_combo_like() {
+    tracing_subscriber::fmt().init();
+    let orm = build_orm().await;
+    let mut query = QueryWrapper::new_from::<BmbpDict>();
+    query.like_left_(BmbpDictColumn::DictAlias, "D");
+    let dict_vec = orm.select_list_by_query::<BmbpDict>(&query).await.unwrap();
+    if let Some(dict) = dict_vec {
+        println!("{}", serde_json::to_string_pretty(&dict).unwrap());
+    }
+}
 #[test]
 fn test_insert_dict() {}
 #[test]

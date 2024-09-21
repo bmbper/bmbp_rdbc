@@ -783,8 +783,11 @@ impl PgScriptFilterBuilder {
                 if let Some(v) = value {
                     if (v.is_null() && !ignore) || !v.is_null() {
                         let col_id = Uuid::new_v4().simple().to_string();
-                        col_sql =
-                            format!("{} LIKE CONCAT('%','#{{{}}}','%')", col_sql, col_id.clone());
+                        col_sql = format!(
+                            "{} LIKE CONCAT('%',#{{{}}}::text,'%')",
+                            col_sql,
+                            col_id.clone()
+                        );
                         col_params.insert(col_id, v.clone());
                     }
                 } else {
@@ -797,7 +800,8 @@ impl PgScriptFilterBuilder {
                 if let Some(v) = value {
                     if (v.is_null() && !ignore) || !v.is_null() {
                         let col_id = Uuid::new_v4().simple().to_string();
-                        col_sql = format!("{} LIKE CONCAT('#{{{}}}','%')", col_sql, col_id.clone());
+                        col_sql =
+                            format!("{} LIKE CONCAT(#{{{}}}::text,'%')", col_sql, col_id.clone());
                         col_params.insert(col_id, v.clone());
                     }
                 } else {
@@ -810,7 +814,8 @@ impl PgScriptFilterBuilder {
                 if let Some(v) = value {
                     if (v.is_null() && !ignore) || !v.is_null() {
                         let col_id = Uuid::new_v4().simple().to_string();
-                        col_sql = format!("{} LIKE CONCAT('%','#{{{}}}')", col_sql, col_id.clone());
+                        col_sql =
+                            format!("{} LIKE CONCAT('%',#{{{}}}::text)", col_sql, col_id.clone());
                         col_params.insert(col_id, v.clone());
                     }
                 } else {
@@ -824,7 +829,7 @@ impl PgScriptFilterBuilder {
                     if (v.is_null() && !ignore) || !v.is_null() {
                         let col_id = Uuid::new_v4().simple().to_string();
                         col_sql = format!(
-                            "{} NOT LIKE CONCAT('%','#{{{}}}','%')",
+                            "{} NOT LIKE CONCAT('%',#{{{}}}::text,'%')",
                             col_sql,
                             col_id.clone()
                         );
@@ -840,8 +845,11 @@ impl PgScriptFilterBuilder {
                 if let Some(v) = value {
                     if (v.is_null() && !ignore) || !v.is_null() {
                         let col_id = Uuid::new_v4().simple().to_string();
-                        col_sql =
-                            format!("{} NOT LIKE CONCAT('#{{{}}}','%')", col_sql, col_id.clone());
+                        col_sql = format!(
+                            "{} NOT LIKE CONCAT(#{{{}}}::text,'%')",
+                            col_sql,
+                            col_id.clone()
+                        );
                         col_params.insert(col_id, v.clone());
                     }
                 } else {
@@ -854,8 +862,11 @@ impl PgScriptFilterBuilder {
                 if let Some(v) = value {
                     if (v.is_null() && !ignore) || !v.is_null() {
                         let col_id = Uuid::new_v4().simple().to_string();
-                        col_sql =
-                            format!("{} NOT LIKE CONCAT('%','#{{{}}}')", col_sql, col_id.clone());
+                        col_sql = format!(
+                            "{} NOT LIKE CONCAT('%',#{{{}}}::text)",
+                            col_sql,
+                            col_id.clone()
+                        );
                         col_params.insert(col_id, v.clone());
                     }
                 } else {
