@@ -389,7 +389,7 @@ impl PgScriptBuilder {
                     }
                     crate::RdbcDmlValue::COLUMN(rdbc_column) => {
                         let (col_v_sql, _) = PgScriptColumnBuilder::build_column(rdbc_column);
-                        set_sql.push(format!("{} = #{{{}}}", col_sql, col_v_sql));
+                        set_sql.push(format!("{} = {}", col_sql, col_v_sql));
                     }
                 }
             } else {
@@ -405,6 +405,7 @@ impl PgScriptBuilder {
         // update table
         let (from_sql, from_prams) =
             PgScriptTableBuilder::build_table_by_slice(from_table.as_slice());
+        println!("from_sql=====>{},{}", from_sql, from_sql.len());
         if !from_sql.is_empty() {
             update_sql.push(format!(" FROM {}", from_sql));
             update_prams.extend(from_prams);
@@ -537,11 +538,21 @@ impl PgScriptTableBuilder {
                 table_vec.push(table);
             }
         }
-        let (table_sql, mut table_params) = Self::build_table_vec_script(table_vec);
+
+        let mut table_sql_vec = vec![];
+        let mut table_sql_params = HashMap::new();
+        let (table_sql, table_params) = Self::build_table_vec_script(table_vec);
+        if !table_sql.is_empty() {
+            table_sql_vec.push(table_sql);
+            table_sql_params.extend(table_params);
+        }
         let (table_join_sql, table_join_params) = Self::build_table_join_vec_script(join_table_vec);
-        let table_sql = format!("{} \n {}", table_sql, table_join_sql);
-        table_params.extend(table_join_params);
-        (table_sql, table_params)
+        if table_join_sql.is_empty() {
+            table_sql_vec.push(table_join_sql);
+            table_sql_params.extend(table_join_params);
+        }
+
+        (table_sql_vec.join("\n"), table_sql_params)
     }
 
     fn build_table(from_tables: &Vec<RdbcTableInner>) -> (String, HashMap<String, RdbcValue>) {
@@ -1111,7 +1122,7 @@ impl PgScriptFucBuilder {
         let old_value = func_column.get_old_value();
         let new_value = func_column.get_new_value();
         (
-            format!("REPLACE({},{},{})", column_sql, old_value, new_value),
+            format!("REPLACE({},'{}','{}')", column_sql, old_value, new_value),
             column_params,
         )
     }

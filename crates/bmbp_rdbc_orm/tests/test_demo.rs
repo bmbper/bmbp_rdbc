@@ -1,5 +1,5 @@
 use bmbp_rdbc_orm::{RdbcDataBase, RdbcDataSource, RdbcIdent, RdbcOrm, RdbcOrmRow, RdbcTable};
-use bmbp_rdbc_sql::{QueryWrapper, RdbcTableFilter};
+use bmbp_rdbc_sql::{QueryWrapper, RdbcColumn, RdbcTableFilter, RdbcTableWrapper, UpdateWrapper};
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
@@ -501,3 +501,30 @@ fn test_insert_dict() {}
 fn test_update_dict() {}
 #[test]
 fn delete_delete_dict() {}
+
+#[tokio::test]
+async fn test_update_path() {
+    let mut update = UpdateWrapper::new();
+    update
+        .table(BmbpDict::get_table())
+        .set(
+            BmbpDictColumn::DictNamePath,
+            RdbcColumn::replace(BmbpDictColumn::DictNamePath.get_ident(), "#,DD", "#,BB"),
+        )
+        .set(
+            BmbpDictColumn::DictCodePath,
+            RdbcColumn::replace(
+                BmbpDictColumn::DictCodePath.get_ident(),
+                "#,0b1bf8a785fb4db38809de24826e41d1,",
+                "#,4aa4a14c781f4a9c952e7879b2d9aeb6,",
+            ),
+        );
+    update.like_left_(
+        BmbpDictColumn::DictCodePath,
+        "#,0b1bf8a785fb4db38809de24826e41d1,",
+    );
+    tracing_subscriber::fmt().init();
+    let orm = build_orm().await;
+    let rs = orm.execute_update(&update).await.unwrap();
+    println!("{}", rs);
+}
