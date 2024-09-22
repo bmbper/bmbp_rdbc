@@ -12,7 +12,7 @@ cd ../bmbp_rdbc_marco
 cargo publish
 cd ../bmbp_rdbc_driver
 cargo publish
-cd ../bmbp_rdbc_adapter
+cd ../bmbp_rdbc_adaptor
 cargo publish
 cd ../bmbp_rdbc
 cargo publish
