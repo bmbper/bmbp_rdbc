@@ -1,7 +1,7 @@
 use bmbp_rdbc_orm::{RdbcDataBase, RdbcDataSource, RdbcIdent, RdbcOrm, RdbcOrmRow, RdbcTable};
 use bmbp_rdbc_sql::{
-    DeleteWrapper, InsertWrapper, QueryWrapper, RdbcColumn, RdbcTableFilter, RdbcTableWrapper,
-    UpdateWrapper,
+    DeleteWrapper, InsertWrapper, QueryFilter, QueryWrapper, RdbcColumn, RdbcTableFilter,
+    RdbcTableWrapper, UpdateWrapper,
 };
 use serde::{Deserialize, Serialize};
 
@@ -493,6 +493,20 @@ async fn test_query_combo_like() {
     let orm = build_orm().await;
     let mut query = QueryWrapper::new_from::<BmbpDict>();
     query.like_left_(BmbpDictColumn::DictAlias, "D");
+    let dict_vec = orm.select_list_by_query::<BmbpDict>(&query).await.unwrap();
+    if let Some(dict) = dict_vec {
+        println!("{}", serde_json::to_string_pretty(&dict).unwrap());
+    }
+}
+#[tokio::test]
+async fn test_query_not_in() {
+    tracing_subscriber::fmt().init();
+    let orm = build_orm().await;
+    let mut query = QueryWrapper::new_from::<BmbpDict>();
+    let mut filter = QueryFilter::new();
+    filter.not_in_v_(BmbpDictColumn::DataId, vec!["1", "2"]);
+    query.add_filter(filter);
+
     let dict_vec = orm.select_list_by_query::<BmbpDict>(&query).await.unwrap();
     if let Some(dict) = dict_vec {
         println!("{}", serde_json::to_string_pretty(&dict).unwrap());

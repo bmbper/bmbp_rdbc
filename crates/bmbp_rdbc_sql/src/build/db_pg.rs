@@ -929,7 +929,7 @@ impl PgScriptFilterBuilder {
                 if let Some(v) = value {
                     if (v.is_null() && !ignore) || !v.is_null() {
                         let col_id = Uuid::new_v4().simple().to_string();
-                        col_sql = format!("{} NOT ANY (#{{{}}})", col_sql, col_id.clone());
+                        col_sql = format!("{} <> ANY (#{{{}}})", col_sql, col_id.clone());
 
                         col_params.insert(col_id, RdbcValue::Vec(v.convert_to_vec()));
                     }

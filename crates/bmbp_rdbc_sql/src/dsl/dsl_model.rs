@@ -1051,19 +1051,71 @@ impl QueryFilter {
             .push(QueryFilterItem::not_like_right_(column, value));
         self
     }
-
+    pub fn in_v_<RC, RV>(&mut self, column: RC, value: Vec<RV>) -> &mut Self
+    where
+        RdbcColumn: From<RC>,
+        RdbcValue: From<RV>,
+    {
+        let rc = RdbcColumn::from(column);
+        let rv: Vec<RdbcValue> = value.into_iter().map(|v| RdbcValue::from(v)).collect();
+        self.item_.push(QueryFilterItem::in_v(rc, rv));
+        self
+    }
+    pub fn in_v_s_<RC, RV>(&mut self, column: RC, value: &[RV]) -> &mut Self
+    where
+        RdbcColumn: From<RC>,
+        RdbcValue: for<'a> From<&'a RV>,
+    {
+        let rc = RdbcColumn::from(column);
+        let rv = value.into_iter().map(|v| RdbcValue::from(v)).collect();
+        self.item_.push(QueryFilterItem::in_v(rc, rv));
+        self
+    }
     pub fn in_v(&mut self, column: RdbcColumn, value: Vec<RdbcValue>) -> &mut Self {
         self.item_.push(QueryFilterItem::in_v(column, value));
+        self
+    }
+
+    pub fn in_v_slice(&mut self, column: RdbcColumn, value: &[RdbcValue]) -> &mut Self {
+        let rv: Vec<RdbcValue> = value.into_iter().map(|v| v.clone()).collect();
+        self.item_.push(QueryFilterItem::in_v(column, rv));
         self
     }
     pub fn in_query(&mut self, column: RdbcColumn, value: QueryWrapper) -> &mut Self {
         self.item_.push(QueryFilterItem::in_query(column, value));
         self
     }
+    pub fn not_in_v_<RC, RV>(&mut self, column: RC, value: Vec<RV>) -> &mut Self
+    where
+        RdbcColumn: From<RC>,
+        RdbcValue: From<RV>,
+    {
+        let rc = RdbcColumn::from(column);
+        let rv: Vec<RdbcValue> = value.into_iter().map(|v| RdbcValue::from(v)).collect();
+        self.item_.push(QueryFilterItem::not_in_v(rc, rv));
+        self
+    }
+    pub fn not_in_v_s_<RC, RV>(&mut self, column: RC, value: &[RV]) -> &mut Self
+    where
+        RdbcColumn: From<RC>,
+        RdbcValue: for<'a> From<&'a RV>,
+    {
+        let rc = RdbcColumn::from(column);
+        let rv: Vec<RdbcValue> = value.into_iter().map(|v| RdbcValue::from(v)).collect();
+        self.item_.push(QueryFilterItem::not_in_v(rc, rv));
+        self
+    }
     pub fn not_in_v(&mut self, column: RdbcColumn, value: Vec<RdbcValue>) -> &mut Self {
         self.item_.push(QueryFilterItem::not_in_v(column, value));
         self
     }
+
+    pub fn not_in_v_slice(&mut self, column: RdbcColumn, value: &[RdbcValue]) -> &mut Self {
+        let rv: Vec<RdbcValue> = value.into_iter().map(|v| v.clone()).collect();
+        self.item_.push(QueryFilterItem::not_in_v(column, rv));
+        self
+    }
+
     pub fn not_in_query(&mut self, column: RdbcColumn, value: QueryWrapper) -> &mut Self {
         self.item_
             .push(QueryFilterItem::not_in_query(column, value));
