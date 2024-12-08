@@ -11,7 +11,6 @@ pub trait RdbcIdent {
         format!("{} AS {}", self.get_ident(), alias)
     }
 }
-
 impl<T> RdbcIdent for T
 where
     T: ToString,
@@ -22,7 +21,7 @@ where
 }
 
 /// RdbcTable which use for declare a struct to  table
-pub trait RdbcTable {
+pub trait RdbcTableIdent {
     fn get_table() -> impl RdbcIdent;
     fn get_columns() -> Vec<impl RdbcIdent>;
     fn get_primary_key() -> impl RdbcIdent {

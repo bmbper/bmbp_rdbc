@@ -1,4 +1,4 @@
-use bmbp_rdbc_orm::{RdbcDataBase, RdbcDataSource, RdbcIdent, RdbcOrm, RdbcOrmRow, RdbcTable};
+use bmbp_rdbc_orm::{RdbcDataBase, RdbcDataSource, RdbcIdent, RdbcOrm, RdbcOrmRow, RdbcTableIdent};
 use bmbp_rdbc_sql::{
     DeleteWrapper, InsertWrapper, QueryFilter, QueryWrapper, RdbcColumn, RdbcTableFilter,
     RdbcTableWrapper, UpdateWrapper,
@@ -307,7 +307,7 @@ impl RdbcIdent for BmbpDictColumn {
         }
     }
 }
-impl RdbcTable for BmbpDict {
+impl RdbcTableIdent for BmbpDict {
     fn get_table() -> impl RdbcIdent {
         "BMBP_CONFIG_DICT".to_string()
     }

@@ -1,4 +1,4 @@
-use bmbp_rdbc_type::{RdbcDataBase, RdbcIdent, RdbcTable, RdbcValue};
+use bmbp_rdbc_type::{RdbcDataBase, RdbcIdent, RdbcTableIdent, RdbcValue};
 use std::collections::HashMap;
 use std::sync::RwLock;
 
@@ -47,7 +47,7 @@ impl QueryWrapper {
     }
     pub fn new_from<T>() -> QueryWrapper
     where
-        T: RdbcTable,
+        T: RdbcTableIdent,
     {
         let mut query = QueryWrapper::new();
         query.table(T::get_table().get_ident());

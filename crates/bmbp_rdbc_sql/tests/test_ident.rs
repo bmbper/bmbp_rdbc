@@ -1,4 +1,4 @@
-use bmbp_rdbc_type::{RdbcIdent, RdbcTable};
+use bmbp_rdbc_type::{RdbcIdent, RdbcTableIdent};
 
 #[test]
 fn test_ident() {
@@ -23,7 +23,7 @@ fn test_rdbc_table() {
         }
     }
 
-    impl RdbcTable for Demo {
+    impl RdbcTableIdent for Demo {
         fn get_table() -> impl RdbcIdent {
             "DEMO".to_string()
         }

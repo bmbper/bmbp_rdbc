@@ -1,9 +1,11 @@
 use crate::{RdbcOrmRow, RdbcValue};
 use bytes::BytesMut;
+use tokio_postgres::types::IsNull;
 use tokio_postgres::{
     types::{to_sql_checked, ToSql},
     Row,
 };
+
 impl From<Row> for RdbcOrmRow {
     fn from(row: Row) -> Self {
         let mut orm_row = RdbcOrmRow::new();
@@ -18,7 +20,7 @@ impl From<Row> for RdbcOrmRow {
                     if let Some(value) = col_value {
                         orm_row
                             .get_data_mut()
-                            .insert(col_name, RdbcValue::String(value));
+                            .insert(col_name, RdbcValue::Varchar(value));
                     }
                 }
                 "int2" => {
@@ -26,7 +28,7 @@ impl From<Row> for RdbcOrmRow {
                     if let Some(value) = col_value {
                         orm_row
                             .get_data_mut()
-                            .insert(col_name, RdbcValue::Int(value));
+                            .insert(col_name, RdbcValue::Int(value as i32));
                     }
                 }
                 "int4" => {
@@ -50,7 +52,7 @@ impl From<Row> for RdbcOrmRow {
                     if let Some(value) = col_value {
                         orm_row
                             .get_data_mut()
-                            .insert(col_name, RdbcValue::Float(value));
+                            .insert(col_name, RdbcValue::Double(value));
                     }
                 }
                 "date" | "time" | "timestamp" => {
@@ -59,7 +61,7 @@ impl From<Row> for RdbcOrmRow {
                     if let Some(value) = col_value {
                         orm_row
                             .get_data_mut()
-                            .insert(col_name, RdbcValue::DateTime(value));
+                            .insert(col_name, RdbcValue::DateTime(value.naive_local()));
                     }
                 }
                 "bool" => {
@@ -67,7 +69,7 @@ impl From<Row> for RdbcOrmRow {
                     if let Some(value) = col_value {
                         orm_row
                             .get_data_mut()
-                            .insert(col_name, RdbcValue::Bool(value));
+                            .insert(col_name, RdbcValue::Boolean(value));
                     }
                 }
                 _ => {
@@ -90,16 +92,24 @@ impl ToSql for RdbcValue {
         Self: Sized,
     {
         match self {
-            RdbcValue::Int(i) => i.to_sql(ty, w),
-            RdbcValue::BigInt(i) => i.to_sql(ty, w),
-            RdbcValue::Float(i) => i.to_sql(ty, w),
-            RdbcValue::BigFloat(i) => i.to_sql(ty, w),
-            RdbcValue::String(s) => s.to_sql(ty, w),
-            RdbcValue::DateTime(dt) => dt.to_sql(ty, w),
-            RdbcValue::Bool(b) => b.to_sql(ty, w),
-            RdbcValue::Null => Ok(tokio_postgres::types::IsNull::Yes),
-            RdbcValue::Vec(v) => v.to_sql(ty, w),
-            RdbcValue::Map(_) => Ok(tokio_postgres::types::IsNull::Yes),
+            RdbcValue::Char(v) => v.to_sql(ty, w),
+            RdbcValue::Varchar(v) => v.to_sql(ty, w),
+            RdbcValue::Text(v) => v.to_sql(ty, w),
+            RdbcValue::LongText(v) => v.to_sql(ty, w),
+            RdbcValue::SmallInt(v) => v.to_sql(ty, w),
+            RdbcValue::Int(v) => v.to_sql(ty, w),
+            RdbcValue::BigInt(v) => v.to_sql(ty, w),
+            RdbcValue::Double(v) => v.to_sql(ty, w),
+            RdbcValue::BigDouble(v) => v.to_sql(ty, w),
+            RdbcValue::Date(v) => v.to_sql(ty, w),
+            RdbcValue::DateTime(v) => v.to_sql(ty, w),
+            RdbcValue::Time(v) => v.to_sql(ty, w),
+            RdbcValue::TimeStamp(v) => v.to_sql(ty, w),
+            RdbcValue::Bytes(v) => v.to_sql(ty, w),
+            RdbcValue::Boolean(v) => v.to_sql(ty, w),
+            RdbcValue::Array(v) => v.to_sql(ty, w),
+            RdbcValue::Object(v) => v.to_sql(ty, w),
+            RdbcValue::Null => IsNull::Yes.into(),
         }
     }
     fn accepts(_ty: &tokio_postgres::types::Type) -> bool

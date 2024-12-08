@@ -1,6 +1,6 @@
 use bmbp_rdbc_sql::{PgRdbcSQLBuilder, QueryWrapper, RdbcTableFilter, SQLBuilder};
 use bmbp_rdbc_sql::{QueryFilter, RdbcTableWrapper};
-use bmbp_rdbc_type::{RdbcIdent, RdbcTable};
+use bmbp_rdbc_type::{RdbcIdent, RdbcTableIdent};
 use serde::Deserialize;
 use serde::Serialize;
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
@@ -305,7 +305,7 @@ impl RdbcIdent for BmbpDictColumn {
         }
     }
 }
-impl RdbcTable for BmbpDict {
+impl RdbcTableIdent for BmbpDict {
     fn get_table() -> impl RdbcIdent {
         "BMBP_CONFIG_DICT".to_string()
     }
