@@ -2,7 +2,7 @@
 members = ["crates/*"]
 resolver = "2"
 [workspace.package]
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 authors = ["bmbp<rs_bmbp.163.com>"]
 description = "BMBP RDBC"
@@ -19,7 +19,7 @@ bmbp_rdbc_marco = { version = "0.3.0", path = "crates/bmbp_rdbc_marco" }
 bmbp_rdbc_orm = { version = "0.3.0", path = "crates/bmbp_rdbc_orm" }
 bmbp_rdbc_script = { version = "0.3.0", path = "crates/bmbp_rdbc_script" }
 bmbp_rdbc_sql = { version = "0.3.0", path = "crates/bmbp_rdbc_sql" }
-bmbp_rdbc_type = { version = "0.3.0", path = "crates/bmbp_rdbc_type" }
+bmbp_rdbc_type = { version = "0.3.1", path = "crates/bmbp_rdbc_type" }
 bmbp_rdbc_driver = { version = "0.3.0", path = "crates/bmbp_rdbc_driver" }
 async_static = "0.1.3"
 async-trait = "0.1.81"
@@ -38,6 +38,7 @@ syn = { version = "2.0.72", features = [
     "clone-impls",
 ] }
 tokio = { version = "1.38.0", features = ["full"] }
+tokio-test = "0.4.4"
 tokio-postgres = { version = "0.7.12", features = ["with-chrono-0_4"] }
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
