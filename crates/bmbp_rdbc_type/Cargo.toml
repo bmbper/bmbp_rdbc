@@ -1,6 +1,6 @@
 [package]
 name = "bmbp_rdbc_type"
-version = "0.3.1"
+version = "0.3.2"
 edition.workspace = true
 authors.workspace = true
 description = "定义rdbc模型"
@@ -13,10 +13,8 @@ documentation.workspace = true
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
-tracing = { workspace = true }# 数据库
+tracing = { workspace = true }
 tokio-postgres = { workspace = true }
-# 时间库
 chrono = { workspace = true }
 bytes = { workspace = true }
 tokio = { workspace = true }
-tokio-test = { workspace = true }

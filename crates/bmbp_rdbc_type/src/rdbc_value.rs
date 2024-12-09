@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::fmt::Display;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum RdbcValue {
     Char(char),
     Varchar(String),
