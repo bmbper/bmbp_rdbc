@@ -1,4 +1,4 @@
-use bmbp_rdbc_orm::{RdbcDataBase, RdbcDataSource, RdbcIdent, RdbcOrm, RdbcOrmRow, RdbcTableIdent};
+use bmbp_rdbc_orm::{RdbcDataBase, RdbcDataSource, RdbcIdent, RdbcOrm, RdbcRow, RdbcTable};
 use bmbp_rdbc_sql::{
     DeleteWrapper, InsertWrapper, QueryFilter, QueryWrapper, RdbcColumn, RdbcTableFilter,
     RdbcTableWrapper, UpdateWrapper,
@@ -307,7 +307,7 @@ impl RdbcIdent for BmbpDictColumn {
         }
     }
 }
-impl RdbcTableIdent for BmbpDict {
+impl RdbcTable for BmbpDict {
     fn get_table() -> impl RdbcIdent {
         "BMBP_CONFIG_DICT".to_string()
     }
@@ -343,8 +343,8 @@ impl RdbcTableIdent for BmbpDict {
         vec!["data_id".to_string()]
     }
 }
-impl From<RdbcOrmRow> for BmbpDict {
-    fn from(row: RdbcOrmRow) -> Self {
+impl From<RdbcRow> for BmbpDict {
+    fn from(row: RdbcRow) -> Self {
         let mut model = BmbpDict::new();
         if let Some(data) = row.get_data().get("dict_value") {
             model.set_dict_value(Some(data.into()));

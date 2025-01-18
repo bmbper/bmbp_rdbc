@@ -8,28 +8,28 @@ use std::fmt::Debug;
 /// RdbcPage 分页返回值
 
 #[derive(Debug)]
-pub struct RdbcOrmRow {
+pub struct RdbcRow {
     columns: Vec<String>,
     data: HashMap<String, RdbcValue>,
 }
 
-impl RdbcOrmRow {
+impl RdbcRow {
     pub fn new() -> Self {
-        RdbcOrmRow {
+        RdbcRow {
             columns: vec![],
             data: HashMap::new(),
         }
     }
-    pub fn get_columns(&self) -> &Vec<String> {
+    pub fn columns(&self) -> &Vec<String> {
         &self.columns
     }
-    pub fn get_columns_mut(&mut self) -> &mut Vec<String> {
+    pub fn columns_mut(&mut self) -> &mut Vec<String> {
         &mut self.columns
     }
-    pub fn get_data(&self) -> &HashMap<String, RdbcValue> {
+    pub fn data(&self) -> &HashMap<String, RdbcValue> {
         &self.data
     }
-    pub fn get_data_mut(&mut self) -> &mut HashMap<String, RdbcValue> {
+    pub fn data_mut(&mut self) -> &mut HashMap<String, RdbcValue> {
         &mut self.data
     }
 }
@@ -39,7 +39,7 @@ impl RdbcOrmRow {
 #[serde(default)]
 pub struct RdbcPage<T>
 where
-    T: Default + Debug + Clone + Serialize + From<RdbcOrmRow>,
+    T: Default + Debug + Clone + Serialize + From<RdbcRow>,
 {
     page_size: usize,
     page_num: usize,
@@ -49,7 +49,7 @@ where
 
 impl<T> RdbcPage<T>
 where
-    T: Default + Debug + Clone + Serialize + From<RdbcOrmRow>,
+    T: Default + Debug + Clone + Serialize + From<RdbcRow>,
 {
     pub fn new() -> Self {
         RdbcPage {
@@ -71,7 +71,7 @@ where
 
 impl<T> RdbcPage<T>
 where
-    T: Default + Debug + Clone + Serialize + From<RdbcOrmRow>,
+    T: Default + Debug + Clone + Serialize + From<RdbcRow>,
 {
     pub fn page_num(&self) -> &usize {
         &self.page_num

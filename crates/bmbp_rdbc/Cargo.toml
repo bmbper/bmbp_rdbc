@@ -14,6 +14,6 @@ bmbp_rdbc_adaptor = { workspace = true }
 bmbp_rdbc_driver = {workspace = true}
 bmbp_rdbc_marco = { workspace = true }
 bmbp_rdbc_orm = { workspace = true }
-bmbp_rdbc_script = { workspace = true }
+bmbp_rdbc_plugin = { workspace = true }
 bmbp_rdbc_sql = { workspace = true }
 bmbp_rdbc_type = { workspace = true }
