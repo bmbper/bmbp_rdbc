@@ -62,7 +62,12 @@ impl From<String> for RdbcRawColumn {
 
 pub struct RdbcDmlColumn {
     pub column: RdbcColumn,
-    pub value: RdbcValue,
+    pub value: RdbcDmlValue,
+}
+pub enum RdbcDmlValue {
+    VALUE(RdbcValue),
+    COLUMN(RdbcColumn),
+    FUNC(RdbcFunc),
 }
 pub struct RdbcSelectColumn {
     pub column: RdbcColumn,
