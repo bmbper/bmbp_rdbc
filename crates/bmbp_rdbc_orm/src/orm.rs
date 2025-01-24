@@ -14,6 +14,20 @@ impl RdbcOrm {
 }
 
 impl RdbcOrm {
+    pub async fn query_page<E>(
+        executor: &E,
+        page_num: usize,
+        page_size: usize,
+        execute_sql: String,
+        params: &[RdbcValue],
+    ) -> Result<RdbcPage<RdbcRow>, RdbcError>
+    where
+        E: Executor,
+    {
+        executor
+            .query_page(page_num, page_size, execute_sql, params)
+            .await
+    }
     pub async fn query_page_as<E, T>(
         executor: &E,
         page_num: usize,
@@ -27,20 +41,6 @@ impl RdbcOrm {
     {
         executor
             .query_page_as(page_num, page_size, execute_sql, params)
-            .await
-    }
-    pub async fn query_page<E>(
-        executor: &E,
-        page_num: usize,
-        page_size: usize,
-        execute_sql: String,
-        params: &[RdbcValue],
-    ) -> Result<RdbcPage<RdbcRow>, RdbcError>
-    where
-        E: Executor,
-    {
-        executor
-            .query_page(page_num, page_size, execute_sql, params)
             .await
     }
     pub async fn query_list<E>(
@@ -95,16 +95,6 @@ impl RdbcOrm {
     {
         executor.execute(execute_sql, params).await
     }
-
-    pub async fn execute_batch_slice<E>(
-        executor: &E,
-        execute_sql_params: &[(&String, &[&RdbcValue])],
-    ) -> Result<usize, RdbcError>
-    where
-        E: Executor,
-    {
-        executor.execute_batch_slice(execute_sql_params).await
-    }
     pub async fn execute_batch<E>(
         executor: &E,
         execute_sql: String,
@@ -115,6 +105,16 @@ impl RdbcOrm {
     {
         executor.execute_batch(execute_sql, params).await
     }
+    pub async fn execute_batch_slice<E>(
+        executor: &E,
+        execute_sql_params: &[(&String, &[&RdbcValue])],
+    ) -> Result<usize, RdbcError>
+    where
+        E: Executor,
+    {
+        executor.execute_batch_slice(execute_sql_params).await
+    }
+
     pub async fn execute_raw<E>(executor: &E, execute_sql: String) -> Result<usize, RdbcError>
     where
         E: Executor,
@@ -169,7 +169,7 @@ impl RdbcOrm {
     {
         executor.query_list("".to_string(), &[]).await
     }
-    pub async fn query_list_as<E, T>(executor: &E, query: &RdbcQuery) -> Result<Vec<T>, RdbcError>
+    pub async fn query_list_by_query_as<E, T>(executor: &E, query: &RdbcQuery) -> Result<Vec<T>, RdbcError>
     where
         E: Executor,
         T: From<RdbcRow> + Debug + Default + Serialize + Clone,
