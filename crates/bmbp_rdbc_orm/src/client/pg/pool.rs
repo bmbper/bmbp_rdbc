@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use bmbp_rdbc_type::{Executor, RdbcError};
 use crate::ds::RdbcDbConfig;
 use crate::rdbc_error::RdbcError;
 
@@ -11,3 +12,4 @@ impl RdbcPgPool {
         Ok(pool)
     }
 }
+impl Executor for RdbcPgPool {}

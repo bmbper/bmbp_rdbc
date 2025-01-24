@@ -1,6 +1,6 @@
 use crate::ds::RdbcDbConfig;
-use crate::rdbc_error::RdbcError;
 use std::sync::Arc;
+use bmbp_rdbc_type::{Executor, RdbcError};
 
 pub struct RdbcSqlitePool {
     db_config: Arc<RdbcDbConfig>,
@@ -12,3 +12,4 @@ impl RdbcSqlitePool {
         Ok(pool)
     }
 }
+impl Executor for RdbcSqlitePool {}

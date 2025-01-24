@@ -1,6 +1,6 @@
 use std::sync::Arc;
+use bmbp_rdbc_type::{Executor, RdbcError};
 use crate::ds::RdbcDbConfig;
-use crate::rdbc_error::RdbcError;
 
 pub struct RdbcOraclePool{
     db_config: Arc<RdbcDbConfig>,
@@ -12,3 +12,4 @@ impl RdbcOraclePool {
         Ok(pool)
     }
 }
+impl Executor for RdbcOraclePool {}

@@ -41,13 +41,22 @@ select_number_value!(&str, String, &String);
 
 pub trait RdbcTableIdent {
     fn table_name() -> String;
-    fn table_alias() -> String {
-        Self::table_name()
-    }
     fn columns() -> Vec<String>;
     fn primary_key() -> String;
     fn unique_keys() -> Vec<String> {
         vec![]
+    }
+    fn table_alias() -> String {
+        "".to_string()
+    }
+    fn status_key() -> String {
+        "".to_string()
+    }
+    fn order_key() -> String {
+        "".to_string()
+    }
+    fn logic_key() -> String {
+        "".to_string()
     }
 }
 pub trait RdbcColumnIdent {
