@@ -48,7 +48,7 @@ impl RdbcInsertBuilder {
             .push(RdbcDmlValue::VALUE(RdbcValue::from(v)));
         self
     }
-    pub fn insert_values<V>(&mut self, v: V) -> &mut Self
+    pub fn insert_values<V>(&mut self, v: Vec<V>) -> &mut Self
     where
         RdbcValue: From<V>,
     {

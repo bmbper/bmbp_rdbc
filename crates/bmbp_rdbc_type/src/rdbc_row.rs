@@ -7,7 +7,7 @@ use std::fmt::Debug;
 /// RdbcOrmRow 数据库查询结果 实现各个数据库的FromRow
 /// RdbcPage 分页返回值
 
-#[derive(Debug)]
+#[derive(Default,Debug, Clone, Serialize, Deserialize)]
 pub struct RdbcRow {
     columns: Vec<String>,
     data: HashMap<String, RdbcValue>,
@@ -36,7 +36,6 @@ impl RdbcRow {
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[serde(default)]
 pub struct RdbcPage<T>
 where
     T: Default + Debug + Clone + Serialize + From<RdbcRow>,
