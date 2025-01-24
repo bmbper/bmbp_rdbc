@@ -5,6 +5,15 @@ pub struct RdbcWhereFilter {
     pub type_: RdbcFilterType,
     pub conditions: Vec<RdbcWhereCondition>,
 }
+impl RdbcWhereFilter {
+    pub fn new()->Self{
+        RdbcWhereFilter{
+            type_: RdbcFilterType::And,
+            conditions: vec![],
+        }
+    }
+    
+}
 pub enum RdbcFilterType {
     And,
     Or,

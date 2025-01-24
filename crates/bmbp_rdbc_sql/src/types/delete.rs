@@ -1,10 +1,10 @@
 use crate::types::{RdbcJoinTable, RdbcOrderColumn, RdbcTable, RdbcWhereFilter};
 
 pub struct RdbcDelete {
-    table: Vec<RdbcTable>,
-    join_table: Vec<RdbcJoinTable>,
-    where_: Option<RdbcWhereFilter>,
-    order_by: Vec<RdbcOrderColumn>,
-    limit: Option<u64>,
-    offset: Option<u64>,
+    pub(crate) table: Vec<RdbcTable>,
+    pub(crate) join_table: Vec<RdbcJoinTable>,
+    pub(crate) where_: Option<RdbcWhereFilter>,
+    pub(crate) order_by: Vec<RdbcOrderColumn>,
+    pub(crate) limit: Option<u64>,
+    pub(crate) offset: Option<u64>,
 }

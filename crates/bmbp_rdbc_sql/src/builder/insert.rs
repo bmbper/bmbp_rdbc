@@ -1,6 +1,4 @@
-use crate::builder::part::RdbcTableBuilder;
-use crate::types::{RdbcInsert, RdbcQuery};
-
+use crate::types::{RdbcInsert};
 pub struct RdbcInsertBuilder {
     insert: RdbcInsert
 }
@@ -8,7 +6,5 @@ impl RdbcInsertBuilder {
     pub fn build(&self) -> &RdbcInsert {
         &self.insert
     }
-}
-impl RdbcTableBuilder for RdbcInsertBuilder {
 }
 

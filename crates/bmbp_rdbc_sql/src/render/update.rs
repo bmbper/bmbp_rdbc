@@ -1,12 +1,12 @@
-use std::collections::HashMap;
-use bmbp_rdbc_type::RdbcValue;
 use crate::render::render::RdbcSqlRender;
 use crate::types::RdbcUpdate;
+use bmbp_rdbc_type::RdbcValue;
+use std::collections::HashMap;
 
-pub struct RdbcUpdateRender{
-    update: RdbcUpdate
+pub struct RdbcUpdateRender {
+    update: RdbcUpdate,
 }
-impl RdbcSqlRender for RdbcUpdateRender{
+impl RdbcSqlRender for RdbcUpdateRender {
     fn render_script(&self) -> (String, HashMap<String, RdbcValue>) {
         todo!()
     }

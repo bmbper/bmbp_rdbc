@@ -1,8 +1,9 @@
+use crate::types::{RdbcDmlColumn, RdbcQuery};
+use crate::RdbcTable;
 use bmbp_rdbc_type::RdbcValue;
-use crate::types::{OrmSchemaTable, RdbcDmlColumn, RdbcQuery};
 
 pub struct RdbcInsert {
-    table: OrmSchemaTable,
+    pub(crate) table: RdbcTable,
     column: Vec<String>,
     values: Vec<RdbcValue>,
     dml_columns: Vec<RdbcDmlColumn>,
