@@ -1,15 +1,17 @@
 use crate::ds::RdbcDbConfig;
-use crate::pool::{RdbcPool, RdbcPoolBuilder};
+use crate::pool::{RdbcPool};
 use bmbp_rdbc_sql::{RdbcDelete, RdbcInsert, RdbcQuery, RdbcUpdate};
-use bmbp_rdbc_type::{Executor, RdbcError, RdbcPage, RdbcRow, RdbcValue};
+use bmbp_rdbc_type::{ RdbcError, RdbcPage, RdbcRow, RdbcValue};
 use serde::Serialize;
 use std::fmt::Debug;
 use std::sync::Arc;
+use tokio_postgres::connect;
+use crate::exec::Executor;
 
 pub struct RdbcOrm {}
 impl RdbcOrm {
     pub async fn connect(db_config: RdbcDbConfig) -> Result<Arc<RdbcPool>, RdbcError> {
-        RdbcPoolBuilder::connect(db_config).await
+        RdbcPool::connect(Arc::new(db_config)).await
     }
 }
 

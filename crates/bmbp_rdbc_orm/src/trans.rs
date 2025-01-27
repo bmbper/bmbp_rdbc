@@ -1,15 +1,6 @@
-use crate::client::{
-    RdbcMysqlTransaction, RdbcOracleTransaction, RdbcPgTransaction, RdbcSqliteTransaction,
-};
-use bmbp_rdbc_type::Executor;
+use bmbp_rdbc_type;
 
-pub struct RdbcTransaction {
-    inner: RdbcTransactionInner,
+pub trait RdbcTransaction{}
+pub struct RdbcTransactionManager {
+    inner: Box<dyn RdbcTransaction>,
 }
-pub enum RdbcTransactionInner {
-    Oracle(RdbcOracleTransaction),
-    Mysql(RdbcMysqlTransaction),
-    Pg(RdbcPgTransaction),
-    Sqlite(RdbcSqliteTransaction),
-}
-impl Executor for RdbcTransaction {}
