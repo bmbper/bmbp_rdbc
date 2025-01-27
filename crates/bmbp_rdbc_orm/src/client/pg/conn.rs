@@ -7,6 +7,7 @@ use serde::Serialize;
 use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
 use tokio_postgres::{Client, NoTls};
+use crate::client::RdbcPgTransaction;
 
 pub struct RdbcPgConnection {
     id: String,
@@ -150,4 +151,10 @@ impl Executor for RdbcConnection {
 }
 
 impl RdbcConnectionTrait for RdbcPgConnection {
+}
+
+impl RdbcPgConnection {
+    fn get_transaction(&self)->Result<Arc<RdbcPgTransaction>,RdbcError>{
+        Err(RdbcError::new(RdbcErrKind::CONNECTION,"not support transaction".to_string()))
+    }
 }

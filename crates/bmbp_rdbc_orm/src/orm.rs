@@ -217,3 +217,40 @@ impl RdbcOrm {
         Ok(0)
     }
 }
+
+
+#[cfg(test)]
+mod tests{
+    use serde_json::to_string;
+    use tracing::info;
+    use tracing_subscriber::fmt;
+    use bmbp_rdbc_sql::RdbcQuery;
+    use bmbp_rdbc_type::RdbcError;
+    use crate::ds::{RdbcDbConfig, RdbcDbType};
+    use crate::orm::RdbcOrm;
+
+    #[tokio::test]
+    async fn test_orm()->Result<(),RdbcError>{
+        fmt().init();
+        let db_config = RdbcDbConfig::new(
+            RdbcDbType::Postgres,
+            "localhost",
+            5432,
+            "bmbp",
+            "zgk0130!",
+            "bmbp",
+            "public",
+            None,
+        );
+        let pool = RdbcOrm::connect(db_config).await?;
+        info!("传递pool");
+        let rs = RdbcOrm::query_list(&pool, "select * from bmbp_user".to_string(), &[]).await?;
+        info!("pool查询记录数：{}",rs.len());
+        info!("传递connection");
+        let conn = pool.get_connection()?;
+        let rs = RdbcOrm::query_list(&conn, "select * from bmbp_user".to_string(), &[]).await?;
+        info!("connection查询记录数：{}",rs.len());
+        Ok(())
+
+    }
+}

@@ -9,7 +9,7 @@ pub trait RdbcConnectionTrait {}
 pub struct RdbcConnection {
     pub(crate) id: String,
     db_config: Arc<RdbcDbConfig>,
-    inner: Box<dyn RdbcConnectionTrait>,
+    inner: Arc<Box<dyn RdbcConnectionTrait>>,
     pub(crate) pool: Weak<RdbcPool>,
 }
 
@@ -21,7 +21,7 @@ impl RdbcConnection {
             id: uuid::Uuid::new_v4().to_string(),
             db_config: pool_conn.db_config.clone(),
             pool: Arc::downgrade(&pool_conn),
-            inner: conn_inner,
+            inner: Arc::new(conn_inner),
         };
         Ok(conn)
     }
@@ -43,3 +43,16 @@ impl RdbcConnection {
     }
 }
 
+impl Drop for RdbcConnection {
+    fn drop(&mut self) {
+        if let Some(pool) = self.pool.upgrade() {
+            let conn = RdbcConnection {
+                id: self.id.clone(),
+                db_config: self.db_config.clone(),
+                pool: self.pool.clone(),
+                inner: self.inner.clone(),
+            };
+            pool.conn_pool.lock().unwrap().push_back(conn);
+        }
+    }
+}
