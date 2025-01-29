@@ -1,7 +1,6 @@
-use crate::conn::RdbcConnection;
+use crate::conn::RdbcPooledConnection;
 use crate::ds::RdbcDbConfig;
-use crate::exec::Executor;
-use crate::trans::{RdbcTransaction, RdbcTransactionInner};
+use crate::orm::RdbcOrmExecutor;
 use bmbp_rdbc_sql::RdbcFilterType;
 use bmbp_rdbc_type::{RdbcErrKind, RdbcError, RdbcPage, RdbcRow, RdbcValue};
 use chrono::Duration;
@@ -14,7 +13,7 @@ use tracing::info;
 
 pub struct RdbcPool {
     pub db_config: Arc<RdbcDbConfig>,
-    pub conn_pool: Arc<Mutex<VecDeque<RdbcConnection>>>,
+    pub conn_pool: Arc<Mutex<VecDeque<RdbcPooledConnection>>>,
 }
 
 impl RdbcPool {
@@ -37,13 +36,13 @@ impl RdbcPool {
         };
         info!("初始化连接池大小：{}", pool_size);
         for _ in 0..pool_size {
-            let mut conn = RdbcConnection::connect(arc.clone()).await?;
+            let mut conn = RdbcPooledConnection::connect(arc.clone()).await?;
             conn.pool = Arc::downgrade(&arc);
             arc.conn_pool.lock().unwrap().push_back(conn);
         }
         Ok(())
     }
-    pub fn get_connection(&self) -> Result<RdbcConnection, RdbcError> {
+    pub fn get_connection(&self) -> Result<RdbcPooledConnection, RdbcError> {
         let timeout = {
             if let Some(config) = &self.db_config.pool_config {
                 config.wait_timeout.clone()
@@ -73,95 +72,93 @@ impl RdbcPool {
     }
 }
 
-impl Executor for Arc<RdbcPool> {
+impl RdbcOrmExecutor for Arc<RdbcPool> {
     async fn query_page(
         &self,
-        _page_num: usize,
-        _page_size: usize,
-        _execute_sql: String,
-        _params: &[RdbcValue],
+        page_num: usize,
+        page_size: usize,
+        execute_sql: String,
+        params: &[RdbcValue],
     ) -> Result<RdbcPage<RdbcRow>, RdbcError> {
         self.get_connection()?
-            .query_page(_page_num, _page_size, _execute_sql, _params)
+            .query_page(page_num, page_size, execute_sql, params)
             .await
     }
 
     async fn query_list(
         &self,
-        _execute_sql: String,
-        _params: &[RdbcValue],
+        execute_sql: String,
+        params: &[RdbcValue],
     ) -> Result<Vec<RdbcRow>, RdbcError> {
-        self.get_connection()?
-            .query_list(_execute_sql, _params)
-            .await
+        self.get_connection()?.query_list(execute_sql, params).await
     }
 
     async fn query_one_option(
         &self,
-        _execute_sql: String,
-        _params: &[RdbcValue],
+        execute_sql: String,
+        params: &[RdbcValue],
     ) -> Result<Option<RdbcRow>, RdbcError> {
         self.get_connection()?
-            .query_one_option(_execute_sql, _params)
+            .query_one_option(execute_sql, params)
             .await
     }
 
     async fn query_page_as<T>(
         &self,
-        _page_num: usize,
-        _page_size: usize,
-        _execute_sql: String,
-        _params: &[RdbcValue],
+        page_num: usize,
+        page_size: usize,
+        execute_sql: String,
+        params: &[RdbcValue],
     ) -> Result<RdbcPage<T>, RdbcError>
     where
         T: From<RdbcRow> + Debug + Default + Serialize + Clone,
     {
         self.get_connection()?
-            .query_page_as(_page_num, _page_size, _execute_sql, _params)
+            .query_page_as(page_num, page_size, execute_sql, params)
             .await
     }
 
     async fn query_list_as<T>(
         &self,
-        _execute_sql: String,
-        _params: &[RdbcValue],
+        execute_sql: String,
+        params: &[RdbcValue],
     ) -> Result<Vec<T>, RdbcError>
     where
         T: From<RdbcRow> + Debug + Default + Serialize + Clone,
     {
         self.get_connection()?
-            .query_list_as(_execute_sql, _params)
+            .query_list_as(execute_sql, params)
             .await
     }
 
     async fn query_one_option_as<T>(
         &self,
-        _execute_sql: String,
-        _params: &[RdbcValue],
+        execute_sql: String,
+        params: &[RdbcValue],
     ) -> Result<Option<T>, RdbcError>
     where
         T: From<RdbcRow> + Debug + Default + Serialize + Clone,
     {
         self.get_connection()?
-            .query_one_option_as(_execute_sql, _params)
+            .query_one_option_as(execute_sql, params)
             .await
     }
 
-    async fn execute(
-        &self,
-        _execute_sql: String,
-        _params: &[RdbcValue],
-    ) -> Result<usize, RdbcError> {
-        self.get_connection()?.execute(_execute_sql, _params).await
+    async fn execute(&self, execute_sql: String, params: &[RdbcValue]) -> Result<usize, RdbcError> {
+        let mut con = self.get_connection()?;
+        let mut trans = con.get_transaction().await?;
+        trans.execute(execute_sql, params).await?;
+        trans.commit().await?;
+        Ok(0usize)
     }
 
     async fn execute_batch(
         &self,
-        _execute_sql: String,
-        _params: &[&[RdbcValue]],
+        execute_sql: String,
+        params: &[&[RdbcValue]],
     ) -> Result<usize, RdbcError> {
         self.get_connection()?
-            .execute_batch(_execute_sql, _params)
+            .execute_batch(execute_sql, params)
             .await
     }
 
