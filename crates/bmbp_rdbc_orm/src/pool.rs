@@ -1,6 +1,8 @@
 use crate::conn::RdbcConnection;
 use crate::ds::RdbcDbConfig;
 use crate::exec::Executor;
+use crate::trans::{RdbcTransaction, RdbcTransactionInner};
+use bmbp_rdbc_sql::RdbcFilterType;
 use bmbp_rdbc_type::{RdbcErrKind, RdbcError, RdbcPage, RdbcRow, RdbcValue};
 use chrono::Duration;
 use serde::Serialize;
@@ -9,7 +11,6 @@ use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
 use tokio::time::timeout;
 use tracing::info;
-use crate::trans::RdbcTransaction;
 
 pub struct RdbcPool {
     pub db_config: Arc<RdbcDbConfig>,
@@ -69,9 +70,6 @@ impl RdbcPool {
 
     pub fn idle_conn_size(&self) -> usize {
         self.conn_pool.lock().unwrap().len()
-    }
-    pub fn get_transaction(&self) -> Result<RdbcTransaction, RdbcError> {
-        Ok(RdbcTransaction{})
     }
 }
 
@@ -216,9 +214,18 @@ mod test {
                 {
                     let conn_rs = pool.get_connection();
                     match conn_rs {
-                        Ok(conn) => {
+                        Ok(mut conn) => {
                             info!("获取连接成功");
-                            info!("空闲连接数{}", pool.idle_conn_size())
+                            info!("空闲连接数{}", pool.idle_conn_size());
+                            match conn.get_transaction().await {
+                                Ok(trans) => {
+                                    info!("获取事务成功");
+                                }
+                                Err(err) => {
+                                    error!("获取事务事变：err:{:?}", err);
+                                    assert!(false);
+                                }
+                            }
                         }
                         Err(err) => {
                             error!("获取连接事变：err:{:?}", err);

@@ -1,18 +1,19 @@
-use crate::conn::{RdbcConnection, RdbcConnectionTrait};
 use crate::ds::RdbcDbConfig;
-use crate::exec::Executor;
-use bmbp_rdbc_type::{RdbcErrKind, RdbcError, RdbcPage, RdbcRow, RdbcValue};
+use crate::trans::RdbcTransactionInner;
+use bmbp_rdbc_type::{RdbcErrKind, RdbcError};
 use chrono::Duration;
-use serde::Serialize;
 use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
-use tokio_postgres::{Client, NoTls};
-use crate::client::RdbcPgTransaction;
+use tokio_postgres::{Client, NoTls, Transaction};
 
 pub struct RdbcPgConnection {
     id: String,
     db_config: Arc<RdbcDbConfig>,
-    client: Arc<Mutex<Client>>,
+    client: Client,
+}
+
+pub struct RdbcPgTransaction<'a> {
+    trans: Transaction<'a>,
 }
 
 impl RdbcPgConnection {
@@ -47,114 +48,26 @@ impl RdbcPgConnection {
                 let conn = RdbcPgConnection {
                     id: uuid::Uuid::new_v4().to_string(),
                     db_config: db_config.clone(),
-                    client: Arc::new(Mutex::new(client)),
+                    client: client,
                 };
                 Ok(conn)
             }
             Err(e) => Err(RdbcError::new(RdbcErrKind::CONNECTION, e.to_string())),
         }
     }
-}
 
-impl Executor for RdbcConnection {
-    async fn query_page(
-        &self,
-        _page_num: usize,
-        _page_size: usize,
-        _execute_sql: String,
-        _params: &[RdbcValue],
-    ) -> Result<RdbcPage<RdbcRow>, RdbcError> {
-        Ok(RdbcPage::new())
-    }
-
-    async fn query_list(
-        &self,
-        _execute_sql: String,
-        _params: &[RdbcValue],
-    ) -> Result<Vec<RdbcRow>, RdbcError> {
-        Ok(vec![])
-    }
-
-    async fn query_one_option(
-        &self,
-        _execute_sql: String,
-        _params: &[RdbcValue],
-    ) -> Result<Option<RdbcRow>, RdbcError> {
-        Ok(None)
-    }
-
-    async fn query_page_as<T>(
-        &self,
-        _page_num: usize,
-        _page_size: usize,
-        _execute_sql: String,
-        _params: &[RdbcValue],
-    ) -> Result<RdbcPage<T>, RdbcError>
-    where
-        T: From<RdbcRow> + Debug + Default + Serialize + Clone,
-    {
-        Ok(RdbcPage::new())
-    }
-
-    async fn query_list_as<T>(
-        &self,
-        _execute_sql: String,
-        _params: &[RdbcValue],
-    ) -> Result<Vec<T>, RdbcError>
-    where
-        T: From<RdbcRow> + Debug + Default + Serialize + Clone,
-    {
-        Ok(vec![])
-    }
-
-    async fn query_one_option_as<T>(
-        &self,
-        _execute_sql: String,
-        _params: &[RdbcValue],
-    ) -> Result<Option<T>, RdbcError>
-    where
-        T: From<RdbcRow> + Debug + Default + Serialize + Clone,
-    {
-        Ok(None)
-    }
-
-    async fn execute(
-        &self,
-        _execute_sql: String,
-        _params: &[RdbcValue],
-    ) -> Result<usize, RdbcError> {
-        Ok(0)
-    }
-
-    async fn execute_batch(
-        &self,
-        _execute_sql: String,
-        _params: &[&[RdbcValue]],
-    ) -> Result<usize, RdbcError> {
-        Ok(0)
-    }
-
-    async fn execute_raw(&self, _execute_sql: String) -> Result<usize, RdbcError> {
-        Ok(0)
-    }
-
-    async fn execute_batch_raw(&self, _execute_sql: &[String]) -> Result<usize, RdbcError> {
-        Ok(0)
-    }
-
-    async fn execute_batch_slice(
-        &self,
-        _execute_sql_params: &[(&String, &[&RdbcValue])],
-    ) -> Result<usize, RdbcError> {
-        Ok(0)
-    }
-}
-
-impl RdbcConnectionTrait for RdbcPgConnection {
-}
-
-impl RdbcPgConnection {
-    fn get_transaction(&self)->Result<Arc<RdbcPgTransaction>,RdbcError>{
-        Err(RdbcError::new(RdbcErrKind::CONNECTION,"not support transaction".to_string()))
+    pub async fn get_transaction(&mut self) -> Result<RdbcTransactionInner, RdbcError> {
+        let mut client = &mut self.client;
+        let trans_rs = client.transaction().await;
+        if trans_rs.is_err() {
+            return Err(RdbcError::new(
+                RdbcErrKind::CONNECTION,
+                trans_rs.err().unwrap().to_string(),
+            ));
+        }
+        let pg_trans = RdbcPgTransaction {
+            trans: trans_rs.unwrap(),
+        };
+        Ok(RdbcTransactionInner::Pg(pg_trans))
     }
 }

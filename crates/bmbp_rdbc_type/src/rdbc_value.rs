@@ -102,7 +102,7 @@ impl RdbcValue {
 }
 
 impl Display for RdbcValue {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let str = match self {
             RdbcValue::Char(v) => v.to_string(),
             RdbcValue::Varchar(v) => v.to_string(),
