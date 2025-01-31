@@ -37,7 +37,7 @@ macro_rules! select_string_value {
         )*
     };
 }
-select_number_value!(&str, String, &String);
+select_string_value!(&str, String, &String);
 
 pub trait RdbcTableIdent {
     fn table_name() -> String;
