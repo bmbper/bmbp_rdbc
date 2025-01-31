@@ -1,10 +1,17 @@
-use crate::builder::part::{RdbcJoinTableBuilder, RdbcTableBuilder, RdbcWhereFilterBuilder};
+use crate::builder::part::{RdbcFilterBuilder, RdbcJoinTableBuilder, RdbcTableBuilder};
 use crate::types::RdbcQuery;
-use crate::{RdbcColumn,  RdbcFuncColumn, RdbcJoinTable, RdbcQueryColumn, RdbcRawColumn, RdbcSelectColumn, RdbcSimpleColumn, RdbcTable, RdbcTableColumn, RdbcValueColumn,  RdbcWhereFilter};
+use crate::{
+    RdbcColumn, RdbcFuncColumn, RdbcGroupColumn,  RdbcJoinTable, RdbcOrderColumn,
+    RdbcOrderType, RdbcQueryColumn, RdbcRawColumn, RdbcSelectColumn, RdbcSimpleColumn, RdbcTable,
+    RdbcTableColumn, RdbcValueColumn, RdbcWhereFilter,
+};
 use bmbp_rdbc_type::{RdbcIdent, RdbcTableIdent, RdbcValue, RdbcValueIdent};
 
 pub struct RdbcQueryBuilder {
     query: RdbcQuery,
+}
+pub struct RdbcHavingBuilder {
+    filter: Option<RdbcWhereFilter>,
 }
 impl RdbcQueryBuilder {
     pub fn new() -> Self {
@@ -277,7 +284,91 @@ impl RdbcQueryBuilder {
         self.query.select.push(RdbcSelectColumn::from(func));
         self
     }
+}
 
+impl RdbcQueryBuilder {
+    pub fn order<C>(&mut self, column: C, order: RdbcOrderType) -> &mut Self
+    where
+        RdbcColumn: From<C>,
+    {
+        let rdbc_order_column = RdbcOrderColumn {
+            column: RdbcColumn::from(column),
+            order_type: order,
+        };
+        self.query.order_by.push(rdbc_order_column);
+        self
+    }
+    pub fn order_asc<C>(&mut self, column: C) -> &mut Self
+    where
+        RdbcColumn: From<C>,
+    {
+        self.order(column, RdbcOrderType::Asc)
+    }
+    pub fn order_vec_asc<C>(&mut self, column: Vec<C>) -> &mut Self
+    where
+        RdbcColumn: From<C>,
+    {
+        for item in column {
+            self.order(item, RdbcOrderType::Asc);
+        }
+        self
+    }
+
+    pub fn order_desc<C>(&mut self, column: C) -> &mut Self
+    where
+        RdbcColumn: From<C>,
+    {
+        self.order(column, RdbcOrderType::Desc)
+    }
+    pub fn order_vec_desc<C>(&mut self, column: Vec<C>) -> &mut Self
+    where
+        RdbcColumn: From<C>,
+    {
+        for item in column {
+            self.order(item, RdbcOrderType::Desc);
+        }
+        self
+    }
+}
+
+impl RdbcQueryBuilder {
+    pub fn group_by<C>(&mut self, column: C) -> &mut Self
+    where
+        RdbcColumn: From<C>,
+    {
+        self.query
+            .group_by
+            .push(RdbcGroupColumn::from(RdbcColumn::from(column)));
+        self
+    }
+    pub fn group_by_vec<C>(&mut self, column: Vec<C>) -> &mut Self
+    where
+        RdbcColumn: From<C>,
+    {
+        for item in column {
+            self.group_by(item);
+        }
+        self
+    }
+}
+
+impl RdbcQueryBuilder {
+    pub fn limit(&mut self, limit: u64) -> &mut Self {
+        self.query.limit = Some(limit);
+        self
+    }
+    pub fn offset(&mut self, offset: u64) -> &mut Self {
+        self.query.offset = Some(offset);
+        self
+    }
+    pub fn having(&mut self, filter: RdbcWhereFilter) -> &mut Self {
+        self.query.having = Some(filter);
+        self
+    }
+    pub fn having_builder(&mut self, builder: RdbcHavingBuilder) -> &mut Self {
+        self.query.having = builder.filter;
+        self
+    }
 }
 
 impl RdbcTableBuilder for RdbcQueryBuilder {
@@ -290,8 +381,19 @@ impl RdbcJoinTableBuilder for RdbcQueryBuilder {
         self.query.join_table.as_mut()
     }
 }
-impl RdbcWhereFilterBuilder for RdbcQueryBuilder {
+impl RdbcFilterBuilder for RdbcQueryBuilder {
     fn filter_mut(&mut self) -> &mut RdbcWhereFilter {
         self.query.where_.get_or_insert(RdbcWhereFilter::new())
+    }
+    fn filter_take(&mut self) -> Option<RdbcWhereFilter> {
+        self.query.where_.take()
+    }
+}
+impl RdbcFilterBuilder for RdbcHavingBuilder {
+    fn filter_mut(&mut self) -> &mut RdbcWhereFilter {
+        self.filter.get_or_insert(RdbcWhereFilter::new())
+    }
+    fn filter_take(&mut self) -> Option<RdbcWhereFilter> {
+        self.filter.take()
     }
 }

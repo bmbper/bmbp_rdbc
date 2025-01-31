@@ -5,7 +5,7 @@ use bmbp_rdbc_type::{RdbcErrKind, RdbcError, RdbcPage, RdbcRow, RdbcValue};
 use chrono::Duration;
 use serde::Serialize;
 use std::fmt::Debug;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc};
 use tokio_postgres::{Client, NoTls, Transaction};
 
 pub struct RdbcPgConnection {
@@ -65,6 +65,7 @@ impl RdbcPgConnection {
         }
         let pg_trans = RdbcPgTransaction {
             trans: Some(trans_rs.unwrap()),
+            done: false,
         };
         Ok(RdbcTransaction::Pg(pg_trans))
     }
@@ -166,9 +167,11 @@ impl RdbcOrmExecutor for RdbcPgConnection {
 
 pub struct RdbcPgTransaction<'a> {
     trans: Option<Transaction<'a>>,
+    done: bool,
 }
 impl<'a> RdbcPgTransaction<'a> {
     pub async fn commit(&mut self) -> Result<usize, RdbcError> {
+        self.done = true;
         if let Some(mut trans) = self.trans.take() {
             let commit_rs = trans.commit().await;
             if commit_rs.is_err() {
@@ -179,6 +182,25 @@ impl<'a> RdbcPgTransaction<'a> {
             }
         }
         Ok(0)
+    }
+    pub async fn rollback(&mut self) -> Result<usize, RdbcError> {
+        self.done = true;
+        if let Some(mut trans) = self.trans.take() {
+            let rollback_rs = trans.rollback().await;
+            if rollback_rs.is_err() {
+                return Err(RdbcError::new(
+                    RdbcErrKind::CONNECTION,
+                    rollback_rs.err().unwrap().to_string(),
+                ));
+            }
+        }
+        Ok(0)
+    }
+    pub async fn done(&mut self) -> Result<bool, RdbcError> {
+        if self.trans.is_none() {
+            return Ok(true);
+        }
+        Ok(self.done.clone())
     }
 }
 

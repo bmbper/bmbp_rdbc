@@ -365,6 +365,11 @@ impl<'a> RdbcTransaction<'a> {
             RdbcTransaction::Pg(trans) => trans.commit().await,
         }
     }
+    pub(crate) async fn rollback(&mut self) -> Result<usize, RdbcError> {
+        match self {
+            RdbcTransaction::Pg(trans) => trans.rollback().await,
+        }
+    }
 }
 impl RdbcOrmExecutor for RdbcTransaction<'_> {
     async fn query_page(&self, page_num: usize, page_size: usize, execute_sql: String, params: &[RdbcValue]) -> Result<RdbcPage<RdbcRow>, RdbcError> {

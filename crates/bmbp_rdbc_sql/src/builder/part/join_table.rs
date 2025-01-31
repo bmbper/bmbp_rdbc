@@ -1,5 +1,5 @@
 use bmbp_rdbc_type::RdbcIdent;
-use crate::builder::part::RdbcWhereFilterBuilder;
+use crate::builder::part::RdbcFilterBuilder;
 use crate::{
     JoinType,  RdbcJoinTable, RdbcQuery, RdbcQueryTable, RdbcRawTable, RdbcSimpleTable,
     RdbcTable, RdbcWhereFilter,
@@ -14,7 +14,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from(table.name()),
             join_type: JoinType::InnerJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -28,7 +28,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from((table.name(), alias.name())),
             join_type: JoinType::InnerJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -41,7 +41,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::new_with_schema_table(schema.name(), table.name()),
             join_type: JoinType::InnerJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -55,7 +55,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from((schema.name(), table.name(), alias.name())),
             join_type: JoinType::InnerJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -68,7 +68,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::RawTable(RdbcRawTable::from(table.name())),
             join_type: JoinType::InnerJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -81,7 +81,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::RawTable(RdbcRawTable::from((table.name(), alias.name()))),
             join_type: JoinType::InnerJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -91,7 +91,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from(query),
             join_type: JoinType::InnerJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -103,7 +103,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from((query, alias.name())),
             join_type: JoinType::InnerJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -112,7 +112,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table,
             join_type: JoinType::InnerJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -121,7 +121,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::SimpleTable(table),
             join_type: JoinType::InnerJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -130,7 +130,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::QueryTable(query),
             join_type: JoinType::InnerJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -139,7 +139,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::RawTable(table),
             join_type: JoinType::InnerJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -155,7 +155,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from(table.name()),
             join_type: JoinType::LeftJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -169,7 +169,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from((table.name(), alias.name())),
             join_type: JoinType::LeftJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -182,7 +182,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::new_with_schema_table(schema.name(), table.name()),
             join_type: JoinType::LeftJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -196,7 +196,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from((schema.name(), table.name(), alias.name())),
             join_type: JoinType::LeftJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -209,7 +209,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::RawTable(RdbcRawTable::from(table.name())),
             join_type: JoinType::LeftJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -222,7 +222,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::RawTable(RdbcRawTable::from((table.name(), alias.name()))),
             join_type: JoinType::LeftJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -232,7 +232,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from(query),
             join_type: JoinType::LeftJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -244,7 +244,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from((query, alias.name())),
             join_type: JoinType::LeftJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -253,7 +253,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table,
             join_type: JoinType::LeftJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -262,7 +262,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::SimpleTable(table),
             join_type: JoinType::LeftJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -271,7 +271,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::QueryTable(query),
             join_type: JoinType::LeftJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -280,7 +280,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::RawTable(table),
             join_type: JoinType::LeftJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -294,7 +294,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from(table.name()),
             join_type: JoinType::RightJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -308,7 +308,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from((table.name(), alias.name())),
             join_type: JoinType::RightJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -321,7 +321,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::new_with_schema_table(schema.name(), table.name()),
             join_type: JoinType::RightJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -335,7 +335,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from((schema.name(), table.name(), alias.name())),
             join_type: JoinType::RightJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -348,7 +348,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::RawTable(RdbcRawTable::from(table.name())),
             join_type: JoinType::RightJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -361,7 +361,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::RawTable(RdbcRawTable::from((table.name(), alias.name()))),
             join_type: JoinType::RightJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -371,7 +371,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from(query),
             join_type: JoinType::RightJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -383,7 +383,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from((query, alias.name())),
             join_type: JoinType::RightJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -392,7 +392,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table,
             join_type: JoinType::RightJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -401,7 +401,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::SimpleTable(table),
             join_type: JoinType::RightJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -410,7 +410,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::QueryTable(query),
             join_type: JoinType::RightJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -419,7 +419,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::RawTable(table),
             join_type: JoinType::RightJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -431,7 +431,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from(table.name()),
             join_type: JoinType::FullJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -445,7 +445,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from((table.name(), alias.name())),
             join_type: JoinType::FullJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -458,7 +458,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::new_with_schema_table(schema.name(), table.name()),
             join_type: JoinType::FullJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -472,7 +472,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from((schema.name(), table.name(), alias.name())),
             join_type: JoinType::FullJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -485,7 +485,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::RawTable(RdbcRawTable::from(table.name())),
             join_type: JoinType::FullJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -498,7 +498,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::RawTable(RdbcRawTable::from((table.name(), alias.name()))),
             join_type: JoinType::FullJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -508,7 +508,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from(query),
             join_type: JoinType::FullJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -520,7 +520,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from((query, alias.name())),
             join_type: JoinType::FullJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -529,7 +529,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table,
             join_type: JoinType::FullJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -538,7 +538,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::SimpleTable(table),
             join_type: JoinType::FullJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -547,7 +547,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::QueryTable(query),
             join_type: JoinType::FullJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -556,7 +556,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::RawTable(table),
             join_type: JoinType::FullJoin,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -569,7 +569,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from(table.name()),
             join_type,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -583,7 +583,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from((table.name(), alias.name())),
             join_type,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -596,7 +596,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::new_with_schema_table(schema.name(), table.name()),
             join_type,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -610,7 +610,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from((schema.name(), table.name(), alias.name())),
             join_type,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -623,7 +623,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::RawTable(RdbcRawTable::from(table.name())),
             join_type,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -636,7 +636,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::RawTable(RdbcRawTable::from((table.name(), alias.name()))),
             join_type,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -646,7 +646,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from(query),
             join_type,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -658,7 +658,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::from((query, alias.name())),
             join_type,
-            filter: RdbcWhereFilter::new(),
+            filter: None,
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -667,7 +667,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table,
             join_type,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -676,7 +676,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::SimpleTable(table),
             join_type,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -685,7 +685,7 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::QueryTable(query),
             join_type,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
@@ -694,14 +694,17 @@ pub trait RdbcJoinTableBuilder {
         let table = RdbcJoinTable {
             table: RdbcTable::RawTable(table),
             join_type,
-            filter: RdbcWhereFilter::new(),
+           filter:None
         };
         self.table_join_mut().push(table);
         self.table_join_mut().last_mut().unwrap()
     }
 }
-impl RdbcWhereFilterBuilder for RdbcJoinTable {
+impl RdbcFilterBuilder for RdbcJoinTable {
     fn filter_mut(&mut self) -> &mut RdbcWhereFilter {
-        &mut self.filter
+        self.filter.get_or_insert(RdbcWhereFilter::new())
+    }
+    fn filter_take(&mut self) -> Option<RdbcWhereFilter> {
+        self.filter.take()
     }
 }

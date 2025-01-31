@@ -117,7 +117,7 @@ impl From<(String, String)> for RdbcRawTable {
 pub struct RdbcJoinTable {
     pub table: RdbcTable,
     pub join_type: JoinType,
-    pub filter: RdbcWhereFilter,
+    pub filter: Option<RdbcWhereFilter>,
 }
 pub enum JoinType {
     InnerJoin,

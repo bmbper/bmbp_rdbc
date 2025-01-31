@@ -1,5 +1,6 @@
 use crate::types::{RdbcFunc, RdbcQuery, RdbcTable};
-use bmbp_rdbc_type::RdbcValue;
+use bmbp_rdbc_type::{RdbcIdent, RdbcValue};
+use crate::RdbcColumn::RawColumn;
 
 pub enum RdbcColumn {
     SimpleColumn(RdbcSimpleColumn),
@@ -10,18 +11,42 @@ pub enum RdbcColumn {
     RawColumn(RdbcRawColumn),
 }
 
-impl From<String> for RdbcColumn {
-    fn from(value: String) -> Self {
+impl<T> From<T> for RdbcColumn
+where
+    T: RdbcIdent,
+{
+    fn from(value: T) -> Self {
         RdbcColumn::SimpleColumn(RdbcSimpleColumn::from(value))
+    }
+}
+
+impl From<RdbcQueryColumn> for RdbcColumn {
+    fn from(value: RdbcQueryColumn) -> Self {
+        RdbcColumn::QueryColumn(value)
+    }
+}
+impl From<RdbcValueColumn> for RdbcColumn {
+    fn from(value: RdbcValueColumn) -> Self {
+        RdbcColumn::ValueColumn(value)
+    }
+}
+impl From<RdbcQuery> for RdbcColumn {
+    fn from(value: RdbcQuery) -> Self {
+        RdbcColumn::from(RdbcQueryColumn::from(value))
     }
 }
 
 pub struct RdbcSimpleColumn {
     pub column: String,
 }
-impl From<String> for RdbcSimpleColumn {
-    fn from(column: String) -> Self {
-        RdbcSimpleColumn { column }
+impl<T> From<T> for RdbcSimpleColumn
+where
+    T: RdbcIdent,
+{
+    fn from(column: T) -> Self {
+        RdbcSimpleColumn {
+            column: column.name(),
+        }
     }
 }
 
@@ -221,9 +246,17 @@ pub struct QueryFilterColumn {
 
 pub struct RdbcOrderColumn {
     pub column: RdbcColumn,
-    pub order_type: OrderType,
+    pub order_type: RdbcOrderType,
 }
-pub enum OrderType {
+pub struct RdbcGroupColumn {
+    pub column: RdbcColumn,
+}
+impl From<RdbcColumn> for RdbcGroupColumn {
+    fn from(value: RdbcColumn) -> Self {
+        RdbcGroupColumn { column: value }
+    }
+}
+pub enum RdbcOrderType {
     Asc,
     Desc,
 }

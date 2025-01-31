@@ -1,4 +1,4 @@
-use bmbp_rdbc_sql::{RdbcQueryBuilder, RdbcTableBuilder};
+use bmbp_rdbc_sql::{RdbcDistinctFunc, RdbcQueryBuilder, RdbcTableBuilder, RdbcFilterBuilder};
 use bmbp_rdbc_type::RdbcIdent;
 
 #[test]
@@ -23,4 +23,7 @@ pub fn test_builder_simple_query() {
     for item in v {
         println!("{}", item.name());
     }
+
+    query_builder.eq_v("name", "damp").eq_col("test","test").eq_script("dd","hello");
+
 }

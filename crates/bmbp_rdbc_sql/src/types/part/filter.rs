@@ -4,24 +4,24 @@ use bmbp_rdbc_type::RdbcValue;
 pub struct RdbcWhereFilter {
     pub type_: RdbcFilterType,
     pub conditions: Vec<RdbcWhereCondition>,
+    pub distinct: bool,
 }
 impl RdbcWhereFilter {
-    pub fn new()->Self{
-        RdbcWhereFilter{
+    pub fn new() -> Self {
+        RdbcWhereFilter {
             type_: RdbcFilterType::And,
             conditions: vec![],
+            distinct: false,
         }
     }
-    
 }
 pub enum RdbcFilterType {
     And,
     Or,
 }
-
 pub enum RdbcWhereCondition {
     Simple(RdbcWhereSimpleCondition),
-    NEST(RdbcWhereNestCondition),
+    Nest(RdbcWhereNestCondition),
     Raw(RdbcWhereRawCondition),
 }
 
@@ -37,18 +37,27 @@ pub enum RdbcCompare {
     GE,
     LT,
     LE,
-    LIKE,
+    Like,
+    LikeLeft,
+    LikeRight,
+    NotLike,
+    NotLikeLeft,
+    NotLikeRight,
     IN,
     NotIn,
+    Exists,
+    NotExits,
     IsNull,
     IsNotNull,
-    BETWEEN,
+    Between,
     NotBetween,
 }
 pub enum RdbcFilterValue {
     Value(RdbcValue),
     Column(RdbcColumn),
     Query(RdbcQuery),
+    Script(String),
+    Raw(String),
 }
 
 pub struct RdbcWhereNestCondition {

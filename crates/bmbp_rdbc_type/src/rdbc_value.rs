@@ -728,6 +728,18 @@ impl From<&Option<chrono::NaiveDate>> for RdbcValue {
         }
     }
 }
+impl<T> From<Vec<T>> for RdbcValue
+where
+    RdbcValue: From<T>,
+{
+    fn from(value: Vec<T>) -> Self {
+        let mut vec = Vec::new();
+        for v in value {
+            vec.push(RdbcValue::from(v));
+        }
+        RdbcValue::Array(vec)
+    }
+}
 
 impl From<chrono::NaiveDateTime> for RdbcValue {
     fn from(value: chrono::NaiveDateTime) -> Self {

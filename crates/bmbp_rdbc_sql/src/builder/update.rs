@@ -1,4 +1,4 @@
-use crate::builder::part::{RdbcJoinTableBuilder, RdbcTableBuilder, RdbcWhereFilterBuilder};
+use crate::builder::part::{RdbcJoinTableBuilder, RdbcTableBuilder, RdbcFilterBuilder};
 use crate::{RdbcJoinTable, RdbcTable, RdbcWhereFilter};
 use crate::types::RdbcUpdate;
 
@@ -21,8 +21,12 @@ impl RdbcJoinTableBuilder for RdbcUpdateBuilder {
         self.update.join_table.as_mut()
     }
 }
-impl RdbcWhereFilterBuilder for RdbcUpdateBuilder {
+impl RdbcFilterBuilder for RdbcUpdateBuilder {
     fn filter_mut(&mut self) -> &mut RdbcWhereFilter {
         self.update.where_.get_or_insert(RdbcWhereFilter::new())
     }
+    fn filter_take(&mut self) -> Option<RdbcWhereFilter> {
+        self.update.where_.take()
+    }
+
 }
