@@ -1,12 +1,13 @@
 use crate::types::RdbcColumn;
 use bmbp_rdbc_type::{RdbcIdent, RdbcValue};
 
+#[derive(Debug, Clone)]
 pub enum RdbcFunc {
     DISTINCT(RdbcDistinctFunc),
     ABS(RdbcAbsFunc),
     SUM(RdbcSumFunc),
 }
-
+#[derive(Debug, Clone)]
 pub struct RdbcDistinctFunc {
     columns: Vec<RdbcColumn>,
 }
@@ -28,15 +29,17 @@ where
         columns,
     }
 }
+#[derive(Debug, Clone)]
 pub struct RdbcSumFunc {
     pub column: Vec<RdbcSumFuncColumn>,
 }
+#[derive(Debug, Clone)]
 pub enum RdbcSumFuncColumn {
     Column(RdbcColumn),
     Value(RdbcValue),
     Raw(String),
 }
-
+#[derive(Debug, Clone)]
 pub struct RdbcAbsFunc {
     column: Vec<RdbcColumn>,
 }

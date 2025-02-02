@@ -1,7 +1,7 @@
 use crate::types::{RdbcFunc, RdbcQuery, RdbcTable};
 use bmbp_rdbc_type::{RdbcIdent, RdbcValue};
-use crate::RdbcColumn::RawColumn;
 
+#[derive(Debug, Clone)]
 pub enum RdbcColumn {
     SimpleColumn(RdbcSimpleColumn),
     TableColumn(RdbcTableColumn),
@@ -35,7 +35,7 @@ impl From<RdbcQuery> for RdbcColumn {
         RdbcColumn::from(RdbcQueryColumn::from(value))
     }
 }
-
+#[derive(Debug, Clone)]
 pub struct RdbcSimpleColumn {
     pub column: String,
 }
@@ -49,11 +49,12 @@ where
         }
     }
 }
-
+#[derive(Debug, Clone)]
 pub struct RdbcTableColumn {
     pub table: RdbcTable,
     pub column: String,
 }
+#[derive(Debug, Clone)]
 pub struct RdbcQueryColumn {
     pub column: RdbcQuery,
 }
@@ -62,7 +63,7 @@ impl From<RdbcQuery> for RdbcQueryColumn {
         RdbcQueryColumn { column: value }
     }
 }
-
+#[derive(Debug, Clone)]
 pub struct RdbcValueColumn {
     pub column: RdbcValue,
 }
@@ -71,10 +72,11 @@ impl From<RdbcValue> for RdbcValueColumn {
         RdbcValueColumn { column: value }
     }
 }
-
+#[derive(Debug, Clone)]
 pub struct RdbcFuncColumn {
     pub func: RdbcFunc,
 }
+#[derive(Debug, Clone)]
 pub struct RdbcRawColumn {
     pub column: String,
 }
@@ -85,15 +87,18 @@ impl From<String> for RdbcRawColumn {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct RdbcDmlColumn {
     pub column: RdbcColumn,
     pub value: RdbcDmlValue,
 }
+#[derive(Debug, Clone)]
 pub enum RdbcDmlValue {
     VALUE(RdbcValue),
     COLUMN(RdbcColumn),
     FUNC(RdbcFunc),
 }
+#[derive(Debug, Clone)]
 pub struct RdbcSelectColumn {
     pub column: RdbcColumn,
     pub alias: String,
@@ -243,11 +248,12 @@ impl From<(RdbcValue, String)> for RdbcSelectColumn {
 pub struct QueryFilterColumn {
     pub column: RdbcColumn,
 }
-
+#[derive(Debug, Clone)]
 pub struct RdbcOrderColumn {
     pub column: RdbcColumn,
     pub order_type: RdbcOrderType,
 }
+#[derive(Debug, Clone)]
 pub struct RdbcGroupColumn {
     pub column: RdbcColumn,
 }
@@ -256,6 +262,7 @@ impl From<RdbcColumn> for RdbcGroupColumn {
         RdbcGroupColumn { column: value }
     }
 }
+#[derive(Debug, Clone)]
 pub enum RdbcOrderType {
     Asc,
     Desc,

@@ -1,6 +1,6 @@
 use crate::types::RdbcInsert;
 use crate::{RdbcColumn, RdbcDmlColumn, RdbcDmlValue, RdbcQuery, RdbcSimpleTable, RdbcTable};
-use bmbp_rdbc_type::{RdbcIdent, RdbcValue};
+use bmbp_rdbc_type::{RdbcIdent, RdbcTableIdent, RdbcValue};
 pub struct RdbcInsertBuilder {
     insert: RdbcInsert,
 }
@@ -16,11 +16,21 @@ impl RdbcInsertBuilder {
             insert: RdbcInsert::new(),
         }
     }
+    pub fn insert<T>(&mut self) -> &mut Self
+    where
+        T: RdbcTableIdent,
+    {
+        self.insert.table = Some(RdbcTable::from(T::table_name()));
+        for column in T::columns() {
+            self.insert_col_val(column.clone(), RdbcValue::from(format!("#{{{}}}", column)));
+        }
+        self
+    }
     pub fn insert_table<T>(&mut self, table: T) -> &mut Self
     where
         T: RdbcIdent,
     {
-        self.insert.table = Some(RdbcTable::SimpleTable(RdbcSimpleTable::from(table.name())));
+        self.insert.table = Some(RdbcTable::from(table.name()));
         self
     }
     pub fn insert_col<T>(&mut self, col: T) -> &mut Self

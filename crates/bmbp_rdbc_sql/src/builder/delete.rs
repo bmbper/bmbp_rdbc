@@ -7,8 +7,13 @@ pub struct RdbcDeleteBuilder {
 }
 
 impl RdbcDeleteBuilder {
-    pub fn build(&self) -> &RdbcDelete {
-        &self.delete
+    pub fn build(&self) -> RdbcDelete {
+        self.delete.clone()
+    }
+    pub fn new() -> Self {
+        RdbcDeleteBuilder {
+            delete: RdbcDelete::new()
+        }
     }
 }
 impl RdbcTableBuilder for RdbcDeleteBuilder {

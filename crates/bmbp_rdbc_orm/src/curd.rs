@@ -1,5 +1,5 @@
 use crate::orm::RdbcOrmExecutor;
-use bmbp_rdbc_sql::{RdbcDelete, RdbcInsert, RdbcQuery, RdbcUpdate, RdbcWhereFilter};
+use bmbp_rdbc_sql::{RdbcDelete, RdbcDeleteBuilder, RdbcInsert, RdbcInsertBuilder, RdbcQuery, RdbcQueryBuilder, RdbcUpdate, RdbcUpdateBuilder, RdbcWhereFilter};
 use bmbp_rdbc_type::{RdbcError, RdbcIdent, RdbcPage, RdbcRow, RdbcTableIdent};
 use serde::Serialize;
 use std::fmt::Debug;
@@ -228,27 +228,27 @@ pub trait RdbcSqlTrait<T>
 where
     T: RdbcTableIdent,
 {
-    fn rdbc_query_all() -> Result<RdbcQuery, RdbcError>;
-    fn rdbc_disable_all() -> Result<RdbcUpdate, RdbcError>;
-    fn rdbc_enable_all() -> Result<RdbcUpdate, RdbcError>;
-    fn rdbc_delete_all() -> Result<RdbcDelete, RdbcError>;
-    fn rdbc_delete_logic_all() -> Result<RdbcUpdate, RdbcError>;
-    fn rdbc_query(&self) -> Result<RdbcQuery, RdbcError>;
-    fn rdbc_query_info(&self) -> Result<RdbcQuery, RdbcError>;
-    fn rdbc_insert(&self) -> Result<RdbcInsert, RdbcError>;
-    fn rdbc_insert_with_none(&self) -> Result<RdbcInsert, RdbcError>;
-    fn rdbc_insert_with_empty(&self) -> Result<RdbcInsert, RdbcError>;
-    fn rdbc_insert_with_all(&self) -> Result<RdbcInsert, RdbcError>;
-    fn rdbc_update(&self) -> Result<RdbcUpdate, RdbcError>;
-    fn rdbc_update_with_none(&self) -> Result<RdbcUpdate, RdbcError>;
-    fn rdbc_update_with_empty(&self) -> Result<RdbcUpdate, RdbcError>;
-    fn rdbc_update_with_all(&self) -> Result<RdbcUpdate, RdbcError>;
-    fn rdbc_update_by_id(&self) -> Result<RdbcUpdate, RdbcError>;
-    fn rdbc_update_with_none_by_id(&self) -> Result<RdbcUpdate, RdbcError>;
-    fn rdbc_update_with_empty_by_id(&self) -> Result<RdbcUpdate, RdbcError>;
-    fn rdbc_update_with_all_by_id(&self) -> Result<RdbcUpdate, RdbcError>;
-    fn rdbc_disable_by_id(&self) -> Result<RdbcUpdate, RdbcError>;
-    fn rdbc_enable_by_id(&self) -> Result<RdbcUpdate, RdbcError>;
-    fn rdbc_delete_by_id(&self) -> Result<RdbcDelete, RdbcError>;
-    fn rdbc_delete_logic_by_id(&self) -> Result<RdbcUpdate, RdbcError>;
+    fn rdbc_query_all() -> Result<RdbcQueryBuilder, RdbcError>;
+    fn rdbc_disable_all() -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_enable_all() -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_delete_all() -> Result<RdbcDeleteBuilder, RdbcError>;
+    fn rdbc_delete_logic_all() -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_query(&self) -> Result<RdbcQueryBuilder, RdbcError>;
+    fn rdbc_query_info(&self) -> Result<RdbcQueryBuilder, RdbcError>;
+    fn rdbc_insert(&self) -> Result<RdbcInsertBuilder, RdbcError>;
+    fn rdbc_insert_with_none(&self) -> Result<RdbcInsertBuilder, RdbcError>;
+    fn rdbc_insert_with_empty(&self) -> Result<RdbcInsertBuilder, RdbcError>;
+    fn rdbc_insert_with_all(&self) -> Result<RdbcInsertBuilder, RdbcError>;
+    fn rdbc_update(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_update_with_none(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_update_with_empty(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_update_with_all(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_update_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_update_with_none_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_update_with_empty_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_update_with_all_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_disable_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_enable_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_delete_by_id(&self) -> Result<RdbcDeleteBuilder, RdbcError>;
+    fn rdbc_delete_logic_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
 }

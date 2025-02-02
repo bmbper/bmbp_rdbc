@@ -55,7 +55,7 @@ pub trait RdbcTableIdent {
     fn order_key() -> String {
         "".to_string()
     }
-    fn logic_key() -> String {
+    fn logic_delete_key() -> String {
         "".to_string()
     }
 }

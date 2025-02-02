@@ -3,15 +3,20 @@ use crate::types::RdbcUpdate;
 use crate::{
     RdbcColumn, RdbcDmlColumn, RdbcDmlValue, RdbcFunc, RdbcJoinTable, RdbcTable, RdbcWhereFilter,
 };
-use bmbp_rdbc_type::{RdbcIdent, RdbcValue, RdbcValueIdent};
+use bmbp_rdbc_type::{RdbcValue};
 
 pub struct RdbcUpdateBuilder {
     update: RdbcUpdate,
 }
 
 impl RdbcUpdateBuilder {
-    pub fn build(&self) -> &RdbcUpdate {
-        &self.update
+    pub fn build(&self) -> RdbcUpdate {
+        self.update.clone()
+    }
+    pub fn new()->RdbcUpdateBuilder{
+        RdbcUpdateBuilder {
+            update: RdbcUpdate::new(),
+        }
     }
 }
 

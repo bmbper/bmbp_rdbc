@@ -10,3 +10,4 @@ pub use insert::*;
 pub use delete::*;
 pub use part::*;
 pub use ddl::*;
+pub use update::*;

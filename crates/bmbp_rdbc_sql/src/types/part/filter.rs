@@ -1,6 +1,6 @@
 use crate::types::{RdbcColumn, RdbcQuery};
 use bmbp_rdbc_type::RdbcValue;
-
+#[derive(Debug, Clone)]
 pub struct RdbcWhereFilter {
     pub type_: RdbcFilterType,
     pub conditions: Vec<RdbcWhereCondition>,
@@ -15,21 +15,25 @@ impl RdbcWhereFilter {
         }
     }
 }
+#[derive(Debug, Clone)]
 pub enum RdbcFilterType {
     And,
     Or,
 }
+#[derive(Debug, Clone)]
 pub enum RdbcWhereCondition {
     Simple(RdbcWhereSimpleCondition),
     Nest(RdbcWhereNestCondition),
     Raw(RdbcWhereRawCondition),
 }
 
+#[derive(Debug, Clone)]
 pub struct RdbcWhereSimpleCondition {
     pub column: RdbcColumn,
     pub compare: RdbcCompare,
     pub value: RdbcFilterValue,
 }
+#[derive(Debug, Clone)]
 pub enum RdbcCompare {
     EQ,
     NE,
@@ -52,6 +56,7 @@ pub enum RdbcCompare {
     Between,
     NotBetween,
 }
+#[derive(Debug, Clone)]
 pub enum RdbcFilterValue {
     Value(RdbcValue),
     Column(RdbcColumn),
@@ -59,11 +64,11 @@ pub enum RdbcFilterValue {
     Script(String),
     Raw(String),
 }
-
+#[derive(Debug, Clone)]
 pub struct RdbcWhereNestCondition {
     pub condition: RdbcWhereFilter,
 }
-
+#[derive(Debug, Clone)]
 pub struct RdbcWhereRawCondition {
     pub condition: String,
 }

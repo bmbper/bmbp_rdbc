@@ -1,5 +1,5 @@
 use crate::types::{RdbcQuery, RdbcWhereFilter};
-
+#[derive(Debug, Clone)]
 pub enum RdbcTable {
     SimpleTable(RdbcSimpleTable),
     QueryTable(RdbcQueryTable),
@@ -37,6 +37,7 @@ impl From<(RdbcQuery, String)> for RdbcTable {
         RdbcTable::QueryTable(RdbcQueryTable::from((query, alias)))
     }
 }
+#[derive(Debug, Clone)]
 pub struct RdbcSimpleTable {
     pub schema: String,
     pub table: String,
@@ -78,6 +79,7 @@ impl From<(String, String, String)> for RdbcSimpleTable {
         }
     }
 }
+#[derive(Debug, Clone)]
 pub struct RdbcQueryTable {
     pub query: RdbcQuery,
     pub alias: String,
@@ -96,6 +98,7 @@ impl From<(RdbcQuery, String)> for RdbcQueryTable {
         RdbcQueryTable { query, alias }
     }
 }
+#[derive(Debug, Clone)]
 pub struct RdbcRawTable {
     pub table: String,
     pub alias: String,
@@ -114,11 +117,13 @@ impl From<(String, String)> for RdbcRawTable {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct RdbcJoinTable {
     pub table: RdbcTable,
     pub join_type: JoinType,
     pub filter: Option<RdbcWhereFilter>,
 }
+#[derive(Debug, Clone)]
 pub enum JoinType {
     InnerJoin,
     LeftJoin,

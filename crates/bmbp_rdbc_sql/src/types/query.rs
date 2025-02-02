@@ -1,6 +1,6 @@
 use crate::types::{RdbcJoinTable, RdbcOrderColumn, RdbcSelectColumn, RdbcTable, RdbcWhereFilter};
 use crate::{RdbcGroupColumn};
-
+#[derive(Debug, Clone)]
 pub struct RdbcQuery {
     pub(crate) select: Vec<RdbcSelectColumn>,
     pub(crate) table: Vec<RdbcTable>,

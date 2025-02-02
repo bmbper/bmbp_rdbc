@@ -7,6 +7,7 @@ use crate::{
 };
 use bmbp_rdbc_type::{RdbcIdent, RdbcTableIdent, RdbcValue, RdbcValueIdent};
 
+
 pub struct RdbcQueryBuilder {
     query: RdbcQuery,
 }
@@ -40,8 +41,8 @@ impl RdbcQueryBuilder {
         builder.table_as(T::table_name(), T::table_alias());
         builder
     }
-    pub fn build(&self) -> &RdbcQuery {
-        &self.query
+    pub fn build(&self) -> RdbcQuery {
+        self.query.clone()
     }
 }
 /// select 构建
