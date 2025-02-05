@@ -5,3 +5,8 @@ mod orm;
 mod ds;
 mod curd;
 pub use curd::*;
+pub use orm::*;
+pub use pool::*;
+pub use conn::*;
+pub use client::*;
+pub use ds::*;

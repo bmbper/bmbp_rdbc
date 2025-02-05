@@ -18,7 +18,7 @@ pub struct RdbcDbConfig {
 }
 
 impl RdbcDbConfig {
-    pub(crate) fn new(
+    pub fn new(
         db_type: RdbcDbType,
         host: &str,
         port: i32,

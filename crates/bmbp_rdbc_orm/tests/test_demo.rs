@@ -1,10 +1,14 @@
-use bmbp_rdbc_orm::RdbcSqlTrait;
-use bmbp_rdbc_sql::{
-    RdbcDeleteBuilder, RdbcFilterBuilder, RdbcInsertBuilder,
-    RdbcQueryBuilder, RdbcTableBuilder, RdbcUpdateBuilder,
+use bmbp_rdbc_orm::{
+    RdbcCurdTrait, RdbcDbConfig, RdbcDbType, RdbcOrm, RdbcOrmExecutor, RdbcPool, RdbcSqlTrait,
 };
-use bmbp_rdbc_type::{RdbcError, RdbcIdent, RdbcTableIdent};
+use bmbp_rdbc_sql::{
+    RdbcDelete, RdbcDeleteBuilder, RdbcFilterBuilder, RdbcInsert, RdbcInsertBuilder, RdbcQuery,
+    RdbcQueryBuilder, RdbcTableBuilder, RdbcUpdate, RdbcUpdateBuilder, RdbcWhereFilter,
+};
+use bmbp_rdbc_type::{RdbcError, RdbcIdent, RdbcPage, RdbcRow, RdbcTableIdent};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
+use tracing_subscriber::fmt;
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -307,5 +311,438 @@ impl RdbcSqlTrait<BmbpDict> for BmbpDict {
     }
 }
 
-#[test]
-fn test_demo() {}
+impl From<RdbcRow> for BmbpDict {
+    fn from(value: RdbcRow) -> Self {
+        todo!()
+    }
+}
+
+impl RdbcCurdTrait<BmbpDict> for BmbpDict {
+    async fn select_page_all(
+        executor: &impl RdbcOrmExecutor,
+        page_num: usize,
+        page_size: usize,
+    ) -> Result<RdbcPage<BmbpDict>, RdbcError> {
+        executor
+            .query_page_as(
+                page_num,
+                page_size,
+                "select * from bmbp_dict".to_string(),
+                &[],
+            )
+            .await
+    }
+
+    async fn select_list_all(executor: &impl RdbcOrmExecutor) -> Result<Vec<BmbpDict>, RdbcError> {
+        executor
+            .query_list_as("select * from bmbp_dict".to_string(), &[])
+            .await
+    }
+
+    async fn select_page_by_query(
+        executor: &impl RdbcOrmExecutor,
+        page_num: usize,
+        page_size: usize,
+        query: RdbcQuery,
+    ) -> Result<RdbcPage<BmbpDict>, RdbcError> {
+        todo!()
+    }
+
+    async fn select_list_by_query(
+        executor: &impl RdbcOrmExecutor,
+        filter: RdbcWhereFilter,
+        query: RdbcQuery,
+    ) -> Result<Vec<BmbpDict>, RdbcError> {
+        todo!()
+    }
+
+    async fn select_one_by_query(
+        executor: &impl RdbcOrmExecutor,
+        query: RdbcQuery,
+    ) -> Result<Option<BmbpDict>, RdbcError> {
+        todo!()
+    }
+
+    async fn select_page_by_filter(
+        executor: &impl RdbcOrmExecutor,
+        page_num: usize,
+        page_size: usize,
+        filter: Option<RdbcWhereFilter>,
+    ) -> Result<RdbcPage<BmbpDict>, RdbcError> {
+        todo!()
+    }
+
+    async fn select_list_by_filter(
+        executor: &impl RdbcOrmExecutor,
+        filter: Option<RdbcWhereFilter>,
+    ) -> Result<Vec<BmbpDict>, RdbcError> {
+        todo!()
+    }
+
+    async fn select_one_by_filter(
+        executor: &impl RdbcOrmExecutor,
+        filter: Option<RdbcWhereFilter>,
+    ) -> Result<Option<BmbpDict>, RdbcError> {
+        todo!()
+    }
+
+    async fn select_one_by_id<I>(
+        executor: &impl RdbcOrmExecutor,
+        data_id: I,
+    ) -> Result<Option<BmbpDict>, RdbcError>
+    where
+        I: RdbcIdent,
+    {
+        todo!()
+    }
+
+    async fn select_page(
+        &self,
+        executor: &impl RdbcOrmExecutor,
+        page_num: usize,
+        page_size: usize,
+    ) -> Result<RdbcPage<BmbpDict>, RdbcError> {
+        todo!()
+    }
+
+    async fn select_list(
+        &self,
+        executor: &impl RdbcOrmExecutor,
+    ) -> Result<Vec<BmbpDict>, RdbcError> {
+        todo!()
+    }
+
+    async fn select_one(
+        &self,
+        executor: &impl RdbcOrmExecutor,
+    ) -> Result<Option<BmbpDict>, RdbcError> {
+        todo!()
+    }
+
+    async fn insert(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn insert_with_none(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn insert_with_empty(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn insert_with_all(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn insert_custom(
+        executor: &impl RdbcOrmExecutor,
+        insert: RdbcInsert,
+    ) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn update(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn update_with_none(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn update_with_empty(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn update_with_all(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn update_custom(executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn update_by_id<I>(
+        &self,
+        executor: &impl RdbcOrmExecutor,
+        data_id: BmbpDict,
+    ) -> Result<usize, RdbcError>
+    where
+        I: RdbcIdent,
+    {
+        todo!()
+    }
+
+    async fn update_with_none_by_id<I>(
+        &self,
+        executor: &impl RdbcOrmExecutor,
+        data_id: I,
+    ) -> Result<usize, RdbcError>
+    where
+        I: RdbcIdent,
+    {
+        todo!()
+    }
+
+    async fn update_with_empty_by_id<I>(
+        &self,
+        executor: &impl RdbcOrmExecutor,
+        data_id: I,
+    ) -> Result<usize, RdbcError>
+    where
+        I: RdbcIdent,
+    {
+        todo!()
+    }
+
+    async fn update_with_all_by_id<I>(
+        &self,
+        executor: &impl RdbcOrmExecutor,
+        data_id: I,
+    ) -> Result<usize, RdbcError>
+    where
+        I: RdbcIdent,
+    {
+        todo!()
+    }
+
+    async fn update_by_filter(
+        &self,
+        executor: &impl RdbcOrmExecutor,
+        filter: RdbcWhereFilter,
+    ) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn update_with_none_by_filter(
+        &self,
+        executor: &impl RdbcOrmExecutor,
+        filter: RdbcWhereFilter,
+    ) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn update_with_empty_by_filter(
+        &self,
+        executor: &(impl RdbcOrmExecutor),
+        filter: RdbcWhereFilter,
+    ) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn update_with_all_by_filter(
+        &self,
+        executor: &impl RdbcOrmExecutor,
+        filter: RdbcWhereFilter,
+    ) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn delete(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn delete_all(executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn delete_by_id<I>(executor: &impl RdbcOrmExecutor, id: I) -> Result<usize, RdbcError>
+    where
+        I: RdbcIdent,
+    {
+        todo!()
+    }
+
+    async fn delete_by_ids<I>(
+        executor: &impl RdbcOrmExecutor,
+        ids: &[I],
+    ) -> Result<usize, RdbcError>
+    where
+        I: RdbcIdent,
+    {
+        todo!()
+    }
+
+    async fn delete_by_filter(
+        executor: &impl RdbcOrmExecutor,
+        filter: RdbcWhereFilter,
+    ) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn delete_by_custom(
+        executor: &impl RdbcOrmExecutor,
+        delete: RdbcDelete,
+    ) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn logic_delete(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn logic_delete_all(executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn logic_delete_by_id<I>(
+        executor: &impl RdbcOrmExecutor,
+        id: I,
+    ) -> Result<usize, RdbcError>
+    where
+        I: RdbcIdent,
+    {
+        todo!()
+    }
+
+    async fn logic_delete_by_ids<I>(
+        executor: &impl RdbcOrmExecutor,
+        ids: &[I],
+    ) -> Result<usize, RdbcError>
+    where
+        I: RdbcIdent,
+    {
+        todo!()
+    }
+
+    async fn logic_delete_by_filter(
+        executor: &impl RdbcOrmExecutor,
+        filter: RdbcWhereFilter,
+    ) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn logic_delete_by_custom(
+        executor: &impl RdbcOrmExecutor,
+        delete: RdbcUpdate,
+    ) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn enable(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn enable_all(executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn enable_by_id<I>(executor: &impl RdbcOrmExecutor, id: I) -> Result<usize, RdbcError>
+    where
+        I: RdbcIdent,
+    {
+        todo!()
+    }
+
+    async fn enable_by_ids<I>(
+        executor: &impl RdbcOrmExecutor,
+        ids: &[I],
+    ) -> Result<usize, RdbcError>
+    where
+        I: RdbcIdent,
+    {
+        todo!()
+    }
+
+    async fn enable_by_filter(
+        executor: &impl RdbcOrmExecutor,
+        filter: RdbcWhereFilter,
+    ) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn enable_by_custom(
+        executor: &impl RdbcOrmExecutor,
+        update: RdbcUpdate,
+    ) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn disable(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn disable_all(executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn disable_by_id<I>(executor: &impl RdbcOrmExecutor, id: I) -> Result<usize, RdbcError>
+    where
+        I: RdbcIdent,
+    {
+        todo!()
+    }
+
+    async fn disable_by_ids<I>(
+        executor: &impl RdbcOrmExecutor,
+        ids: &[I],
+    ) -> Result<usize, RdbcError>
+    where
+        I: RdbcIdent,
+    {
+        todo!()
+    }
+
+    async fn disable_by_filter(
+        executor: &impl RdbcOrmExecutor,
+        filter: RdbcWhereFilter,
+    ) -> Result<usize, RdbcError> {
+        todo!()
+    }
+
+    async fn disable_by_custom(
+        executor: &impl RdbcOrmExecutor,
+        update: RdbcUpdate,
+    ) -> Result<usize, RdbcError> {
+        todo!()
+    }
+}
+
+async fn get_pool() -> Result<Arc<RdbcPool>, RdbcError> {
+    let db_config = RdbcDbConfig::new(
+        RdbcDbType::Postgres,
+        "localhost",
+        5432,
+        "bmbp",
+        "zgk0130!",
+        "bmbp",
+        "public",
+        None,
+    );
+    let arc_db_config = Arc::new(db_config);
+    let pool = RdbcPool::connect(arc_db_config.clone()).await;
+    pool
+}
+
+#[tokio::test]
+async fn test_demo() -> Result<(), RdbcError> {
+    let demo = BmbpDict {
+        dict_value: None,
+        dict_alias: None,
+        data_id: None,
+        data_level: None,
+        data_flag: None,
+        data_status: None,
+        data_sort: None,
+        data_create_time: None,
+        data_create_user: None,
+        data_update_time: None,
+        data_update_user: None,
+        data_owner_org: None,
+        data_sign: None,
+        dict_code: None,
+        dict_parent_code: None,
+        dict_name: None,
+        dict_code_path: None,
+        dict_name_path: None,
+        dict_tree_grade: None,
+        dict_leaf: None,
+        dict_type: None,
+        dict_children: None,
+    };
+
+    let pool = get_pool().await?;
+    let data = BmbpDict::select_list_all(&pool).await?;
+    assert_eq!(data.len(), 0);
+    Ok(())
+}
