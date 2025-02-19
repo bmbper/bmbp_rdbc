@@ -77,15 +77,15 @@ where
     // 插入值，仅插入有效值
     async fn insert(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError>;
     // 插入值，包含null值
-    async fn insert_with_none(&self, executor: &impl RdbcOrmExecutor)
-        -> Result<usize, RdbcError>;
+    async fn insert_ignore_none(&self, executor: &impl RdbcOrmExecutor)
+                                -> Result<usize, RdbcError>;
     // 插入值包含空值
-    async fn insert_with_empty(
+    async fn insert_ignore_empty(
         &self,
         executor: &impl RdbcOrmExecutor,
     ) -> Result<usize, RdbcError>;
     // 插入值，包含所有值
-    async fn insert_with_all(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError>;
+    async fn insert_ignore_both(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError>;
     async fn insert_custom(
         executor: &impl RdbcOrmExecutor,
         insert: RdbcInsert,
@@ -94,15 +94,15 @@ where
     // 更新，仅插入有效值
     async fn update(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError>;
     // 更新值，包含null值
-    async fn update_with_none(&self, executor: &impl RdbcOrmExecutor)
-        -> Result<usize, RdbcError>;
+    async fn update_ignore_none(&self, executor: &impl RdbcOrmExecutor)
+                                -> Result<usize, RdbcError>;
     // 更新值，包含空值
-    async fn update_with_empty(
+    async fn update_ignore_empty(
         &self,
         executor: &impl RdbcOrmExecutor,
     ) -> Result<usize, RdbcError>;
     // 更新值，包含所有值
-    async fn update_with_all(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError>;
+    async fn update_ignore_both(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError>;
 
     async fn update_custom(executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError>;
 
@@ -115,7 +115,7 @@ where
     where
         I: RdbcIdent;
     // 更新值，包含null值
-    async fn update_with_none_by_id<I>(
+    async fn update_ignore_none_by_id<I>(
         &self,
         executor: &impl RdbcOrmExecutor,
         data_id: I,
@@ -123,7 +123,7 @@ where
     where
         I: RdbcIdent;
     // 更新值包含空值
-    async fn update_with_empty_by_id<I>(
+    async fn update_ignore_empty_by_id<I>(
         &self,
         executor: &impl RdbcOrmExecutor,
         data_id: I,
@@ -131,7 +131,7 @@ where
     where
         I: RdbcIdent;
     // 更新值，包含所有值
-    async fn update_with_all_by_id<I>(
+    async fn update_ignore_both_by_id<I>(
         &self,
         executor: &impl RdbcOrmExecutor,
         data_id: I,
@@ -146,19 +146,19 @@ where
         filter: RdbcWhereFilter,
     ) -> Result<usize, RdbcError>;
     // 更新值，包含null值
-    async fn update_with_none_by_filter(
+    async fn update_ignore_none_by_filter(
         &self,
         executor: &impl RdbcOrmExecutor,
         filter: RdbcWhereFilter,
     ) -> Result<usize, RdbcError>;
     // 更新值包含空值
-    async fn update_with_empty_by_filter(
+    async fn update_ignore_empty_by_filter(
         &self,
         executor: &impl RdbcOrmExecutor,
         filter: RdbcWhereFilter,
     ) ->  Result<usize, RdbcError>;
     // 更新值，包含所有值
-    async fn update_with_all_by_filter(
+    async fn update_ignore_both_by_filter(
         &self,
         executor: &impl RdbcOrmExecutor,
         filter: RdbcWhereFilter,
@@ -259,17 +259,17 @@ where
     fn rdbc_query(&self) -> Result<RdbcQueryBuilder, RdbcError>;
     fn rdbc_query_info(&self) -> Result<RdbcQueryBuilder, RdbcError>;
     fn rdbc_insert(&self) -> Result<RdbcInsertBuilder, RdbcError>;
-    fn rdbc_insert_with_none(&self) -> Result<RdbcInsertBuilder, RdbcError>;
-    fn rdbc_insert_with_empty(&self) -> Result<RdbcInsertBuilder, RdbcError>;
-    fn rdbc_insert_with_all(&self) -> Result<RdbcInsertBuilder, RdbcError>;
+    fn rdbc_insert_ignore_none(&self) -> Result<RdbcInsertBuilder, RdbcError>;
+    fn rdbc_insert_ignore_empty(&self) -> Result<RdbcInsertBuilder, RdbcError>;
+    fn rdbc_insert_ignore_both(&self) -> Result<RdbcInsertBuilder, RdbcError>;
     fn rdbc_update(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
-    fn rdbc_update_with_none(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
-    fn rdbc_update_with_empty(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
-    fn rdbc_update_with_all(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_update_ignore_none(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_update_ignore_empty(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_update_ignore_both(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
     fn rdbc_update_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
-    fn rdbc_update_with_none_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
-    fn rdbc_update_with_empty_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
-    fn rdbc_update_with_all_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_update_ignore_none_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_update_ignore_empty_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_update_ignore_both_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
     fn rdbc_disable_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
     fn rdbc_enable_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError>;
     fn rdbc_delete_by_id(&self) -> Result<RdbcDeleteBuilder, RdbcError>;

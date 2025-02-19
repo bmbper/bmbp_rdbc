@@ -250,15 +250,15 @@ impl RdbcSqlTrait<BmbpDict> for BmbpDict {
         Ok(insert)
     }
 
-    fn rdbc_insert_with_none(&self) -> Result<RdbcInsertBuilder, RdbcError> {
+    fn rdbc_insert_ignore_none(&self) -> Result<RdbcInsertBuilder, RdbcError> {
         todo!()
     }
 
-    fn rdbc_insert_with_empty(&self) -> Result<RdbcInsertBuilder, RdbcError> {
+    fn rdbc_insert_ignore_empty(&self) -> Result<RdbcInsertBuilder, RdbcError> {
         todo!()
     }
 
-    fn rdbc_insert_with_all(&self) -> Result<RdbcInsertBuilder, RdbcError> {
+    fn rdbc_insert_ignore_all(&self) -> Result<RdbcInsertBuilder, RdbcError> {
         todo!()
     }
 
