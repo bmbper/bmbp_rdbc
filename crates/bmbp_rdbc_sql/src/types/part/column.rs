@@ -112,6 +112,14 @@ impl From<RdbcColumn> for RdbcSelectColumn {
         }
     }
 }
+impl From<(RdbcColumn, String)> for RdbcSelectColumn {
+    fn from((column, alias): (RdbcColumn, String)) -> Self {
+        RdbcSelectColumn {
+            column,
+            alias,
+        }
+    }
+}
 impl From<RdbcSimpleColumn> for RdbcSelectColumn {
     fn from(column: RdbcSimpleColumn) -> Self {
         RdbcSelectColumn {

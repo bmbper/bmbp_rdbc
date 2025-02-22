@@ -177,6 +177,7 @@ impl RdbcQueryBuilder {
         self
     }
     pub fn select_rdbc_column(&mut self, column: RdbcColumn) -> &mut Self {
+        self.query.select.push(RdbcSelectColumn::from(column));
         self
     }
 
@@ -184,7 +185,7 @@ impl RdbcQueryBuilder {
     where
         A: RdbcIdent,
     {
-        self.query.select.push(RdbcSelectColumn::from(column));
+        self.query.select.push(RdbcSelectColumn::from((column, alias.name())));
         self
     }
 

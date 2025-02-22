@@ -1,5 +1,5 @@
 use bmbp_rdbc_orm::{
-    RdbcCurdTrait, RdbcDbConfig, RdbcDbType, RdbcOrm, RdbcOrmExecutor, RdbcPool, RdbcSqlTrait,
+    RdbcOrmCurd, RdbcDbConfig, RdbcDbType, RdbcOrmExecutor, RdbcPool, RdbcOrmSqlBuilder,
 };
 use bmbp_rdbc_sql::{
     RdbcDelete, RdbcDeleteBuilder, RdbcFilterBuilder, RdbcInsert, RdbcInsertBuilder, RdbcQuery,
@@ -8,7 +8,6 @@ use bmbp_rdbc_sql::{
 use bmbp_rdbc_type::{RdbcError, RdbcIdent, RdbcPage, RdbcRow, RdbcTableIdent};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use tracing_subscriber::fmt;
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -92,7 +91,6 @@ impl RdbcTableIdent for BmbpDict {
     fn table_name() -> String {
         "bmbp_config_dict".to_string()
     }
-
     fn columns() -> Vec<String> {
         vec![
             "dict_value".to_string(),
@@ -118,11 +116,9 @@ impl RdbcTableIdent for BmbpDict {
             "data_sign".to_string(),
         ]
     }
-
     fn primary_key() -> String {
         "data_id".to_string()
     }
-
     fn status_key() -> String {
         "data_status".to_string()
     }
@@ -131,7 +127,7 @@ impl RdbcTableIdent for BmbpDict {
     }
 }
 
-impl RdbcSqlTrait<BmbpDict> for BmbpDict {
+impl RdbcOrmSqlBuilder<BmbpDict> for BmbpDict {
     fn rdbc_query_all() -> Result<RdbcQueryBuilder, RdbcError> {
         let mut builder = RdbcQueryBuilder::new();
         builder.table(BmbpDict::table_name());
@@ -258,7 +254,7 @@ impl RdbcSqlTrait<BmbpDict> for BmbpDict {
         todo!()
     }
 
-    fn rdbc_insert_ignore_all(&self) -> Result<RdbcInsertBuilder, RdbcError> {
+    fn rdbc_insert_ignore_both(&self) -> Result<RdbcInsertBuilder, RdbcError> {
         todo!()
     }
 
@@ -266,15 +262,15 @@ impl RdbcSqlTrait<BmbpDict> for BmbpDict {
         todo!()
     }
 
-    fn rdbc_update_with_none(&self) -> Result<RdbcUpdateBuilder, RdbcError> {
+    fn rdbc_update_ignore_none(&self) -> Result<RdbcUpdateBuilder, RdbcError> {
         todo!()
     }
 
-    fn rdbc_update_with_empty(&self) -> Result<RdbcUpdateBuilder, RdbcError> {
+    fn rdbc_update_ignore_empty(&self) -> Result<RdbcUpdateBuilder, RdbcError> {
         todo!()
     }
 
-    fn rdbc_update_with_all(&self) -> Result<RdbcUpdateBuilder, RdbcError> {
+    fn rdbc_update_ignore_both(&self) -> Result<RdbcUpdateBuilder, RdbcError> {
         todo!()
     }
 
@@ -282,15 +278,15 @@ impl RdbcSqlTrait<BmbpDict> for BmbpDict {
         todo!()
     }
 
-    fn rdbc_update_with_none_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError> {
+    fn rdbc_update_ignore_none_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError> {
         todo!()
     }
 
-    fn rdbc_update_with_empty_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError> {
+    fn rdbc_update_ignore_empty_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError> {
         todo!()
     }
 
-    fn rdbc_update_with_all_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError> {
+    fn rdbc_update_ignore_both_by_id(&self) -> Result<RdbcUpdateBuilder, RdbcError> {
         todo!()
     }
 
@@ -317,7 +313,7 @@ impl From<RdbcRow> for BmbpDict {
     }
 }
 
-impl RdbcCurdTrait<BmbpDict> for BmbpDict {
+impl RdbcOrmCurd<BmbpDict> for BmbpDict {
     async fn select_page_all(
         executor: &impl RdbcOrmExecutor,
         page_num: usize,
@@ -423,15 +419,15 @@ impl RdbcCurdTrait<BmbpDict> for BmbpDict {
         todo!()
     }
 
-    async fn insert_with_none(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+    async fn insert_ignore_none(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
         todo!()
     }
 
-    async fn insert_with_empty(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+    async fn insert_ignore_empty(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
         todo!()
     }
 
-    async fn insert_with_all(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+    async fn insert_ignore_both(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
         todo!()
     }
 
@@ -446,15 +442,15 @@ impl RdbcCurdTrait<BmbpDict> for BmbpDict {
         todo!()
     }
 
-    async fn update_with_none(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+    async fn update_ignore_none(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
         todo!()
     }
 
-    async fn update_with_empty(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+    async fn update_ignore_empty(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
         todo!()
     }
 
-    async fn update_with_all(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
+    async fn update_ignore_both(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError> {
         todo!()
     }
 
@@ -473,7 +469,7 @@ impl RdbcCurdTrait<BmbpDict> for BmbpDict {
         todo!()
     }
 
-    async fn update_with_none_by_id<I>(
+    async fn update_ignore_none_by_id<I>(
         &self,
         executor: &impl RdbcOrmExecutor,
         data_id: I,
@@ -484,7 +480,7 @@ impl RdbcCurdTrait<BmbpDict> for BmbpDict {
         todo!()
     }
 
-    async fn update_with_empty_by_id<I>(
+    async fn update_ignore_empty_by_id<I>(
         &self,
         executor: &impl RdbcOrmExecutor,
         data_id: I,
@@ -495,7 +491,7 @@ impl RdbcCurdTrait<BmbpDict> for BmbpDict {
         todo!()
     }
 
-    async fn update_with_all_by_id<I>(
+    async fn update_ignore_both_by_id<I>(
         &self,
         executor: &impl RdbcOrmExecutor,
         data_id: I,
@@ -514,7 +510,7 @@ impl RdbcCurdTrait<BmbpDict> for BmbpDict {
         todo!()
     }
 
-    async fn update_with_none_by_filter(
+    async fn update_ignore_none_by_filter(
         &self,
         executor: &impl RdbcOrmExecutor,
         filter: RdbcWhereFilter,
@@ -522,7 +518,7 @@ impl RdbcCurdTrait<BmbpDict> for BmbpDict {
         todo!()
     }
 
-    async fn update_with_empty_by_filter(
+    async fn update_ignore_empty_by_filter(
         &self,
         executor: &(impl RdbcOrmExecutor),
         filter: RdbcWhereFilter,
@@ -530,7 +526,7 @@ impl RdbcCurdTrait<BmbpDict> for BmbpDict {
         todo!()
     }
 
-    async fn update_with_all_by_filter(
+    async fn update_ignore_both_by_filter(
         &self,
         executor: &impl RdbcOrmExecutor,
         filter: RdbcWhereFilter,

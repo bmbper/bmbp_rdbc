@@ -58,6 +58,7 @@ pub enum RdbcCompare {
 }
 #[derive(Debug, Clone)]
 pub enum RdbcFilterValue {
+    None,
     Value(RdbcValue),
     Column(RdbcColumn),
     Query(RdbcQuery),

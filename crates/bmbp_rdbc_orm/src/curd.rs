@@ -1,16 +1,16 @@
 use crate::orm::RdbcOrmExecutor;
 use bmbp_rdbc_sql::{
     RdbcDelete, RdbcDeleteBuilder, RdbcInsert, RdbcInsertBuilder, RdbcQuery, RdbcQueryBuilder,
-    RdbcUpdate, RdbcUpdateBuilder, RdbcWhereFilter,
+    RdbcTableBuilder, RdbcUpdate, RdbcUpdateBuilder, RdbcWhereFilter,
 };
 use bmbp_rdbc_type::{RdbcError, RdbcIdent, RdbcPage, RdbcRow, RdbcTableIdent};
 use serde::Serialize;
 use std::fmt::Debug;
 
-pub trait RdbcCurdTrait<T>
+pub trait RdbcOrmCurd<T>
 where
     T: From<RdbcRow>,
-    T: RdbcSqlTrait<T>,
+    T: RdbcOrmSqlBuilder<T>,
     T: RdbcTableIdent,
     T: Default + Debug + Clone + Serialize,
 {
@@ -78,14 +78,15 @@ where
     async fn insert(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError>;
     // 插入值，包含null值
     async fn insert_ignore_none(&self, executor: &impl RdbcOrmExecutor)
-                                -> Result<usize, RdbcError>;
+    -> Result<usize, RdbcError>;
     // 插入值包含空值
     async fn insert_ignore_empty(
         &self,
         executor: &impl RdbcOrmExecutor,
     ) -> Result<usize, RdbcError>;
     // 插入值，包含所有值
-    async fn insert_ignore_both(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError>;
+    async fn insert_ignore_both(&self, executor: &impl RdbcOrmExecutor)
+    -> Result<usize, RdbcError>;
     async fn insert_custom(
         executor: &impl RdbcOrmExecutor,
         insert: RdbcInsert,
@@ -95,14 +96,15 @@ where
     async fn update(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError>;
     // 更新值，包含null值
     async fn update_ignore_none(&self, executor: &impl RdbcOrmExecutor)
-                                -> Result<usize, RdbcError>;
+    -> Result<usize, RdbcError>;
     // 更新值，包含空值
     async fn update_ignore_empty(
         &self,
         executor: &impl RdbcOrmExecutor,
     ) -> Result<usize, RdbcError>;
     // 更新值，包含所有值
-    async fn update_ignore_both(&self, executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError>;
+    async fn update_ignore_both(&self, executor: &impl RdbcOrmExecutor)
+    -> Result<usize, RdbcError>;
 
     async fn update_custom(executor: &impl RdbcOrmExecutor) -> Result<usize, RdbcError>;
 
@@ -156,7 +158,7 @@ where
         &self,
         executor: &impl RdbcOrmExecutor,
         filter: RdbcWhereFilter,
-    ) ->  Result<usize, RdbcError>;
+    ) -> Result<usize, RdbcError>;
     // 更新值，包含所有值
     async fn update_ignore_both_by_filter(
         &self,
@@ -247,15 +249,39 @@ where
     ) -> Result<usize, RdbcError>;
 }
 
-pub trait RdbcSqlTrait<T>
+pub trait RdbcOrmSqlBuilder<T>
 where
     T: RdbcTableIdent,
 {
-    fn rdbc_query_all() -> Result<RdbcQueryBuilder, RdbcError>;
-    fn rdbc_disable_all() -> Result<RdbcUpdateBuilder, RdbcError>;
-    fn rdbc_enable_all() -> Result<RdbcUpdateBuilder, RdbcError>;
-    fn rdbc_delete_all() -> Result<RdbcDeleteBuilder, RdbcError>;
-    fn rdbc_delete_logic_all() -> Result<RdbcUpdateBuilder, RdbcError>;
+    fn rdbc_query_all() -> Result<RdbcQueryBuilder, RdbcError> {
+        let mut query = RdbcQueryBuilder::new();
+        query.table(T::table_name());
+        query.select_vec(T::columns());
+        Ok(query)
+    }
+    fn rdbc_disable_all() -> Result<RdbcUpdateBuilder, RdbcError> {
+        let mut update = RdbcUpdateBuilder::new();
+        update.table(T::table_name());
+        update.set(T::status_key(), "N");
+        Ok(update)
+    }
+    fn rdbc_enable_all() -> Result<RdbcUpdateBuilder, RdbcError> {
+        let mut update = RdbcUpdateBuilder::new();
+        update.table(T::table_name());
+        update.set(T::status_key(), "Y");
+        Ok(update)
+    }
+    fn rdbc_delete_all() -> Result<RdbcDeleteBuilder, RdbcError> {
+        let mut delete = RdbcDeleteBuilder::new();
+        delete.table(T::table_name());
+        Ok(delete)
+    }
+    fn rdbc_delete_logic_all() -> Result<RdbcUpdateBuilder, RdbcError> {
+        let mut update = RdbcUpdateBuilder::new();
+        update.table(T::table_name());
+        update.set(T::logic_delete_key(), "Y");
+        Ok(update)
+    }
     fn rdbc_query(&self) -> Result<RdbcQueryBuilder, RdbcError>;
     fn rdbc_query_info(&self) -> Result<RdbcQueryBuilder, RdbcError>;
     fn rdbc_insert(&self) -> Result<RdbcInsertBuilder, RdbcError>;
