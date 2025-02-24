@@ -1,14 +1,31 @@
 pub trait RdbcIdent {
     fn name(&self) -> String;
 }
-impl<T> RdbcIdent for T
-where
-    T: ToString,
-{
-    fn name(&self) -> String {
-        self.to_string()
-    }
+macro_rules! number_ident {
+    ( $( $t:ty ),* ) => {
+        $(
+            impl RdbcIdent for $t {
+                fn name(&self) -> String {
+                    self.to_string()
+                }
+            }
+        )*
+    };
 }
+number_ident!(i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, f32, f64);
+macro_rules! string_ident {
+    ( $( $t:ty ),* ) => {
+        $(
+            impl RdbcIdent for $t {
+                fn name(&self) -> String {
+                    format!("{}",self.to_string())
+                }
+            }
+        )*
+    };
+}
+string_ident!(&str, String, &String);
+
 
 pub trait RdbcValueIdent {
     fn value(&self) -> String;

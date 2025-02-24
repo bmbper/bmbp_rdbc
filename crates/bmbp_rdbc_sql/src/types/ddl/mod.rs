@@ -1,9 +1,0 @@
-mod schema;
-mod table;
-mod view;
-mod user;
-mod producer;
-mod trigger;
-mod column;
-mod index;
-mod constriant;

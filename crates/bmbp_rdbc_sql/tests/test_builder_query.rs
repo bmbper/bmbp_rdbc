@@ -1,4 +1,7 @@
-use bmbp_rdbc_sql::{RdbcDistinctFunc, RdbcQueryBuilder, RdbcTableBuilder, RdbcFilterBuilder};
+use bmbp_rdbc_sql::dql::RdbcQueryBuilder;
+use bmbp_rdbc_sql::filter::RdbcWhereFilterBuilder;
+use bmbp_rdbc_sql::select::RdbcSelectBuilder;
+use bmbp_rdbc_sql::table::RdbcTableBuilder;
 use bmbp_rdbc_type::RdbcIdent;
 
 #[test]

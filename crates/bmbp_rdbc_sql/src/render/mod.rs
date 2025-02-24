@@ -1,8 +1,3 @@
-mod client;
-mod query;
-mod render;
-mod update;
-mod delete;
-mod insert;
-mod part;
-mod ddl;
+pub mod ddl;
+pub mod dmq;
+pub mod client;

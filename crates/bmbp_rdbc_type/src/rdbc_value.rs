@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt::Display;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(untagged)]
 pub enum RdbcValue {
     Char(char),
@@ -22,21 +22,10 @@ pub enum RdbcValue {
     Boolean(bool),
     Array(Vec<RdbcValue>),
     Object(HashMap<String, RdbcValue>),
+    #[default]
     Null,
 }
 impl RdbcValue {
-    pub fn is_object(&self) -> bool {
-        match self {
-            RdbcValue::Object(_) => true,
-            _ => false,
-        }
-    }
-    pub fn is_array(&self) -> bool {
-        match self {
-            RdbcValue::Array(_) => true,
-            _ => false,
-        }
-    }
     pub fn is_string(&self) -> bool {
         match self {
             RdbcValue::Char(_)

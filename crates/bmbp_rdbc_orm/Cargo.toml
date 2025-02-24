@@ -11,7 +11,7 @@ repository.workspace = true
 documentation.workspace = true
 
 [dependencies]
-# sql
+# dmq
 bmbp_rdbc_type = { workspace = true }
 bmbp_rdbc_sql = { workspace = true }
 # 日志
