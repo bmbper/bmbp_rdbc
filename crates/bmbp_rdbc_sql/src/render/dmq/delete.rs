@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use bmbp_rdbc_type::RdbcValue;
-use crate::dmq::render::RdbcSqlRender;
-use crate::RdbcDelete;
+use crate::{RdbcDelete, RdbcSqlRender};
 
 pub struct RdbcDeleteRender {
     delete: RdbcDelete

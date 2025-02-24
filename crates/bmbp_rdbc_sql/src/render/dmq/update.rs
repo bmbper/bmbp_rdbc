@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use bmbp_rdbc_type::RdbcValue;
-use crate::dmq::render::RdbcSqlRender;
-use crate::RdbcUpdate;
+use crate::{RdbcSqlRender, RdbcUpdate};
 
 pub struct RdbcUpdateRender {
     update: RdbcUpdate,
