@@ -1,6 +1,6 @@
 use crate::ds::RdbcDbConfig;
 use crate::pool::RdbcPool;
-use bmbp_rdbc_sql::{RdbcDelete, RdbcInsert, RdbcQuery, RdbcUpdate};
+use bmbp_rdbc_sql::{RdbcDelete, RdbcInsert, RdbcQuery, RdbcQueryRender, RdbcUpdate};
 use bmbp_rdbc_type::{RdbcError, RdbcPage, RdbcRow, RdbcValue};
 use serde::Serialize;
 use std::fmt::Debug;
